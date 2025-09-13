@@ -9,8 +9,6 @@
 
     <ItemGroup>
       <Folder Include="Endpoints\" />
-      <Folder Include="Services\Implementation\" />
-      <Folder Include="Services\Interface\" />
     </ItemGroup>
 
     <ItemGroup>
