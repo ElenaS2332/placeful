@@ -2,7 +2,7 @@ using Placeful.Models;
 
 namespace Placeful.Api.Models;
 
-public class FavoritesList
+public class FavoriteMemoriesList
 {
     public Guid Id { get; set; }
     public Guid UserProfileId { get; set; }
