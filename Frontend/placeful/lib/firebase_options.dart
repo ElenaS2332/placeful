@@ -62,18 +62,4 @@ class DefaultFirebaseOptions {
     databaseURL: 'https://smart-spin-83f3e-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'smart-spin-83f3e.firebasestorage.app',
   );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDUiVrA-gi7R4YNKmrl2wZlRIMdCSjIjv4',
-    appId: '1:308117439977:ios:a2e2c9c5964e7b7c73f778',
-    messagingSenderId: '308117439977',
-    projectId: 'smart-spin-83f3e',
-    databaseURL: 'https://smart-spin-83f3e-default-rtdb.europe-west1.firebasedatabase.app',
-    storageBucket: 'smart-spin-83f3e.firebasestorage.app',
-    androidClientId:
-        '308117439977-380rqfv11tbniib2knsod2fhdgpu7gnm.apps.googleusercontent.com',
-    iosClientId:
-        '308117439977-hredna3g3v07vmarbddbjt9qqae7auv5.apps.googleusercontent.com',
-    iosBundleId: 'com.smart.spin',
-  );
 }
