@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:placeful/core/domain/dtos/memory_dto.dart';
 import 'location.dart';
 
 part 'memory.g.dart';
@@ -19,8 +20,14 @@ class Memory {
     this.imageUrl = '',
   });
 
-  factory Memory.fromJson(Map<String, dynamic> json) =>
-      _$MemoryFromJson(json);
+  Memory.fromDto(MemoryDto dto)
+    : id = dto.id,
+      title = dto.title,
+      description = dto.description,
+      location = dto.location,
+      imageUrl = dto.imageUrl;
+
+  factory Memory.fromJson(Map<String, dynamic> json) => _$MemoryFromJson(json);
 
   Map<String, dynamic> toJson() => _$MemoryToJson(this);
 }

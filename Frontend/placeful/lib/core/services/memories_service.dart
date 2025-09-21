@@ -1,0 +1,35 @@
+import 'package:placeful/core/domain/dtos/memory_dto.dart';
+import 'package:placeful/core/domain/models/memory.dart';
+import 'package:placeful/core/services/http_service.dart';
+import 'package:placeful/core/services/service_locatior.dart';
+
+class MemoryService {
+  MemoryService();
+
+  final HttpService _client = getIt<HttpService>();
+
+  Future<List<Memory>> getMemories() async {
+    final List response = await _client.get("memories/");
+    return response
+        .map((c) => MemoryDto.fromJson(c))
+        .map((dto) => Memory.fromDto(dto))
+        .toList();
+  }
+
+  Future<Memory> getMemory(String id) async {
+    final Map<String, dynamic> response = await _client.get("memories/$id");
+    return Memory.fromDto(MemoryDto.fromJson(response));
+  }
+
+  Future<void> createMemory(Memory memory) async {
+    await _client.post("memories/", memory.toJson());
+  }
+
+  Future<void> updateMemory(Memory memory) async {
+    await _client.put("memories/${memory.id}", memory.toJson());
+  }
+
+  Future<void> deleteMemory(String id) async {
+    await _client.delete("memories/$id");
+  }
+}

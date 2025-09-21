@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:placeful/core/domain/dtos/favorite_memories_list_dto.dart';
 import 'user_profile.dart';
 import 'memory.dart';
 
@@ -19,6 +20,13 @@ class FavoriteMemoriesList {
     required this.userProfile,
     required this.memory,
   });
+
+  FavoriteMemoriesList.fromDto(FavoriteMemoriesListDto dto)
+    : id = dto.id,
+      userProfileId = dto.userProfileId,
+      memoryId = dto.memoryId,
+      userProfile = dto.userProfile,
+      memory = dto.memory;
 
   factory FavoriteMemoriesList.fromJson(Map<String, dynamic> json) =>
       _$FavoriteMemoriesListFromJson(json);
