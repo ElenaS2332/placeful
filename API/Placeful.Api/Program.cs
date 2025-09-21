@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.EntityFrameworkCore;
 using Placeful.Api.Data;
 using Placeful.Api.Endpoints;
@@ -24,6 +26,12 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IMemoryService, MemoryService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddAutoMapper(cfg => { }, AppDomain.CurrentDomain.GetAssemblies());
+
+var credentials = GoogleCredential.FromFile(builder.Configuration["Firebase:Credentials"]);
+FirebaseApp.Create(new AppOptions
+{
+    Credential = credentials,
+});
 
 var app = builder.Build();
 
