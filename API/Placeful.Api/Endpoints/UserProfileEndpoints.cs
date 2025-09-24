@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Placeful.Api.Models;
 using Placeful.Api.Models.DTOs;
+using Placeful.Api.Models.Enums;
 using Placeful.Api.Services.Interface;
 
 namespace Placeful.Api.Endpoints;
@@ -11,11 +12,11 @@ public static class UserProfileEndpoints
     public static void MapUserProfileEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("api/user-profile");
-        group.MapGet("", GetUserProfiles).WithName(nameof(GetUserProfiles));
-        group.MapGet("{userProfileId:guid}", GetUserProfile).WithName(nameof(GetUserProfile));
-        group.MapPost("", CreateUserProfile).WithName(nameof(CreateUserProfile));
-        group.MapPut("", UpdateUserProfile).WithName(nameof(UpdateUserProfile));
-        group.MapDelete("{userProfileId:guid}", DeleteUserProfile).WithName(nameof(DeleteUserProfile));
+        group.MapGet("", GetUserProfiles).WithName(nameof(GetUserProfiles)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapGet("{userProfileId:guid}", GetUserProfile).WithName(nameof(GetUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapPost("", CreateUserProfile).WithName(nameof(CreateUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapPut("", UpdateUserProfile).WithName(nameof(UpdateUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapDelete("{userProfileId:guid}", DeleteUserProfile).WithName(nameof(DeleteUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
     }
     
     private static async Task<IResult> GetUserProfiles(IUserProfileService userProfileService, IMapper mapper)

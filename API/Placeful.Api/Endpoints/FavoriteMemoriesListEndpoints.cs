@@ -1,6 +1,7 @@
 using AutoMapper;
 using Placeful.Api.Models;
 using Placeful.Api.Models.DTOs;
+using Placeful.Api.Models.Enums;
 using Placeful.Api.Services.Interface;
 
 namespace Placeful.Api.Endpoints;
@@ -10,11 +11,11 @@ public static class FavoriteMemoriesListEndpoints
     public static void MapFavoriteMemoriesListEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("api/favorite-memories-list");
-        group.MapGet("", GetFavoriteMemoriesLists).WithName(nameof(GetFavoriteMemoriesLists));
-        group.MapGet("{favoriteMemoriesListId:guid}", GetFavoriteMemoriesList).WithName(nameof(GetFavoriteMemoriesList));
-        group.MapPost("", CreateFavoriteMemoriesList).WithName(nameof(CreateFavoriteMemoriesList));
-        group.MapPut("", UpdateFavoriteMemoriesList).WithName(nameof(UpdateFavoriteMemoriesList));
-        group.MapDelete("{favoriteMemoriesListId:guid}", DeleteFavoriteMemoriesList).WithName(nameof(DeleteFavoriteMemoriesList));
+        group.MapGet("", GetFavoriteMemoriesLists).WithName(nameof(GetFavoriteMemoriesLists)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapGet("{favoriteMemoriesListId:guid}", GetFavoriteMemoriesList).WithName(nameof(GetFavoriteMemoriesList)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapPost("", CreateFavoriteMemoriesList).WithName(nameof(CreateFavoriteMemoriesList)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapPut("", UpdateFavoriteMemoriesList).WithName(nameof(UpdateFavoriteMemoriesList)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapDelete("{favoriteMemoriesListId:guid}", DeleteFavoriteMemoriesList).WithName(nameof(DeleteFavoriteMemoriesList)).RequireAuthorization(AuthPolicy.Authenticated);
     }
     
     private static async Task<IResult> GetFavoriteMemoriesLists(IFavoriteMemoriesListService favoriteMemoriesListService, IMapper mapper)

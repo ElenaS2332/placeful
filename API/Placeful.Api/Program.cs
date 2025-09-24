@@ -2,8 +2,10 @@ using System.Text.Json.Serialization;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.EntityFrameworkCore;
+using Placeful.Api.Authentication.Extensions;
 using Placeful.Api.Data;
 using Placeful.Api.Endpoints;
+using Placeful.Api.Models.Enums;
 using Placeful.Api.Services.Implementation;
 using Placeful.Api.Services.Interface;
 
@@ -33,6 +35,16 @@ FirebaseApp.Create(new AppOptions
     Credential = credentials,
 });
 
+builder.Services.AddFirebaseAuthentication(builder.Configuration["Firebase:ProjectId"]!);
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthPolicy.Authenticated, policy =>
+    {
+        policy.RequireAuthenticatedUser();
+    });
+});
+
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -45,5 +57,7 @@ app.MapFavoriteMemoriesListEndpoints();
 app.MapLocationEndpoints();
 app.MapMemoryEndpoints();
 app.MapUserProfileEndpoints();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();
