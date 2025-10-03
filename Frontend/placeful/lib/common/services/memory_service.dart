@@ -9,7 +9,7 @@ class MemoryService {
   final HttpService _client = getIt<HttpService>();
 
   Future<List<Memory>> getMemories() async {
-    final List response = await _client.get("memories/");
+    final List response = await _client.get("memory/");
     return response
         .map((c) => MemoryDto.fromJson(c))
         .map((dto) => Memory.fromDto(dto))
@@ -17,19 +17,19 @@ class MemoryService {
   }
 
   Future<Memory> getMemory(String id) async {
-    final Map<String, dynamic> response = await _client.get("memories/$id");
+    final Map<String, dynamic> response = await _client.get("memory/$id");
     return Memory.fromDto(MemoryDto.fromJson(response));
   }
 
   Future<void> createMemory(Memory memory) async {
-    await _client.post("memories/", memory.toJson());
+    await _client.post("memory/", memory.toJson());
   }
 
   Future<void> updateMemory(Memory memory) async {
-    await _client.put("memories/${memory.id}", memory.toJson());
+    await _client.put("memory/${memory.id}", memory.toJson());
   }
 
   Future<void> deleteMemory(String id) async {
-    await _client.delete("memories/$id");
+    await _client.delete("memory/$id");
   }
 }

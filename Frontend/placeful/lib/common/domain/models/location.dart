@@ -6,21 +6,18 @@ part 'location.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class Location {
-  final String id;
   final double latitude;
   final double longitude;
   final List<Memory> memories;
 
   Location({
-    required this.id,
     required this.latitude,
     required this.longitude,
     this.memories = const [],
   });
 
   Location.fromDto(LocationDto dto)
-    : id = dto.id,
-      latitude = dto.latitude,
+    : latitude = dto.latitude,
       longitude = dto.longitude,
       memories = dto.memories;
 
