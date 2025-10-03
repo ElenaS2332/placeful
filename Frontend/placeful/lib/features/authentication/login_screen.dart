@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:placeful/core/services/auth_service.dart';
 import 'package:placeful/core/services/service_locatior.dart';
 import 'package:placeful/features/authentication/register_screen.dart';
+import 'package:placeful/features/memories/memories_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await _auth.loginWithEmail(email, pass);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) =>  const RegisterScreen()),
+        MaterialPageRoute(builder: (_) => const MemoriesPage()),
       );
     } on FirebaseAuthException catch (e) {
       _showMessage(e.message ?? 'Login failed.');
@@ -110,11 +111,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               controller: _emailCtrl,
                               keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
-                                prefixIcon: const Icon(Icons.email,
-                                    color: Colors.white70),
+                                prefixIcon: const Icon(
+                                  Icons.email,
+                                  color: Colors.white70,
+                                ),
                                 hintText: 'Email',
-                                hintStyle:
-                                    const TextStyle(color: Colors.white70),
+                                hintStyle: const TextStyle(
+                                  color: Colors.white70,
+                                ),
                                 filled: true,
                                 fillColor: Colors.white24,
                                 border: OutlineInputBorder(
@@ -130,11 +134,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               controller: _passCtrl,
                               obscureText: _isObscured,
                               decoration: InputDecoration(
-                                prefixIcon: const Icon(Icons.lock,
-                                    color: Colors.white70),
+                                prefixIcon: const Icon(
+                                  Icons.lock,
+                                  color: Colors.white70,
+                                ),
                                 hintText: 'Password',
-                                hintStyle:
-                                    const TextStyle(color: Colors.white70),
+                                hintStyle: const TextStyle(
+                                  color: Colors.white70,
+                                ),
                                 filled: true,
                                 fillColor: Colors.white24,
                                 border: OutlineInputBorder(
@@ -160,34 +167,37 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: ElevatedButton(
                                 onPressed: _isLoading ? null : _login,
                                 style: ElevatedButton.styleFrom(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 14),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   backgroundColor: Colors.white,
                                 ),
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                  Color(0xFF7751F8)),
-                                        ),
-                                      )
-                                    : Text(
-                                        'LOG IN',
-                                        style: GoogleFonts.nunito(
-                                          textStyle: const TextStyle(
-                                            color: Color(0xFF7751F8),
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
+                                child:
+                                    _isLoading
+                                        ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  Color(0xFF7751F8),
+                                                ),
+                                          ),
+                                        )
+                                        : Text(
+                                          'LOG IN',
+                                          style: GoogleFonts.nunito(
+                                            textStyle: const TextStyle(
+                                              color: Color(0xFF7751F8),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
-                                      ),
                               ),
                             ),
                           ],
@@ -202,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) =>  const RegisterScreen(),
+                            builder: (_) => const RegisterScreen(),
                           ),
                         );
                       },
