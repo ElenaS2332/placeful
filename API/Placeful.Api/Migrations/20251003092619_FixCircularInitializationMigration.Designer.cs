@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Placeful.Api.Data;
@@ -11,9 +12,11 @@ using Placeful.Api.Data;
 namespace Placeful.Api.Migrations
 {
     [DbContext(typeof(PlacefulDbContext))]
-    partial class PlacefulDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251003092619_FixCircularInitializationMigration")]
+    partial class FixCircularInitializationMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,7 +44,7 @@ namespace Placeful.Api.Migrations
                     b.HasIndex("UserProfileId")
                         .IsUnique();
 
-                    b.ToTable("FavoriteMemoriesLists", (string)null);
+                    b.ToTable("FavoriteMemoriesLists");
                 });
 
             modelBuilder.Entity("Placeful.Api.Models.Entities.Location", b =>
@@ -58,7 +61,7 @@ namespace Placeful.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Locations", (string)null);
+                    b.ToTable("Locations");
                 });
 
             modelBuilder.Entity("Placeful.Api.Models.Entities.Memory", b =>
@@ -89,7 +92,7 @@ namespace Placeful.Api.Migrations
 
                     b.HasIndex("LocationId");
 
-                    b.ToTable("Memories", (string)null);
+                    b.ToTable("Memories");
                 });
 
             modelBuilder.Entity("Placeful.Api.Models.Entities.UserProfile", b =>
@@ -118,7 +121,7 @@ namespace Placeful.Api.Migrations
 
                     b.HasIndex("UserProfileId");
 
-                    b.ToTable("UserProfiles", (string)null);
+                    b.ToTable("UserProfiles");
                 });
 
             modelBuilder.Entity("Placeful.Api.Models.Entities.FavoriteMemoriesList", b =>

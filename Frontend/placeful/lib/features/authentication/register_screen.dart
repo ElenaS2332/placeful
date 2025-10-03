@@ -59,7 +59,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       final parts = raw.split('/');
       final dt = DateTime(
-          int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
+        int.parse(parts[2]),
+        int.parse(parts[1]),
+        int.parse(parts[0]),
+      );
       final age = DateTime.now().difference(dt).inDays ~/ 365;
       return age >= 12;
     } catch (_) {
@@ -96,18 +99,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       await _authSvc.registerWithEmail(email, pass);
       await _userSvc.registerUser(
-          fullName: name,
-          birthDate: DateTime.parse(
-              "${dob.split('/')[2]}-${dob.split('/')[1].padLeft(2, '0')}-${dob.split('/')[0].padLeft(2, '0')}"));
+        fullName: name,
+        email: email,
+        birthDate: DateTime.parse(
+          "${dob.split('/')[2]}-${dob.split('/')[1].padLeft(2, '0')}-${dob.split('/')[0].padLeft(2, '0')}",
+        ),
+      );
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
     } on FirebaseAuthException catch (e) {
-      final msg = e.code == 'email-already-in-use'
-          ? 'Email already in use.'
-          : e.code == 'weak-password'
+      final msg =
+          e.code == 'email-already-in-use'
+              ? 'Email already in use.'
+              : e.code == 'weak-password'
               ? 'Password too weak.'
               : 'Registration failed.';
       _showMsg(msg);
@@ -146,10 +153,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-            ),
+            onPressed:
+                () => Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                ),
           ),
         ),
         body: Container(
@@ -191,8 +199,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _fullNameCtrl,
                             decoration: _inputDeco(
                               'Full Name',
-                              prefix: const Icon(Icons.person,
-                                  color: Colors.white70),
+                              prefix: const Icon(
+                                Icons.person,
+                                color: Colors.white70,
+                              ),
                             ),
                             style: const TextStyle(color: Colors.white),
                           ),
@@ -203,8 +213,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             onTap: _pickDob,
                             decoration: _inputDeco(
                               'Birthday',
-                              prefix: const Icon(Icons.calendar_today,
-                                  color: Colors.white70),
+                              prefix: const Icon(
+                                Icons.calendar_today,
+                                color: Colors.white70,
+                              ),
                             ),
                             style: const TextStyle(color: Colors.white),
                           ),
@@ -214,8 +226,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             keyboardType: TextInputType.emailAddress,
                             decoration: _inputDeco(
                               'Email',
-                              prefix: const Icon(Icons.email,
-                                  color: Colors.white70),
+                              prefix: const Icon(
+                                Icons.email,
+                                color: Colors.white70,
+                              ),
                             ),
                             style: const TextStyle(color: Colors.white),
                           ),
@@ -225,8 +239,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             obscureText: _obscurePass,
                             decoration: _inputDeco(
                               'Password',
-                              prefix:
-                                  const Icon(Icons.lock, color: Colors.white70),
+                              prefix: const Icon(
+                                Icons.lock,
+                                color: Colors.white70,
+                              ),
                               suffix: IconButton(
                                 icon: Icon(
                                   _obscurePass
@@ -245,8 +261,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             obscureText: _obscureConfirmPass,
                             decoration: _inputDeco(
                               'Confirm Password',
-                              prefix: const Icon(Icons.lock_outline,
-                                  color: Colors.white70),
+                              prefix: const Icon(
+                                Icons.lock_outline,
+                                color: Colors.white70,
+                              ),
                               suffix: IconButton(
                                 icon: Icon(
                                   _obscureConfirmPass
@@ -266,34 +284,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               onPressed: _isLoading ? null : _register,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                          Color(0xFF8668FF),
+                              child:
+                                  _isLoading
+                                      ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Color(0xFF8668FF),
+                                              ),
+                                        ),
+                                      )
+                                      : Text(
+                                        'REGISTER',
+                                        style: GoogleFonts.nunito(
+                                          textStyle: const TextStyle(
+                                            color: Color(0xFF8668FF),
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
-                                    )
-                                  : Text(
-                                      'REGISTER',
-                                      style: GoogleFonts.nunito(
-                                        textStyle: const TextStyle(
-                                          color: Color(0xFF8668FF),
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
                             ),
                           ),
                         ],
@@ -303,10 +323,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   const SizedBox(height: 20),
                   TextButton(
-                    onPressed: () => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    ),
+                    onPressed:
+                        () => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const LoginScreen(),
+                          ),
+                        ),
                     child: Text(
                       'Already have an account? Log in',
                       style: GoogleFonts.nunito(

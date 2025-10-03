@@ -6,9 +6,14 @@ part 'user_dto.g.dart';
 @JsonSerializable()
 class UserDto extends Equatable {
   final String fullName;
+  final String email;
   final DateTime birthDate;
 
-  const UserDto({required this.fullName, required this.birthDate});
+  const UserDto({
+    required this.fullName,
+    required this.email,
+    required this.birthDate,
+  });
 
   factory UserDto.fromJson(Map<String, dynamic> json) =>
       _$UserDtoFromJson(json);

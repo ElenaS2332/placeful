@@ -2,9 +2,9 @@ using System.Security.Claims;
 using AutoMapper;
 using Placeful.Api.Models;
 using Placeful.Api.Models.DTOs;
+using Placeful.Api.Models.Entities;
 using Placeful.Api.Models.Enums;
 using Placeful.Api.Services.Interface;
-using Placeful.Models;
 
 namespace Placeful.Api.Endpoints;
 

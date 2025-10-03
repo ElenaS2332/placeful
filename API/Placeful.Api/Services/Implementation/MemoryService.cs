@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Placeful.Api.Data;
+using Placeful.Api.Models.Entities;
 using Placeful.Api.Services.Interface;
-using Placeful.Models;
 
 namespace Placeful.Api.Services.Implementation;
 

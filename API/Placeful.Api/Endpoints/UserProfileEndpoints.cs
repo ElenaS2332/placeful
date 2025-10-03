@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Placeful.Api.Models;
 using Placeful.Api.Models.DTOs;
+using Placeful.Api.Models.Entities;
 using Placeful.Api.Models.Enums;
 using Placeful.Api.Services.Interface;
 
@@ -14,7 +15,7 @@ public static class UserProfileEndpoints
         var group = app.MapGroup("api/user-profile");
         group.MapGet("", GetUserProfiles).WithName(nameof(GetUserProfiles)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapGet("{userProfileId:guid}", GetUserProfile).WithName(nameof(GetUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
-        group.MapPost("", CreateUserProfile).WithName(nameof(CreateUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapPost("/register", CreateUserProfile).WithName(nameof(CreateUserProfile));
         group.MapPut("", UpdateUserProfile).WithName(nameof(UpdateUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapDelete("{userProfileId:guid}", DeleteUserProfile).WithName(nameof(DeleteUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
     }

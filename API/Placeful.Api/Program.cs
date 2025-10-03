@@ -44,6 +44,16 @@ builder.Services.AddAuthorization(options =>
     });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
@@ -59,5 +69,6 @@ app.MapMemoryEndpoints();
 app.MapUserProfileEndpoints();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors("AllowAll");
 
 app.Run();

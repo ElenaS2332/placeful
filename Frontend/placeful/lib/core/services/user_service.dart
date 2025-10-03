@@ -15,22 +15,23 @@ class UserService {
   Future<UserProfile?> getUserProfile() async {
     final user = authService.getCurrentUser();
 
-    if(user == null){
+    if (user == null) {
       return null;
     }
-    final path = "user-profile/${user.uid}"; 
+    final path = "user-profile/${user.uid}";
     final response = await _client.get(path);
     return UserProfile.fromJson(response);
   }
 
   Future<void> registerUser({
     required String fullName,
+    required String email,
     required DateTime birthDate,
   }) async {
     try {
       await _client.post(
         "user-profile/register",
-        UserDto(fullName: fullName, birthDate: birthDate),
+        UserDto(fullName: fullName, email: email, birthDate: birthDate),
       );
     } on Exception catch (e) {
       loggerService.logError('$e');

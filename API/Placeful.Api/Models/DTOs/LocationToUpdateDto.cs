@@ -1,4 +1,4 @@
-using Placeful.Models;
+using Placeful.Api.Models.Entities;
 
 namespace Placeful.Api.Models.DTOs;
 
@@ -6,5 +6,5 @@ public class LocationToUpdateDto
 {
     public double Latitude { get; set; }
     public double Longitude { get; set; }
-    public IEnumerable<Memory> Memories { get; set; } = new List<Memory>();
+    public IEnumerable<Memory>? Memories { get; set; } = new List<Memory>();
 }

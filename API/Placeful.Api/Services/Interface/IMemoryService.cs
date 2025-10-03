@@ -1,4 +1,4 @@
-using Placeful.Models;
+using Placeful.Api.Models.Entities;
 
 namespace Placeful.Api.Services.Interface;
 
