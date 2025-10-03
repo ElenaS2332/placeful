@@ -1,5 +1,5 @@
 import 'package:http/http.dart';
-import 'package:placeful/core/domain/exceptions/http_response_exception.dart';
+import 'package:placeful/common/domain/exceptions/http_response_exception.dart';
 
 extension HttpResponseExtensions on Response {
   void ensureSuccessStatusCode() {

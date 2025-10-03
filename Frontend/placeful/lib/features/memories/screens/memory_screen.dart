@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:placeful/features/memories/add_memory/add_memory_screen.dart';
-import 'package:placeful/features/memories/list_memories/list_memories_screen.dart';
+import 'package:placeful/features/memories/screens/add_memory_screen.dart';
+import 'package:placeful/features/memories/screens/list_memories_screen.dart';
 
 class MemoryScreen extends StatefulWidget {
   const MemoryScreen({super.key});

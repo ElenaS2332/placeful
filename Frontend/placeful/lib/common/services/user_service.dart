@@ -1,9 +1,9 @@
-import 'package:placeful/core/domain/dtos/user_dto.dart';
-import 'package:placeful/core/domain/models/user_profile.dart';
-import 'package:placeful/core/services/auth_service.dart';
-import 'package:placeful/core/services/http_service.dart';
-import 'package:placeful/core/services/logger_service.dart';
-import 'package:placeful/core/services/service_locatior.dart';
+import 'package:placeful/common/domain/dtos/user_dto.dart';
+import 'package:placeful/common/domain/models/user_profile.dart';
+import 'package:placeful/common/services/auth_service.dart';
+import 'package:placeful/common/services/http_service.dart';
+import 'package:placeful/common/services/logger_service.dart';
+import 'package:placeful/common/services/service_locatior.dart';
 
 class UserService {
   UserService([HttpService? client]);

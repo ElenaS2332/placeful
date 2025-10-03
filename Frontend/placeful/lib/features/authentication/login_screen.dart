@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:placeful/core/services/auth_service.dart';
-import 'package:placeful/core/services/service_locatior.dart';
+import 'package:placeful/common/services/auth_service.dart';
+import 'package:placeful/common/services/service_locatior.dart';
 import 'package:placeful/features/authentication/register_screen.dart';
-import 'package:placeful/features/memories/memory_screen.dart';
+import 'package:placeful/features/memories/screens/memory_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

@@ -1,7 +1,7 @@
-import 'package:placeful/core/domain/dtos/favorite_memories_list_dto.dart';
-import 'package:placeful/core/domain/models/favorite_memories_list.dart';
-import 'package:placeful/core/services/http_service.dart';
-import 'package:placeful/core/services/service_locatior.dart';
+import 'package:placeful/common/domain/dtos/favorite_memories_list_dto.dart';
+import 'package:placeful/common/domain/models/favorite_memories_list.dart';
+import 'package:placeful/common/services/http_service.dart';
+import 'package:placeful/common/services/service_locatior.dart';
 
 class FavoriteMemoriesListService {
   FavoriteMemoriesListService();

@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:placeful/core/domain/models/memory.dart';
-import 'package:placeful/core/domain/models/user_profile.dart';
+import 'package:placeful/common/domain/models/memory.dart';
+import 'package:placeful/common/domain/models/user_profile.dart';
 
 part 'favorite_memories_list_dto.g.dart';
 

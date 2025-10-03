@@ -1,7 +1,7 @@
-import 'package:placeful/core/domain/dtos/memory_dto.dart';
-import 'package:placeful/core/domain/models/memory.dart';
-import 'package:placeful/core/services/http_service.dart';
-import 'package:placeful/core/services/service_locatior.dart';
+import 'package:placeful/common/domain/dtos/memory_dto.dart';
+import 'package:placeful/common/domain/models/memory.dart';
+import 'package:placeful/common/services/http_service.dart';
+import 'package:placeful/common/services/service_locatior.dart';
 
 class MemoryService {
   MemoryService();

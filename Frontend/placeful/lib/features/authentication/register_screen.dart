@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:placeful/core/services/auth_service.dart';
-import 'package:placeful/core/services/logger_service.dart';
-import 'package:placeful/core/services/service_locatior.dart';
-import 'package:placeful/core/services/user_service.dart';
+import 'package:placeful/common/services/auth_service.dart';
+import 'package:placeful/common/services/logger_service.dart';
+import 'package:placeful/common/services/service_locatior.dart';
+import 'package:placeful/common/services/user_service.dart';
 import 'package:placeful/features/authentication/login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {

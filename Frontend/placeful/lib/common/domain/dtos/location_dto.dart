@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:placeful/core/domain/models/memory.dart';
+import 'package:placeful/common/domain/models/memory.dart';
 
 part 'location_dto.g.dart';
 

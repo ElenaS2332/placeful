@@ -1,12 +1,11 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
-import 'package:placeful/core/extensions/http_response_extension.dart';
+import 'package:placeful/common/extensions/http_response_extension.dart';
 import 'package:placeful/globals.dart';
 import 'dart:convert';
 
 class HttpService {
-
   Future<Map<String, String>> _buildHeaders() async {
     final token = await FirebaseAuth.instance.currentUser?.getIdToken();
     return {
@@ -21,21 +20,17 @@ class HttpService {
     Map<String, dynamic>? queryParameters,
   }) async {
     final url = buildUri(path, queryParameters);
-    final headers = await _buildHeaders(); 
+    final headers = await _buildHeaders();
 
-    final response = await http.get(
-      url,
-      headers: headers,
-    );
+    final response = await http.get(url, headers: headers);
 
-    response.ensureSuccessStatusCode(); 
+    response.ensureSuccessStatusCode();
     return _decodeBody(response.body);
   }
 
-
   Future<dynamic> post(String path, Object requestBody) async {
     final endpoint = Uri.parse(baseApiUrl + path);
-    final headers = await _buildHeaders(); 
+    final headers = await _buildHeaders();
 
     final response = await http.post(
       endpoint,
@@ -48,7 +43,7 @@ class HttpService {
 
   Future<dynamic> patch(String path, Object requestBody) async {
     final endpoint = Uri.parse(baseApiUrl + path);
-    final headers = await _buildHeaders(); 
+    final headers = await _buildHeaders();
 
     final response = await http.patch(
       endpoint,
@@ -61,7 +56,7 @@ class HttpService {
 
   Future<dynamic> put(String path, Object requestBody) async {
     final endpoint = Uri.parse(baseApiUrl + path);
-    final headers = await _buildHeaders(); 
+    final headers = await _buildHeaders();
 
     final response = await http.put(
       endpoint,
@@ -74,12 +69,9 @@ class HttpService {
 
   Future<dynamic> delete(String path) async {
     final endpoint = Uri.parse(baseApiUrl + path);
-    final headers = await _buildHeaders(); 
+    final headers = await _buildHeaders();
 
-    final response = await http.delete(
-      endpoint,
-      headers: headers,
-    );
+    final response = await http.delete(endpoint, headers: headers);
     response.ensureSuccessStatusCode();
     return _decodeBody(response.body);
   }

@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:placeful/core/services/service_locatior.dart';
+import 'package:placeful/common/services/service_locatior.dart';
 import 'package:placeful/features/home_screen.dart';
 
 void main() async {
