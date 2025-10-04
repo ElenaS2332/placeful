@@ -1,68 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/add_memory_viewmodel.dart';
 
 class AddMemoryScreen extends StatelessWidget {
   const AddMemoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final String mockTitle = "Trip to Ohrid";
-    final String mockDescription = "Had a great time by the lake!";
-    final String mockLocation = "Ohrid, Macedonia";
-    final String mockImage = "https://picsum.photos/400/200";
+    return ChangeNotifierProvider(
+      create: (_) => AddMemoryViewModel(),
+      child: const _AddMemoryScreenBody(),
+    );
+  }
+}
+
+class _AddMemoryScreenBody extends StatelessWidget {
+  const _AddMemoryScreenBody();
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = Provider.of<AddMemoryViewModel>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Memory")),
+      appBar: AppBar(title: const Text("Add New Memory")),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: ListView(
+        child: Column(
           children: [
-            TextFormField(
-              initialValue: mockTitle,
-              decoration: const InputDecoration(
-                labelText: "Title",
-                border: OutlineInputBorder(),
-              ),
+            TextField(
+              decoration: const InputDecoration(labelText: "Title"),
+              onChanged: vm.setTitle,
             ),
-            const SizedBox(height: 16),
-            TextFormField(
-              initialValue: mockDescription,
-              decoration: const InputDecoration(
-                labelText: "Description",
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
+            TextField(
+              decoration: const InputDecoration(labelText: "Description"),
+              onChanged: vm.setDescription,
             ),
-            const SizedBox(height: 16),
-
-            Container(
-              height: 200,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                image: DecorationImage(
-                  image: NetworkImage(mockImage),
-                  fit: BoxFit.cover,
-                ),
-              ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed:
+                  vm.isLoading
+                      ? null
+                      : () async {
+                        final success = await vm.addMemory();
+                        if (success) Navigator.pop(context);
+                      },
+              child:
+                  vm.isLoading
+                      ? const CircularProgressIndicator()
+                      : const Text("Add Memory"),
             ),
-            const SizedBox(height: 16),
-
-            ListTile(
-              leading: const Icon(Icons.location_on),
-              title: Text(mockLocation),
-              subtitle: const Text("Lat: 41.123, Lng: 20.789"),
-            ),
-
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.save),
-              label: const Text("Save Memory"),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Memory saved (mock)!")),
-                );
-                Navigator.pop(context);
-              },
-            ),
+            if (vm.error != null)
+              Text(vm.error!, style: const TextStyle(color: Colors.red)),
           ],
         ),
       ),

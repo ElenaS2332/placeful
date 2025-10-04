@@ -7,7 +7,6 @@ part of 'memory_dto.dart';
 // **************************************************************************
 
 MemoryDto _$MemoryDtoFromJson(Map<String, dynamic> json) => MemoryDto(
-  id: json['id'] as String,
   title: json['title'] as String? ?? '',
   description: json['description'] as String? ?? '',
   location: Location.fromJson(json['location'] as Map<String, dynamic>),
@@ -15,7 +14,6 @@ MemoryDto _$MemoryDtoFromJson(Map<String, dynamic> json) => MemoryDto(
 );
 
 Map<String, dynamic> _$MemoryDtoToJson(MemoryDto instance) => <String, dynamic>{
-  'id': instance.id,
   'title': instance.title,
   'description': instance.description,
   'location': instance.location.toJson(),

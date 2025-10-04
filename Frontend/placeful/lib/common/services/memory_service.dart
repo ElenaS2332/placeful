@@ -21,7 +21,7 @@ class MemoryService {
     return Memory.fromDto(MemoryDto.fromJson(response));
   }
 
-  Future<void> createMemory(Memory memory) async {
+  Future<void> addMemory(MemoryDto memory) async {
     await _client.post("memory/", memory.toJson());
   }
 

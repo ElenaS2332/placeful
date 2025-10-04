@@ -5,14 +5,12 @@ part 'memory_dto.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class MemoryDto {
-  final String id;
   final String title;
   final String description;
   final Location location;
   final String imageUrl;
 
   MemoryDto({
-    required this.id,
     this.title = '',
     this.description = '',
     required this.location,

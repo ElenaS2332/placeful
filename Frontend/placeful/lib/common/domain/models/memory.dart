@@ -21,7 +21,8 @@ class Memory {
   });
 
   Memory.fromDto(MemoryDto dto)
-    : id = dto.id,
+    : id =
+          '0000-0000-0000-0000', // Since MemoryDto does not have an id, we assign a default value
       title = dto.title,
       description = dto.description,
       location = dto.location,

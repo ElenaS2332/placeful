@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:placeful/features/memories/screens/add_memory_screen.dart';
 import 'package:placeful/features/memories/screens/list_memories_screen.dart';
+import 'package:placeful/features/user_profile/screens/user_profile_screen.dart';
 
 class MemoryScreen extends StatefulWidget {
   const MemoryScreen({super.key});
@@ -18,6 +19,22 @@ class _MemoryScreenState extends State<MemoryScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Memories Map"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            tooltip: "User Profile",
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const UserProfileScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+
       body: Stack(
         children: [
           GoogleMap(
