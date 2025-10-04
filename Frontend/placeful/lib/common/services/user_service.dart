@@ -18,12 +18,16 @@ class UserService {
     if (user == null) {
       return null;
     }
+
     final path = "user-profile/${user.uid}";
     final response = await _client.get(path);
-    return UserProfile.fromJson(response);
+
+    final dto = UserDto.fromJson(response as Map<String, dynamic>);
+    return UserProfile.fromDto(dto);
   }
 
   Future<void> registerUser({
+    required String firebaseUid,
     required String fullName,
     required String email,
     required DateTime birthDate,
@@ -31,7 +35,12 @@ class UserService {
     try {
       await _client.post(
         "user-profile/register",
-        UserDto(fullName: fullName, email: email, birthDate: birthDate),
+        UserDto(
+          firebaseUid: firebaseUid,
+          fullName: fullName,
+          email: email,
+          birthDate: birthDate,
+        ),
       );
     } on Exception catch (e) {
       loggerService.logError('$e');

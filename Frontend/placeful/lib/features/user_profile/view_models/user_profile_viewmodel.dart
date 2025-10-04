@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:placeful/common/domain/models/user_profile.dart';
+import 'package:placeful/common/domain/dtos/user_dto.dart';
 import 'package:placeful/common/services/service_locatior.dart';
 import 'package:placeful/common/services/user_service.dart';
 
@@ -9,7 +9,7 @@ class UserProfileViewModel extends ChangeNotifier {
   UserProfileViewModel();
 
   bool isLoading = false;
-  UserProfile? profile;
+  UserDto? profileDto;
   String? error;
 
   Future<void> loadUserProfile() async {
@@ -18,7 +18,17 @@ class UserProfileViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      profile = await userService.getUserProfile();
+      final profile = await userService.getUserProfile();
+      if (profile != null) {
+        profileDto = UserDto(
+          firebaseUid: profile.firebaseUid,
+          fullName: profile.fullName,
+          email: profile.email,
+          birthDate: profile.birthDate,
+        );
+      } else {
+        error = "No profile found";
+      }
     } catch (e) {
       error = "Failed to load profile: $e";
     } finally {

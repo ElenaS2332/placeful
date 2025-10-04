@@ -14,9 +14,9 @@ public class UserProfileService(PlacefulDbContext context) : IUserProfileService
             .ToListAsync();
     }
 
-    public async Task<UserProfile> GetUserProfile(Guid id)
+    public async Task<UserProfile> GetUserProfile(String firebaseUid)
     {
-        var userProfile = await context.UserProfiles.FirstOrDefaultAsync(c => c.Id == id);
+        var userProfile = await context.UserProfiles.FirstOrDefaultAsync(c => c.FirebaseUid.Equals(firebaseUid));
 
         if (userProfile is null) throw new Exception(); // create specific exceptions
 
@@ -40,9 +40,9 @@ public class UserProfileService(PlacefulDbContext context) : IUserProfileService
         await SaveChanges();
     }
 
-    public async Task DeleteUserProfile(Guid id)
+    public async Task DeleteUserProfile(String firebaseUid)
     {
-        var userProfileToBeDeleted = await GetUserProfile(id);
+        var userProfileToBeDeleted = await GetUserProfile(firebaseUid);
 
         context.UserProfiles.Remove(userProfileToBeDeleted);
 

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:placeful/common/domain/models/user_profile.dart';
 import 'package:placeful/features/memories/screens/memory_screen.dart';
@@ -49,9 +50,9 @@ class _UserProfileScreenBody extends StatelessWidget {
                 ? const Center(child: CircularProgressIndicator())
                 : vm.error != null
                 ? Center(child: Text(vm.error!))
-                : vm.profile == null
+                : vm.profileDto == null
                 ? const Center(child: Text("No profile found"))
-                : _buildProfile(vm.profile!),
+                : _buildProfile(UserProfile.fromDto(vm.profileDto!)),
       ),
     );
   }
@@ -101,7 +102,7 @@ class _UserProfileScreenBody extends StatelessWidget {
           ),
           const Divider(height: 40),
           Text(
-            "Friends (${profile.friends.length})",
+            "Friends (${profile.friends?.length})",
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -109,7 +110,7 @@ class _UserProfileScreenBody extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          profile.friends.isEmpty
+          profile.friends == null || profile.friends!.isEmpty
               ? const Text(
                 "No friends yet",
                 style: TextStyle(color: Colors.grey),
@@ -117,9 +118,9 @@ class _UserProfileScreenBody extends StatelessWidget {
               : ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: profile.friends.length,
+                itemCount: profile.friends?.length,
                 itemBuilder: (_, index) {
-                  final friend = profile.friends[index];
+                  final friend = profile.friends?[index];
                   return Card(
                     child: ListTile(
                       leading: CircleAvatar(
@@ -127,15 +128,15 @@ class _UserProfileScreenBody extends StatelessWidget {
                           0xFF8668FF,
                         ).withValues(alpha: 0.2),
                         child: Text(
-                          friend.fullName[0].toUpperCase(),
+                          friend?.fullName[0].toUpperCase() ?? '',
                           style: const TextStyle(
                             color: Color(0xFF8668FF),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      title: Text(friend.fullName),
-                      subtitle: Text(friend.email),
+                      title: Text(friend?.fullName ?? ''),
+                      subtitle: Text(friend?.email ?? ''),
                     ),
                   );
                 },

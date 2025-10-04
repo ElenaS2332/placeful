@@ -7,6 +7,8 @@ public class UserProfile
 {
     public Guid Id { get; init; }
     [MaxLength(1000)]
+    public String FirebaseUid { get; init; } = String.Empty;
+    [MaxLength(1000)]
     public string Email { get; init; } = string.Empty;
     [MaxLength(1000)]
     public string FullName { get; init; } = string.Empty;

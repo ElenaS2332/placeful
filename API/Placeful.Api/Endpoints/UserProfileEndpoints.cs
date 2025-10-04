@@ -14,7 +14,7 @@ public static class UserProfileEndpoints
     {
         var group = app.MapGroup("api/user-profile");
         group.MapGet("", GetUserProfiles).WithName(nameof(GetUserProfiles)).RequireAuthorization(AuthPolicy.Authenticated);
-        group.MapGet("{userProfileId:guid}", GetUserProfile).WithName(nameof(GetUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapGet("{firebaseUid}", GetUserProfile).WithName(nameof(GetUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapPost("/register", CreateUserProfile).WithName(nameof(CreateUserProfile));
         group.MapPut("", UpdateUserProfile).WithName(nameof(UpdateUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapDelete("{userProfileId:guid}", DeleteUserProfile).WithName(nameof(DeleteUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
@@ -26,11 +26,11 @@ public static class UserProfileEndpoints
         return Results.Ok(mapper.Map<IEnumerable<UserProfileDto>>(userProfiles));
     }
     
-    private static async Task<IResult> GetUserProfile(Guid userProfileId, IUserProfileService userProfileService, IMapper mapper)
+    private static async Task<IResult> GetUserProfile(String firebaseUid, IUserProfileService userProfileService, IMapper mapper)
     {
         try
         {
-            return Results.Ok(mapper.Map<UserProfileDto>(await userProfileService.GetUserProfile(userProfileId)));
+            return Results.Ok(mapper.Map<UserProfileDto>(await userProfileService.GetUserProfile(firebaseUid)));
         }
         catch (Exception ex) // more specific
         {
@@ -60,11 +60,11 @@ public static class UserProfileEndpoints
         }
     }
 
-    private static async Task<IResult> DeleteUserProfile(Guid userProfileId, IUserProfileService userProfileService)
+    private static async Task<IResult> DeleteUserProfile(String firebaseUid, IUserProfileService userProfileService)
     {
         try
         {
-            await userProfileService.DeleteUserProfile(userProfileId);
+            await userProfileService.DeleteUserProfile(firebaseUid);
             return Results.Ok();
         }
         catch (Exception ex)

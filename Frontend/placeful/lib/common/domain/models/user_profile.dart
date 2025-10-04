@@ -1,25 +1,32 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:placeful/common/domain/dtos/user_dto.dart';
 import 'favorite_memories_list.dart';
 
 part 'user_profile.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class UserProfile {
-  final String id;
-  final String email;
-  final String fullName;
-  final DateTime birthDate;
-  final List<UserProfile> friends;
-  final FavoriteMemoriesList favoritesMemoriesList;
-
   UserProfile({
-    required this.id,
+    required this.firebaseUid,
     this.email = '',
     this.fullName = '',
     required this.birthDate,
-    this.friends = const [],
-    required this.favoritesMemoriesList,
+    this.favoritesMemoriesList,
   });
+
+  late final String? id;
+  late final String firebaseUid;
+  late final String email;
+  late final String fullName;
+  late final DateTime birthDate;
+  final List<UserProfile>? friends = List.empty();
+  late final FavoriteMemoriesList? favoritesMemoriesList;
+
+  UserProfile.fromDto(UserDto dto)
+    : firebaseUid = dto.firebaseUid,
+      email = dto.email,
+      fullName = dto.fullName,
+      birthDate = dto.birthDate;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>
       _$UserProfileFromJson(json);

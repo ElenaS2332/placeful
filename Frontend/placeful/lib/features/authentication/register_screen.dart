@@ -97,8 +97,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     setState(() => _isLoading = true);
     try {
-      await _authSvc.registerWithEmail(email, pass);
+      final userCredentials = await _authSvc.registerWithEmail(email, pass);
       await _userSvc.registerUser(
+        firebaseUid: userCredentials.user?.uid ?? '',
         fullName: name,
         email: email,
         birthDate: DateTime.parse(

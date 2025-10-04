@@ -5,11 +5,13 @@ part 'user_dto.g.dart';
 
 @JsonSerializable()
 class UserDto extends Equatable {
+  final String firebaseUid;
   final String fullName;
   final String email;
   final DateTime birthDate;
 
   const UserDto({
+    required this.firebaseUid,
     required this.fullName,
     required this.email,
     required this.birthDate,
