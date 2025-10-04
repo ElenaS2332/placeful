@@ -1,6 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:placeful/common/domain/models/location.dart';
 import 'package:placeful/features/memories/screens/location_picker_screen.dart';
+import 'package:placeful/features/memories/screens/take_image_screen.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/add_memory_viewmodel.dart';
 
@@ -13,6 +18,106 @@ class AddMemoryScreen extends StatelessWidget {
       create: (_) => AddMemoryViewModel(),
       child: const _AddMemoryScreenBody(),
     );
+  }
+}
+
+Future<void> _showImageSourceDialog(BuildContext context) async {
+  showModalBottomSheet(
+    context: context,
+    builder: (_) {
+      return SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text("Open Camera"),
+              onTap: () async {
+                Navigator.pop(context);
+                await _openCamera(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text("Open Gallery"),
+              onTap: () async {
+                Navigator.pop(context);
+                await _openGallery(context);
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Future<void> _openGallery(BuildContext context) async {
+  var status = await Permission.photos.request(); // iOS
+  if (status.isGranted) {
+    final albums = await PhotoManager.getAssetPathList(
+      type: RequestType.image,
+      onlyAll: true,
+    );
+    final recentAlbum = albums.first;
+    final recentImages = await recentAlbum.getAssetListPaged(page: 0, size: 30);
+
+    if (!context.mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (_) {
+        return GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            mainAxisSpacing: 2,
+            crossAxisSpacing: 2,
+          ),
+          itemCount: recentImages.length,
+          itemBuilder: (_, index) {
+            final asset = recentImages[index];
+            return FutureBuilder<Uint8List?>(
+              future: asset.thumbnailDataWithSize(
+                const ThumbnailSize(200, 200),
+              ),
+              builder: (_, snapshot) {
+                if (!snapshot.hasData) return const SizedBox();
+                return GestureDetector(
+                  onTap: () async {
+                    final file = await asset.file;
+                    if (!context.mounted) return;
+
+                    Navigator.pop(context, file?.path);
+                  },
+                  child: Image.memory(snapshot.data!, fit: BoxFit.cover),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  } else {
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Gallery permission denied")));
+  }
+}
+
+Future<void> _openCamera(BuildContext context) async {
+  var status = await Permission.camera.request();
+  if (!context.mounted) return;
+
+  if (status.isGranted) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const TakeImageScreen()),
+    );
+  } else {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Camera permission denied")));
   }
 }
 
@@ -53,14 +158,12 @@ class _AddMemoryScreenBody extends StatelessWidget {
                 ),
               ),
             ),
-            TextField(
-              //find a way to select image, open gallery or camera
-              decoration: const InputDecoration(labelText: "Image URL"),
-              // onChanged: vm.setImageUrl,
+            ElevatedButton(
+              onPressed: () => _showImageSourceDialog(context),
+              child: const Text("Add Image"),
             ),
             TextField(
               readOnly: true,
-              // controller: vm.locationController,
               onTap: () async {
                 final selectedLocation = await Navigator.push(
                   context,
@@ -89,6 +192,8 @@ class _AddMemoryScreenBody extends StatelessWidget {
                             ? null
                             : () async {
                               final success = await vm.addMemory();
+                              if (!context.mounted) return;
+
                               if (success) Navigator.pop(context);
                             },
                     child:

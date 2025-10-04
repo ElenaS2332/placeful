@@ -10,7 +10,7 @@ class LocationPickerScreen extends StatefulWidget {
 }
 
 class _LocationPickerScreenState extends State<LocationPickerScreen> {
-  GoogleMapController? _mapController;
+  GoogleMapController? mapController;
   LatLng? _selectedPosition;
 
   @override
@@ -41,7 +41,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           target: LatLng(41.9981, 21.4254),
           zoom: 12,
         ),
-        onMapCreated: (controller) => _mapController = controller,
+        onMapCreated: (controller) => mapController = controller,
         onTap: (LatLng position) {
           setState(() {
             _selectedPosition = position;

@@ -12,7 +12,7 @@ class MemoryScreen extends StatefulWidget {
 }
 
 class _MemoryScreenState extends State<MemoryScreen> {
-  GoogleMapController? _mapController;
+  GoogleMapController? mapController;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
               target: LatLng(41.9981, 21.4254),
               zoom: 12,
             ),
-            onMapCreated: (controller) => _mapController = controller,
+            onMapCreated: (controller) => mapController = controller,
             markers: {
               const Marker(
                 markerId: MarkerId("1"),
