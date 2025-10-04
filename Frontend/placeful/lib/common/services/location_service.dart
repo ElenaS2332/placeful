@@ -9,7 +9,7 @@ class LocationService {
   final HttpService _client = getIt<HttpService>();
 
   Future<List<Location>> getLocations() async {
-    final List response = await _client.get("locations/");
+    final List response = await _client.get("location/");
     return response
         .map((c) => LocationDto.fromJson(c))
         .map((dto) => Location.fromDto(dto))
@@ -17,15 +17,15 @@ class LocationService {
   }
 
   Future<Location> getLocation(String id) async {
-    final Map<String, dynamic> response = await _client.get("locations/$id");
+    final Map<String, dynamic> response = await _client.get("location/$id");
     return Location.fromDto(LocationDto.fromJson(response));
   }
 
   Future<void> createLocation(Location location) async {
-    await _client.post("locations/", location.toJson());
+    await _client.post("location/", location.toJson());
   }
 
   Future<void> deleteLocation(String id) async {
-    await _client.delete("locations/$id");
+    await _client.delete("location/$id");
   }
 }

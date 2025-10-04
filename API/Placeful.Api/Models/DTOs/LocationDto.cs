@@ -6,5 +6,6 @@ public class LocationDto
 {
     public double Latitude { get; set; }
     public double Longitude { get; set; }
+    public string Name { get; set; } = string.Empty;
     public IEnumerable<Memory>? Memories { get; set; } = new List<Memory>();
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:placeful/common/domain/models/location.dart';
+import 'package:placeful/features/memories/screens/location_picker_screen.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/add_memory_viewmodel.dart';
 
@@ -57,8 +59,26 @@ class _AddMemoryScreenBody extends StatelessWidget {
               // onChanged: vm.setImageUrl,
             ),
             TextField(
-              //find a way to select location
+              readOnly: true,
+              // controller: vm.locationController,
+              onTap: () async {
+                final selectedLocation = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const LocationPickerScreen(),
+                  ),
+                );
+                if (selectedLocation != null) {
+                  final locationToAdd = Location.fromDto(selectedLocation);
+                  vm.setLocation(locationToAdd);
+                }
+              },
+              decoration: const InputDecoration(
+                labelText: "Location",
+                prefixIcon: Icon(Icons.location_on),
+              ),
             ),
+
             const SizedBox(height: 12),
             Row(
               children: [

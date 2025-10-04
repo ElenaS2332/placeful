@@ -40,8 +40,8 @@ public static class LocationEndpoints
         IMapper mapper)
     {
         var mappedLocation = mapper.Map<Location>(locationDto);
-        await locationService.CreateLocation(mappedLocation);
-        return Results.Ok();
+        var createdLocation = await locationService.CreateLocation(mappedLocation);
+        return Results.Ok(mapper.Map<MemoryDto>(createdLocation));
     }
     
     private static async Task<IResult> DeleteLocation(Guid locationId, ILocationService locationService)

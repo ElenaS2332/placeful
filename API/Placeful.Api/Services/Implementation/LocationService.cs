@@ -23,10 +23,11 @@ public class LocationService(PlacefulDbContext context) : ILocationService
         return location;
     }
 
-    public async Task CreateLocation(Location location)
+    public async Task<Location> CreateLocation(Location location)
     {
         await context.Locations.AddAsync(location);
         await SaveChanges();
+        return location;
     }
 
     public async Task DeleteLocation(Guid id)

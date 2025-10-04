@@ -7,6 +7,6 @@ public interface ILocationService
 {
     Task<IEnumerable<Location>> GetLocations();
     Task<Location> GetLocation(Guid id);
-    Task CreateLocation(Location location);
+    Task<Location> CreateLocation(Location location);
     Task DeleteLocation(Guid id);
 }

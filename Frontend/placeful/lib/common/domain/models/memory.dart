@@ -26,7 +26,7 @@ class Memory {
     : title = dto.title,
       description = dto.description,
       date = dto.date,
-      location = dto.location,
+      location = dto.location != null ? Location.fromDto(dto.location!) : null,
       imageUrl = dto.imageUrl;
 
   factory Memory.fromJson(Map<String, dynamic> json) => _$MemoryFromJson(json);

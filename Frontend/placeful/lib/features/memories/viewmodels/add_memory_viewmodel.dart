@@ -1,6 +1,5 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:placeful/common/domain/dtos/location_dto.dart';
 import 'package:placeful/common/domain/dtos/memory_dto.dart';
 import 'package:placeful/common/domain/models/location.dart';
 import 'package:placeful/common/services/memory_service.dart';
@@ -65,7 +64,14 @@ class AddMemoryViewModel extends ChangeNotifier {
         title: title,
         description: description,
         date: date,
-        location: location,
+        location:
+            location != null
+                ? LocationDto(
+                  latitude: location!.latitude,
+                  longitude: location!.longitude,
+                  name: location!.name,
+                )
+                : null,
         imageUrl: imageUrl,
       );
 

@@ -24,8 +24,40 @@ public class MemoryService(PlacefulDbContext context) : IMemoryService
 
     public async Task CreateMemory(Memory memory)
     {
-        await context.Memories.AddAsync(memory);
-        await SaveChanges();
+        await using var transaction = await context.Database.BeginTransactionAsync();
+
+        try
+        {
+            var location = memory.Location;
+            if (memory.Location is not null)
+            {
+                location = new Location
+                {
+                    Latitude = memory.Location.Latitude,
+                    Longitude = memory.Location.Longitude,
+                    Name = memory.Location.Name
+                };
+                await context.Locations.AddAsync(location);
+                await context.SaveChangesAsync();
+            }
+
+            var newMemory = new Memory
+            {
+                Title = memory.Title,
+                Description = memory.Description,
+                ImageUrl = memory.ImageUrl,
+                Location = location
+            };
+            await context.Memories.AddAsync(newMemory);
+            await context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task UpdateMemory(Memory memory)

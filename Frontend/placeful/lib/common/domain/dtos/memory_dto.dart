@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:placeful/common/domain/models/location.dart';
+import 'package:placeful/common/domain/dtos/location_dto.dart';
 
 part 'memory_dto.g.dart';
 
@@ -16,7 +16,7 @@ class MemoryDto {
   late final String title;
   late final String description;
   late final DateTime? date;
-  late final Location? location;
+  late final LocationDto? location;
   late final String? imageUrl;
 
   factory MemoryDto.fromJson(Map<String, dynamic> json) =>

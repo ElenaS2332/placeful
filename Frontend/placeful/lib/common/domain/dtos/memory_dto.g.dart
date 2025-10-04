@@ -13,7 +13,7 @@ MemoryDto _$MemoryDtoFromJson(Map<String, dynamic> json) => MemoryDto(
   location:
       json['location'] == null
           ? null
-          : Location.fromJson(json['location'] as Map<String, dynamic>),
+          : LocationDto.fromJson(json['location'] as Map<String, dynamic>),
   imageUrl: json['imageUrl'] as String?,
 );
 
