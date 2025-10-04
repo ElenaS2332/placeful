@@ -36,18 +36,48 @@ class _AddMemoryScreenBody extends StatelessWidget {
               onChanged: vm.setDescription,
             ),
             const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed:
-                  vm.isLoading
-                      ? null
-                      : () async {
-                        final success = await vm.addMemory();
-                        if (success) Navigator.pop(context);
-                      },
-              child:
-                  vm.isLoading
-                      ? const CircularProgressIndicator()
-                      : const Text("Add Memory"),
+            TextField(
+              readOnly: true,
+              controller: vm.dateController,
+              onTap: () => vm.pickDate(context),
+              decoration: InputDecoration(
+                hintText: "Select Date",
+                filled: true,
+                fillColor: Colors.white24,
+                prefixIcon: const Icon(Icons.calendar_today),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            TextField(
+              //find a way to select image, open gallery or camera
+              decoration: const InputDecoration(labelText: "Image URL"),
+              // onChanged: vm.setImageUrl,
+            ),
+            TextField(
+              //find a way to select location
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed:
+                        vm.isLoading
+                            ? null
+                            : () async {
+                              final success = await vm.addMemory();
+                              if (success) Navigator.pop(context);
+                            },
+                    child:
+                        vm.isLoading
+                            ? const CircularProgressIndicator()
+                            : const Text("Add Memory"),
+                  ),
+                ),
+              ],
             ),
             if (vm.error != null)
               Text(vm.error!, style: const TextStyle(color: Colors.red)),

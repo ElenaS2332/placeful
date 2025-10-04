@@ -6,25 +6,26 @@ part 'memory.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class Memory {
-  final String id;
-  final String title;
-  final String description;
-  final Location location;
-  final String imageUrl;
-
   Memory({
     required this.id,
-    this.title = '',
-    this.description = '',
-    required this.location,
-    this.imageUrl = '',
+    required this.title,
+    required this.description,
+    this.date,
+    this.location,
+    this.imageUrl,
   });
 
+  late final String id;
+  late final String title;
+  late final String description;
+  late final DateTime? date;
+  late final Location? location;
+  late final String? imageUrl;
+
   Memory.fromDto(MemoryDto dto)
-    : id =
-          '0000-0000-0000-0000', // Since MemoryDto does not have an id, we assign a default value
-      title = dto.title,
+    : title = dto.title,
       description = dto.description,
+      date = dto.date,
       location = dto.location,
       imageUrl = dto.imageUrl;
 

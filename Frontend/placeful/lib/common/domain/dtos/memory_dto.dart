@@ -5,17 +5,19 @@ part 'memory_dto.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class MemoryDto {
-  final String title;
-  final String description;
-  final Location location;
-  final String imageUrl;
-
   MemoryDto({
     this.title = '',
     this.description = '',
-    required this.location,
-    this.imageUrl = '',
+    this.date,
+    this.location,
+    this.imageUrl,
   });
+
+  late final String title;
+  late final String description;
+  late final DateTime? date;
+  late final Location? location;
+  late final String? imageUrl;
 
   factory MemoryDto.fromJson(Map<String, dynamic> json) =>
       _$MemoryDtoFromJson(json);

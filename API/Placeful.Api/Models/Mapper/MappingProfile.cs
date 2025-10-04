@@ -14,7 +14,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.FavoritesMemoriesList, opt => opt.Ignore())
             .ForMember(dest => dest.BirthDate,
                 opt => opt.MapFrom(src => DateTime.SpecifyKind(src.BirthDate, DateTimeKind.Utc)));
-
         CreateMap<UserProfile, UserProfileDto>();
+        
+        CreateMap<MemoryDto, Memory>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore());
+        CreateMap<Memory, MemoryDto>();
     }
 }

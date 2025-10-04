@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:placeful/common/domain/dtos/memory_dto.dart';
 import 'package:placeful/common/domain/models/location.dart';
@@ -11,11 +13,14 @@ class AddMemoryViewModel extends ChangeNotifier {
 
   String title = '';
   String description = '';
+  DateTime? date;
   Location? location;
-  String imageUrl = '';
+  String? imageUrl = '';
 
   bool isLoading = false;
   String? error;
+
+  final dateController = TextEditingController();
 
   void setTitle(String value) {
     title = value;
@@ -24,6 +29,11 @@ class AddMemoryViewModel extends ChangeNotifier {
 
   void setDescription(String value) {
     description = value;
+    notifyListeners();
+  }
+
+  void setDate(DateTime? value) {
+    date = value;
     notifyListeners();
   }
 
@@ -37,8 +47,7 @@ class AddMemoryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool get isValid =>
-      title.isNotEmpty && description.isNotEmpty && location != null;
+  bool get isValid => title.isNotEmpty && description.isNotEmpty;
 
   Future<bool> addMemory() async {
     if (!isValid) {
@@ -55,7 +64,8 @@ class AddMemoryViewModel extends ChangeNotifier {
       final memoryDto = MemoryDto(
         title: title,
         description: description,
-        location: location!,
+        date: date,
+        location: location,
         imageUrl: imageUrl,
       );
 
@@ -69,5 +79,25 @@ class AddMemoryViewModel extends ChangeNotifier {
       isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> pickDate(BuildContext context) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: now.subtract(const Duration(days: 365 * 20)),
+      firstDate: DateTime(1900),
+      lastDate: now.subtract(const Duration(days: 365 * 12)),
+    );
+    if (picked != null) {
+      dateController.text = "${picked.day}/${picked.month}/${picked.year}";
+      setDate(picked);
+    }
+  }
+
+  @override
+  void dispose() {
+    dateController.dispose();
+    super.dispose();
   }
 }
