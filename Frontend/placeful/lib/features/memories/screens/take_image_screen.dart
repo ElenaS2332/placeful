@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:placeful/features/memories/viewmodels/take_image_viewmodel.dart';
+import 'package:placeful/features/memories/widgets/camera_shutter.dart';
 import 'package:provider/provider.dart';
 
 class TakeImageScreen extends StatelessWidget {
@@ -120,6 +121,7 @@ class _TakeImageScreenBodyState extends State<_TakeImageScreenBody> {
                   children: [
                     // 🔦 Flash toggle button (if you add one later)
                     // CameraShutter button can go here
+                    CameraShutter(viewModel: vm),
                     IconButton(
                       onPressed: _toggleCameraLens,
                       icon: const Icon(

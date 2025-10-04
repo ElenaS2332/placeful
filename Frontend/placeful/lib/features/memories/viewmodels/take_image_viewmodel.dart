@@ -1,15 +1,36 @@
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:placeful/common/handlers/lifecycle_event_handler.dart';
 import 'package:placeful/common/services/camera_service.dart';
 import 'package:placeful/common/services/service_locatior.dart';
 
 class TakeImageViewModel extends ChangeNotifier {
+  TakeImageViewModel() {
+    _lifecycleEventHandler.init();
+  }
+
   final ImagePicker _picker = ImagePicker();
 
   final CameraService cameraService = getIt.get<CameraService>();
+  final _lifecycleEventHandler = LifecycleEventHandler();
+  bool _isFlashTurnedOn = false;
+  bool _isBackCameraOn = true;
+
+  bool get isFlashTurnedOn => _isFlashTurnedOn;
+  set isFlashTurnedOn(bool value) {
+    _isFlashTurnedOn = value;
+    notifyListeners();
+  }
+
+  bool get isBackCameraOn => _isBackCameraOn;
+  set isBackCameraOn(bool value) {
+    _isBackCameraOn = value;
+    notifyListeners();
+  }
 
   XFile? _selectedImage;
   XFile? get selectedImage => _selectedImage;
@@ -58,6 +79,51 @@ class TakeImageViewModel extends ChangeNotifier {
     if (file != null) {
       _selectedImage = XFile(file.path);
       notifyListeners();
+    }
+  }
+
+  Future<void> takePicture() async {
+    try {
+      _lifecycleEventHandler.onLifecycleChange = null;
+
+      final picture = await cameraService.takePicture();
+      await toggleFlash(shouldTurnOn: false);
+      await cameraService.pauseCameraPreview();
+
+      final snapShotDataInBytes = await picture!.readAsBytes();
+
+      // navigationService
+      //     .replaceCurrent<DisplayPicturePage, DisplayPictureViewModel>(
+      //   initParams: {
+      //     imageBytes: snapShotDataInBytes,
+      //     rideData: ride,
+      //   },
+      // );
+    } catch (e) {
+      // loggerService.logError(e.toString(), errorTitle: 'Camera error');
+    }
+  }
+
+  Future<void> toggleFlash({required bool shouldTurnOn}) async {
+    isFlashTurnedOn = shouldTurnOn;
+
+    if (isFlashTurnedOn) {
+      await cameraService.setFlashMode(FlashMode.always);
+    } else {
+      await cameraService.setFlashMode(FlashMode.off);
+    }
+  }
+
+  Future<void> handleCameraPreview(AppLifecycleState state) async {
+    if (cameraController == null ||
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      return;
+    }
+
+    if (state == AppLifecycleState.resumed) {
+      await cameraService.resumeCameraPreview();
+    } else {
+      await cameraService.pauseCameraPreview();
     }
   }
 }
