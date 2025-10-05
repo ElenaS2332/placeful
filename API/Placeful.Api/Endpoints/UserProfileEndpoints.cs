@@ -26,7 +26,7 @@ public static class UserProfileEndpoints
         return Results.Ok(mapper.Map<IEnumerable<UserProfileDto>>(userProfiles));
     }
     
-    private static async Task<IResult> GetCurrentUserProfile(String firebaseUid, IUserProfileService userProfileService, IMapper mapper)
+    private static async Task<IResult> GetCurrentUserProfile(IUserProfileService userProfileService, IMapper mapper)
     {
         try
         {

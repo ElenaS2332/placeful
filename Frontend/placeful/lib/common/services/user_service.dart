@@ -13,13 +13,7 @@ class UserService {
   final AuthService authService = getIt<AuthService>();
 
   Future<UserProfile?> getUserProfile() async {
-    final user = authService.getCurrentUser();
-
-    if (user == null) {
-      return null;
-    }
-
-    final path = "user-profile/";
+    final path = "user-profile";
     final response = await _client.get(path);
 
     final dto = UserDto.fromJson(response as Map<String, dynamic>);
