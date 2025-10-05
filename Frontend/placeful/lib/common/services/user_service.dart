@@ -19,7 +19,7 @@ class UserService {
       return null;
     }
 
-    final path = "user-profile/${user.uid}";
+    final path = "user-profile/";
     final response = await _client.get(path);
 
     final dto = UserDto.fromJson(response as Map<String, dynamic>);

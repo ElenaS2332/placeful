@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Placeful.Api.Data;
 using Placeful.Api.Models;
@@ -6,7 +7,7 @@ using Placeful.Api.Services.Interface;
 
 namespace Placeful.Api.Services.Implementation;
 
-public class UserProfileService(PlacefulDbContext context) : IUserProfileService
+public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor httpContextAccessor) : IUserProfileService
 {
     public async Task<IEnumerable<UserProfile>> GetUserProfiles()
     {
@@ -14,7 +15,20 @@ public class UserProfileService(PlacefulDbContext context) : IUserProfileService
             .ToListAsync();
     }
 
-    public async Task<UserProfile> GetUserProfile(String firebaseUid)
+    public async Task<UserProfile> GetCurrentUserProfile()
+    {
+        var firebaseUid = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (firebaseUid == null)
+            throw new UnauthorizedAccessException("User identifier not found in token.");
+
+        var userProfile = await context.UserProfiles.FirstOrDefaultAsync(c => c.FirebaseUid.Equals(firebaseUid));
+
+        if (userProfile is null) throw new Exception(); // create specific exceptions
+
+        return userProfile;
+    }
+
+    public async Task<UserProfile> GetUserProfile(string firebaseUid)
     {
         var userProfile = await context.UserProfiles.FirstOrDefaultAsync(c => c.FirebaseUid.Equals(firebaseUid));
 
@@ -42,7 +56,7 @@ public class UserProfileService(PlacefulDbContext context) : IUserProfileService
 
     public async Task DeleteUserProfile(String firebaseUid)
     {
-        var userProfileToBeDeleted = await GetUserProfile(firebaseUid);
+        var userProfileToBeDeleted = await GetCurrentUserProfile();
 
         context.UserProfiles.Remove(userProfileToBeDeleted);
 

@@ -15,4 +15,7 @@ public class UserProfile
     public DateTime BirthDate { get; init; } = DateTime.UtcNow;
     public IEnumerable<UserProfile>? Friends { get; init; }
     public FavoriteMemoriesList? FavoritesMemoriesList { get; init; }
+    
+    public ICollection<UserFriendship>? SentFriendRequests { get; set; }
+    public ICollection<UserFriendship>? ReceivedFriendRequests { get; set; }
 }

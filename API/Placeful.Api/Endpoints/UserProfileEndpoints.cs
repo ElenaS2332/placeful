@@ -13,8 +13,8 @@ public static class UserProfileEndpoints
     public static void MapUserProfileEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("api/user-profile");
-        group.MapGet("", GetUserProfiles).WithName(nameof(GetUserProfiles)).RequireAuthorization(AuthPolicy.Authenticated);
-        group.MapGet("{firebaseUid}", GetUserProfile).WithName(nameof(GetUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapGet("/all-users", GetUserProfiles).WithName(nameof(GetUserProfiles)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapGet("", GetCurrentUserProfile).WithName(nameof(GetCurrentUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapPost("/register", CreateUserProfile).WithName(nameof(CreateUserProfile));
         group.MapPut("", UpdateUserProfile).WithName(nameof(UpdateUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapDelete("{userProfileId:guid}", DeleteUserProfile).WithName(nameof(DeleteUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
@@ -26,11 +26,11 @@ public static class UserProfileEndpoints
         return Results.Ok(mapper.Map<IEnumerable<UserProfileDto>>(userProfiles));
     }
     
-    private static async Task<IResult> GetUserProfile(String firebaseUid, IUserProfileService userProfileService, IMapper mapper)
+    private static async Task<IResult> GetCurrentUserProfile(String firebaseUid, IUserProfileService userProfileService, IMapper mapper)
     {
         try
         {
-            return Results.Ok(mapper.Map<UserProfileDto>(await userProfileService.GetUserProfile(firebaseUid)));
+            return Results.Ok(mapper.Map<UserProfileDto>(await userProfileService.GetCurrentUserProfile()));
         }
         catch (Exception ex) // more specific
         {
