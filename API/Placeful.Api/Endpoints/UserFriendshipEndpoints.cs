@@ -1,4 +1,3 @@
-using AutoMapper;
 using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Enums;
 using Placeful.Api.Services.Interface;
@@ -19,45 +18,122 @@ public static class UserFriendshipEndpoints
         group.MapGet("/mutual/{otherUserUid}", GetMutualFriends).WithName(nameof(GetMutualFriends)).RequireAuthorization(AuthPolicy.Authenticated);
     }
 
-    private static async Task<IResult> ListActiveFriendships(IUserFriendshipService userFriendshipService, IMapper mapper)
+    private static async Task<IResult> ListActiveFriendships(IUserFriendshipService userFriendshipService)
     {
         var userFriendships = await userFriendshipService.ListCurrentUserActiveFriendships();
-        return Results.Ok(mapper.Map<IEnumerable<UserFriendshipDto>>(userFriendships));
+
+        var dtos = userFriendships.Select(f => new UserFriendshipDto
+        {
+            FriendshipInitiatorId = f.FriendshipInitiatorId,
+            FriendshipReceiverId = f.FriendshipReceiverId,
+            FriendshipAccepted = f.FriendshipAccepted,
+            FriendshipInitiator = f.FriendshipInitiator,
+            FriendshipReceiver = f.FriendshipReceiver
+        });
+
+        return Results.Ok(dtos);
     }
 
-    private static async Task<IResult> ListFriendRequests(IUserFriendshipService userFriendshipService, IMapper mapper)
+
+    private static async Task<IResult> ListFriendRequests(IUserFriendshipService userFriendshipService)
     {
         var userFriendships = await userFriendshipService.ListCurrentUserFriendRequests();
-        return Results.Ok(mapper.Map<IEnumerable<UserFriendshipDto>>(userFriendships));
+
+        var dtos = userFriendships.Select(f => new UserFriendshipDto
+        {
+            FriendshipInitiatorId = f.FriendshipInitiatorId,
+            FriendshipReceiverId = f.FriendshipReceiverId,
+            FriendshipAccepted = f.FriendshipAccepted,
+            FriendshipInitiator = f.FriendshipInitiator,
+            FriendshipReceiver = f.FriendshipReceiver
+        });
+
+        return Results.Ok(dtos);
     }
 
-    private static async Task<IResult> GetFriendship(String otherUserUid, IUserFriendshipService userFriendshipService, IMapper mapper)
+    private static async Task<IResult> GetFriendship(
+        string otherUserUid, 
+        IUserFriendshipService userFriendshipService
+    )
     {
-        var userFriendships = await userFriendshipService.GetFriendshipDetails(otherUserUid);
-        return Results.Ok(mapper.Map<IEnumerable<UserFriendshipDto>>(userFriendships));
+        var userFriendship = await userFriendshipService.GetFriendshipDetails(otherUserUid);
+
+        var dto = new UserFriendshipDto
+        {
+            FriendshipInitiatorId = userFriendship.FriendshipInitiatorId,
+            FriendshipReceiverId = userFriendship.FriendshipReceiverId,
+            FriendshipAccepted = userFriendship.FriendshipAccepted,
+            FriendshipInitiator = userFriendship.FriendshipInitiator,
+            FriendshipReceiver = userFriendship.FriendshipReceiver
+        };
+
+        return Results.Ok(dto);
     }
 
-    private static async Task<IResult> RequestFriendship(String otherUserUid, IUserFriendshipService userFriendshipService, IMapper mapper)
+
+
+    private static async Task<IResult> RequestFriendship(
+        string otherUserUid, 
+        IUserFriendshipService userFriendshipService
+    )
     {
-        var userFriendships = await userFriendshipService.RequestFriendship(otherUserUid);
-        return Results.Ok(mapper.Map<IEnumerable<UserFriendshipDto>>(userFriendships));
+        var userFriendship = await userFriendshipService.RequestFriendship(otherUserUid);
+
+        var dto = new UserFriendshipDto
+        {
+            FriendshipInitiatorId = userFriendship.FriendshipInitiatorId,
+            FriendshipReceiverId = userFriendship.FriendshipReceiverId,
+            FriendshipAccepted = userFriendship.FriendshipAccepted,
+            FriendshipInitiator = userFriendship.FriendshipInitiator,
+            FriendshipReceiver = userFriendship.FriendshipReceiver
+        };
+
+        return Results.Ok(dto);
     }
 
-    private static async Task<IResult> AcceptFriendship(String otherUserUid, IUserFriendshipService userFriendshipService, IMapper mapper)
+
+    private static async Task<IResult> AcceptFriendship(
+        string otherUserUid, 
+        IUserFriendshipService userFriendshipService
+    )
     {
-        var userFriendships = await userFriendshipService.AcceptFriendship(otherUserUid);
-        return Results.Ok(mapper.Map<IEnumerable<UserFriendshipDto>>(userFriendships));
+        var userFriendship = await userFriendshipService.AcceptFriendship(otherUserUid);
+
+        var dto = new UserFriendshipDto
+        {
+            FriendshipInitiatorId = userFriendship.FriendshipInitiatorId,
+            FriendshipReceiverId = userFriendship.FriendshipReceiverId,
+            FriendshipAccepted = userFriendship.FriendshipAccepted,
+            FriendshipInitiator = userFriendship.FriendshipInitiator,
+            FriendshipReceiver = userFriendship.FriendshipReceiver
+        };
+
+        return Results.Ok(dto);
     }
 
-    private static async Task<IResult> DeleteFriendship(String otherUserUid, IUserFriendshipService userFriendshipService, IMapper mapper)
+
+    private static async Task<IResult> DeleteFriendship(String otherUserUid, IUserFriendshipService userFriendshipService)
     {
         await userFriendshipService.DeleteFriendship(otherUserUid);
         return Results.Ok();
     }
 
-    private static async Task<IResult> GetMutualFriends(String otherUserUid, IUserFriendshipService userFriendshipService, IMapper mapper)
+    private static async Task<IResult> GetMutualFriends(
+        string otherUserUid,
+        IUserFriendshipService userFriendshipService
+    )
     {
-        var userFriendships = await userFriendshipService.GetMutualFriends(otherUserUid);
-        return Results.Ok(mapper.Map<IEnumerable<UserFriendshipDto>>(userFriendships));
+        var mutualFriends = await userFriendshipService.GetMutualFriends(otherUserUid);
+
+        var mutualFriendsDto = mutualFriends.Select(u => new UserProfileDto
+        {
+            FirebaseUid = u.FirebaseUid,
+            FullName = u.FullName,
+            Email = u.Email,
+            BirthDate = DateTime.SpecifyKind(u.BirthDate, DateTimeKind.Utc)
+        }).ToList();
+
+        return Results.Ok(mutualFriendsDto);
     }
+
 }

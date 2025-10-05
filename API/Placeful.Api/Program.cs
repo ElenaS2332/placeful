@@ -28,7 +28,6 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IMemoryService, MemoryService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IUserFriendshipService, UserFriendshipService>();
-builder.Services.AddAutoMapper(cfg => { }, AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddHttpContextAccessor();
 
 var credentials = GoogleCredential.FromFile(builder.Configuration["Firebase:Credentials"]);

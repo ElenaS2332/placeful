@@ -1,4 +1,3 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Placeful.Api.Models;
 using Placeful.Api.Models.DTOs;
@@ -20,38 +19,77 @@ public static class UserProfileEndpoints
         group.MapDelete("{userProfileId:guid}", DeleteUserProfile).WithName(nameof(DeleteUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
     }
     
-    private static async Task<IResult> GetUserProfiles([FromQuery(Name = "fullName")] string? searchQuery, IUserProfileService userProfileService, IMapper mapper)
+    private static async Task<IResult> GetUserProfiles(
+        [FromQuery(Name = "fullName")] string? searchQuery, 
+        IUserProfileService userProfileService
+    )
     {
         var userProfiles = await userProfileService.GetUserProfiles(searchQuery);
-        return Results.Ok(mapper.Map<IEnumerable<UserProfileDto>>(userProfiles));
+
+        var userProfilesDto = userProfiles.Select(u => new UserProfileDto
+        {
+            FirebaseUid = u.FirebaseUid,
+            Email = u.Email,
+            FullName = u.FullName,
+            BirthDate = DateTime.SpecifyKind(u.BirthDate, DateTimeKind.Utc)
+            
+        }).ToList();
+
+        return Results.Ok(userProfilesDto);
     }
+
     
-    private static async Task<IResult> GetCurrentUserProfile(IUserProfileService userProfileService, IMapper mapper)
+    private static async Task<IResult> GetCurrentUserProfile(IUserProfileService userProfileService)
     {
         try
         {
-            return Results.Ok(mapper.Map<UserProfileDto>(await userProfileService.GetCurrentUserProfile()));
+            var currentUser = await userProfileService.GetCurrentUserProfile();
+
+            var currentUserDto = new UserProfileDto
+            {
+                FirebaseUid = currentUser.FirebaseUid,
+                Email = currentUser.Email,
+                FullName = currentUser.FullName,
+                BirthDate = DateTime.SpecifyKind(currentUser.BirthDate, DateTimeKind.Utc)
+            };
+
+            return Results.Ok(currentUserDto);
         }
-        catch (Exception ex) // more specific
+        catch (Exception ex) // more specific exceptions can be used
         {
             return Results.NotFound();
-        } 
+        }
     }
+
     
-    private static async Task<IResult> CreateUserProfile(UserProfileDto userProfileDto, IUserProfileService userProfileService,
-        IMapper mapper)
+    private static async Task<IResult> CreateUserProfile(UserProfileDto userProfileDto, IUserProfileService userProfileService)
     {
-        var mappedUserProfile = mapper.Map<UserProfile>(userProfileDto);
-        await userProfileService.CreateUserProfile(mappedUserProfile);
+        var newUserProfile = new UserProfile
+        {
+            FirebaseUid = userProfileDto.FirebaseUid,
+            Email = userProfileDto.Email,
+            FullName = userProfileDto.FullName,
+            BirthDate = DateTime.SpecifyKind(userProfileDto.BirthDate, DateTimeKind.Utc)
+        };
+
+        await userProfileService.CreateUserProfile(newUserProfile);
         return Results.Ok();
     }
-    
-    private static async Task<IResult> UpdateUserProfile(UserProfileToUpdateDto userProfileToUpdateDto,
-        IUserProfileService userProfileService, IMapper mapper)
+
+    private static async Task<IResult> UpdateUserProfile(
+        UserProfileToUpdateDto userProfileToUpdateDto,
+        IUserProfileService userProfileService)
     {
         try
         {
-            await userProfileService.UpdateUserProfile(mapper.Map<UserProfileToUpdateDto, UserProfile>(userProfileToUpdateDto));
+            var updatedProfile = new UserProfile
+            {
+                Email = userProfileToUpdateDto.Email,
+                FullName = userProfileToUpdateDto.FullName,
+                BirthDate = DateTime.SpecifyKind(userProfileToUpdateDto.BirthDate, DateTimeKind.Utc)
+            };
+
+            await userProfileService.UpdateUserProfile(updatedProfile);
             return Results.Ok();
         }
         catch (Exception ex) // more specific exceptions like UserProfileNotFound
@@ -59,6 +97,7 @@ public static class UserProfileEndpoints
             return Results.NotFound();
         }
     }
+
 
     private static async Task<IResult> DeleteUserProfile(String firebaseUid, IUserProfileService userProfileService)
     {

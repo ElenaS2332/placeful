@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using AutoMapper;
 using Placeful.Api.Models;
 using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Entities;
@@ -20,41 +19,78 @@ public static class MemoryEndpoints
         group.MapDelete("{memoryId:guid}", DeleteMemory).WithName(nameof(DeleteMemory)).RequireAuthorization(AuthPolicy.Authenticated);
     }
     
-    private static async Task<IResult> GetMemories(IMemoryService memoryService, IMapper mapper, HttpContext context)
+    private static async Task<IResult> GetMemories(IMemoryService memoryService, HttpContext context)
     {
         var memories = await memoryService.GetMemories();
-        return Results.Ok(mapper.Map<IEnumerable<MemoryDto>>(memories));
+
+        var memoryDtos = memories.Select(m => new MemoryDto
+        {
+            Title = m.Title,
+            Description = m.Description,
+            Date = m.Date ?? DateTime.UtcNow,
+            Location = m.Location,
+            ImageUrl = m.ImageUrl
+        });
+
+        return Results.Ok(memoryDtos);
     }
     
-    private static async Task<IResult> GetMemory(Guid memoryId, IMemoryService memoryService, IMapper mapper)
+    private static async Task<IResult> GetMemory(Guid memoryId, IMemoryService memoryService)
     {
         try
         {
-            return Results.Ok(mapper.Map<MemoryDto>(await memoryService.GetMemory(memoryId)));
+            var memory = await memoryService.GetMemory(memoryId);
+
+            var memoryDto = new MemoryDto
+            {
+                Title = memory.Title,
+                Description = memory.Description,
+                Date = memory.Date ?? DateTime.UtcNow,
+                Location = memory.Location,
+                ImageUrl = memory.ImageUrl
+            };
+
+            return Results.Ok(memoryDto);
         }
-        catch (Exception ex) // more specific
+        catch (Exception ex) 
         {
             return Results.NotFound();
-        } 
+        }
     }
-    
-    private static async Task<IResult> CreateMemory(MemoryDto memoryDto, IMemoryService memoryService,
-        IMapper mapper)
+
+    private static async Task<IResult> CreateMemory(MemoryDto memoryDto, IMemoryService memoryService)
     {
-        var mappedMemory = mapper.Map<Memory>(memoryDto);
-        await memoryService.CreateMemory(mappedMemory);
+        var memory = new Memory
+        {
+            Title = memoryDto.Title,
+            Description = memoryDto.Description,
+            Date = memoryDto.Date ?? DateTime.UtcNow,
+            Location = memoryDto.Location,
+            ImageUrl = memoryDto.ImageUrl
+        };
+
+        await memoryService.CreateMemory(memory);
+
         return Results.Ok();
     }
     
-    private static async Task<IResult> UpdateMemory(MemoryToUpdateDto memoryToUpdateDto,
-        IMemoryService memoryService, IMapper mapper)
+    private static async Task<IResult> UpdateMemory(MemoryToUpdateDto memoryToUpdateDto, IMemoryService memoryService)
     {
         try
         {
-            await memoryService.UpdateMemory(mapper.Map<MemoryToUpdateDto, Memory>(memoryToUpdateDto));
+            var memory = new Memory
+            {
+                Title = memoryToUpdateDto.Title,
+                Description = memoryToUpdateDto.Description,
+                Date = memoryToUpdateDto.Date ?? DateTime.UtcNow,
+                Location = memoryToUpdateDto.Location,
+                ImageUrl = memoryToUpdateDto.ImageUrl
+            };
+
+            await memoryService.UpdateMemory(memory);
             return Results.Ok();
         }
-        catch (Exception ex) // more specific exceptions like UserProfileNotFound
+        catch (Exception ex) // more specific exceptions like MemoryNotFound
         {
             return Results.NotFound();
         }
