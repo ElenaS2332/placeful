@@ -5,7 +5,7 @@ namespace Placeful.Api.Services.Interface;
 
 public interface IUserProfileService
 {
-    Task<IEnumerable<UserProfile>> GetUserProfiles();
+    Task<IEnumerable<UserProfile>> GetUserProfiles(String? searchQuery);
     Task<UserProfile> GetCurrentUserProfile();
     Task<UserProfile> GetUserProfile(String firebaseUid);
     Task CreateUserProfile(UserProfile userProfile);

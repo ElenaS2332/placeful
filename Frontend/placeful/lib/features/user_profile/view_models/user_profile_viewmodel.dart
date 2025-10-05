@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:placeful/common/domain/dtos/user_dto.dart';
+import 'package:placeful/common/services/auth_service.dart';
 import 'package:placeful/common/services/service_locatior.dart';
 import 'package:placeful/common/services/user_service.dart';
 
 class UserProfileViewModel extends ChangeNotifier {
   final UserService userService = getIt.get<UserService>();
+  final AuthService authService = getIt.get<AuthService>();
 
   UserProfileViewModel();
 
@@ -35,5 +37,9 @@ class UserProfileViewModel extends ChangeNotifier {
       isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> signOut() async {
+    await authService.signOut();
   }
 }

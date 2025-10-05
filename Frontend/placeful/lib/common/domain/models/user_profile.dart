@@ -11,6 +11,7 @@ class UserProfile {
     this.email = '',
     this.fullName = '',
     required this.birthDate,
+    this.friends,
     this.favoritesMemoriesList,
   });
 
@@ -19,13 +20,14 @@ class UserProfile {
   late final String email;
   late final String fullName;
   late final DateTime birthDate;
-  final List<UserProfile>? friends = List.empty();
+  late final List<UserProfile>? friends;
   late final FavoriteMemoriesList? favoritesMemoriesList;
 
   UserProfile.fromDto(UserDto dto)
     : firebaseUid = dto.firebaseUid,
       email = dto.email,
       fullName = dto.fullName,
+      friends = dto.friends,
       birthDate = dto.birthDate;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>

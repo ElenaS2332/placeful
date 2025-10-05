@@ -20,9 +20,9 @@ public static class UserProfileEndpoints
         group.MapDelete("{userProfileId:guid}", DeleteUserProfile).WithName(nameof(DeleteUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
     }
     
-    private static async Task<IResult> GetUserProfiles(IUserProfileService userProfileService, IMapper mapper)
+    private static async Task<IResult> GetUserProfiles([FromQuery(Name = "fullName")] string? searchQuery, IUserProfileService userProfileService, IMapper mapper)
     {
-        var userProfiles = await userProfileService.GetUserProfiles();
+        var userProfiles = await userProfileService.GetUserProfiles(searchQuery);
         return Results.Ok(mapper.Map<IEnumerable<UserProfileDto>>(userProfiles));
     }
     

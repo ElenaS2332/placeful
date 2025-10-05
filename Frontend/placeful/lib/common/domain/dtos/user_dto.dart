@@ -1,27 +1,30 @@
-import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:placeful/common/domain/models/favorite_memories_list.dart';
+import 'package:placeful/common/domain/models/user_profile.dart';
 
 part 'user_dto.g.dart';
 
 @JsonSerializable()
-class UserDto extends Equatable {
-  final String firebaseUid;
-  final String fullName;
-  final String email;
-  final DateTime birthDate;
-
-  const UserDto({
+class UserDto {
+  UserDto({
     required this.firebaseUid,
-    required this.fullName,
-    required this.email,
+    this.email = '',
+    this.fullName = '',
     required this.birthDate,
+    this.friends,
+    this.favoritesMemoriesList,
   });
+
+  late final String? id;
+  late final String firebaseUid;
+  late final String email;
+  late final String fullName;
+  late final DateTime birthDate;
+  late final List<UserProfile>? friends;
+  late final FavoriteMemoriesList? favoritesMemoriesList;
 
   factory UserDto.fromJson(Map<String, dynamic> json) =>
       _$UserDtoFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserDtoToJson(this);
-
-  @override
-  List<Object?> get props => [fullName, birthDate];
 }

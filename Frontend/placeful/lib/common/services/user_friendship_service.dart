@@ -13,7 +13,7 @@ class UserFriendshipService {
 
   Future<List<UserProfile>> getListOfUsers(String searchQuery) async {
     final response =
-        await _client.get('user-profile?fullName=$searchQuery')
+        await _client.get('user-profile/all-users?fullName=$searchQuery')
             as List<dynamic>;
 
     final currentUserId = authService.getCurrentUser()!.uid;

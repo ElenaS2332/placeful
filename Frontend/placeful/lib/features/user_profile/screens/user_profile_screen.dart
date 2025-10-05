@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:placeful/common/domain/models/user_profile.dart';
+import 'package:placeful/features/authentication/login_screen.dart';
+import 'package:placeful/features/friends/screens/add_friend_screen.dart';
 import 'package:placeful/features/memories/screens/memory_screen.dart';
 import 'package:placeful/features/user_profile/view_models/user_profile_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -42,6 +44,21 @@ class _UserProfileScreenBody extends StatelessWidget {
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            onPressed: () async {
+              await vm.signOut();
+              if (context.mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child:
@@ -51,12 +68,12 @@ class _UserProfileScreenBody extends StatelessWidget {
                 ? Center(child: Text(vm.error!))
                 : vm.profileDto == null
                 ? const Center(child: Text("No profile found"))
-                : _buildProfile(UserProfile.fromDto(vm.profileDto!)),
+                : _buildProfile(context, UserProfile.fromDto(vm.profileDto!)),
       ),
     );
   }
 
-  Widget _buildProfile(UserProfile profile) {
+  Widget _buildProfile(BuildContext context, UserProfile profile) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
@@ -101,7 +118,7 @@ class _UserProfileScreenBody extends StatelessWidget {
           ),
           const Divider(height: 40),
           Text(
-            "Friends (${profile.friends?.length})",
+            "Friends (${profile.friends?.length ?? 0})",
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -140,6 +157,32 @@ class _UserProfileScreenBody extends StatelessWidget {
                   );
                 },
               ),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const AddFriendScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF8668FF),
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                  ),
+                  child: const Text(
+                    'Add Friends',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

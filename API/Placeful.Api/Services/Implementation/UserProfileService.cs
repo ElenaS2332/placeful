@@ -9,10 +9,16 @@ namespace Placeful.Api.Services.Implementation;
 
 public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor httpContextAccessor) : IUserProfileService
 {
-    public async Task<IEnumerable<UserProfile>> GetUserProfiles()
+    public async Task<IEnumerable<UserProfile>> GetUserProfiles(String? searchQuery)
     {
-        return await context.UserProfiles
-            .ToListAsync();
+        var query = context.UserProfiles.AsQueryable();
+        
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            query = query.Where(u => u.FullName.Contains(searchQuery));
+        }
+        
+        return await query.ToListAsync();
     }
 
     public async Task<UserProfile> GetCurrentUserProfile()
