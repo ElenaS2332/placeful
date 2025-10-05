@@ -85,7 +85,6 @@ class _TakeImageScreenBodyState extends State<_TakeImageScreenBody> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final theme = Theme.of(context);
 
     if (vm.cameraController == null ||
         !vm.cameraController!.value.isInitialized) {
@@ -96,7 +95,7 @@ class _TakeImageScreenBodyState extends State<_TakeImageScreenBody> {
       appBar: AppBar(title: const Text("Take Image")),
       body: Stack(
         children: [
-          Container(
+          SizedBox(
             width: size.width,
             height: size.height,
             child: FittedBox(
@@ -113,7 +112,7 @@ class _TakeImageScreenBodyState extends State<_TakeImageScreenBody> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              color: Colors.black.withOpacity(0.6),
+              color: Colors.black.withValues(alpha: 0.6),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 21, 0, 44),
                 child: Row(
@@ -139,12 +138,12 @@ class _TakeImageScreenBodyState extends State<_TakeImageScreenBody> {
             left: 24,
             child: ElevatedButton(
               onPressed: () async => Navigator.pop(context),
-              child: const Icon(Icons.close),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black.withOpacity(0.5),
+                backgroundColor: Colors.black.withValues(alpha: 0.5),
                 shape: const CircleBorder(),
                 padding: const EdgeInsets.all(12),
               ),
+              child: const Icon(Icons.close),
             ),
           ),
         ],

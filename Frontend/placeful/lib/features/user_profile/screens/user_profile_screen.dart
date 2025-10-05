@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:placeful/common/domain/models/user_profile.dart';
 import 'package:placeful/features/memories/screens/memory_screen.dart';

@@ -14,8 +14,8 @@ class _CameraShutterState extends State<CameraShutter>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late AnimationController _outerAnimationController;
-  late Animation<double> _tapAnimation;
-  late Animation<double> _outerAnimation;
+  late Animation<double> tapAnimation;
+  late Animation<double> outerAnimation;
 
   @override
   void initState() {
@@ -31,13 +31,13 @@ class _CameraShutterState extends State<CameraShutter>
       duration: const Duration(milliseconds: 125),
     );
 
-    _tapAnimation = Tween<double>(begin: 30, end: 28).animate(
+    tapAnimation = Tween<double>(begin: 30, end: 28).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.slowMiddle),
     )..addListener(() {
       setState(() {});
     });
 
-    _outerAnimation = Tween<double>(begin: 36, end: 32).animate(
+    outerAnimation = Tween<double>(begin: 36, end: 32).animate(
       CurvedAnimation(
         parent: _outerAnimationController,
         curve: Curves.bounceIn,
@@ -67,7 +67,7 @@ class _CameraShutterState extends State<CameraShutter>
             _animationController.reverse(),
             _outerAnimationController.reverse(),
           },
-      child: Container(
+      child: SizedBox(
         width: 80,
         height: 80,
         child: Stack(

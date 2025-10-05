@@ -6,10 +6,10 @@ import 'package:placeful/features/authentication/register_screen.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
+class HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctl;
 

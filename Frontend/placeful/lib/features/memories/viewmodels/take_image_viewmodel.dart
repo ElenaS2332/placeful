@@ -86,11 +86,11 @@ class TakeImageViewModel extends ChangeNotifier {
     try {
       _lifecycleEventHandler.onLifecycleChange = null;
 
-      final picture = await cameraService.takePicture();
+      // final picture = await cameraService.takePicture();
       await toggleFlash(shouldTurnOn: false);
       await cameraService.pauseCameraPreview();
 
-      final snapShotDataInBytes = await picture!.readAsBytes();
+      // final snapShotDataInBytes = await picture!.readAsBytes();
 
       // navigationService
       //     .replaceCurrent<DisplayPicturePage, DisplayPictureViewModel>(

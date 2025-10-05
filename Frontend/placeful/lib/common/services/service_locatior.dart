@@ -6,6 +6,7 @@ import 'package:placeful/common/services/http_service.dart';
 import 'package:placeful/common/services/location_service.dart';
 import 'package:placeful/common/services/logger_service.dart';
 import 'package:placeful/common/services/memory_service.dart';
+import 'package:placeful/common/services/user_friendship_service.dart';
 import 'package:placeful/common/services/user_service.dart';
 
 final getIt = GetIt.instance;
@@ -19,4 +20,5 @@ void setupLocator() {
   getIt.registerLazySingleton(() => MemoryService());
   getIt.registerLazySingleton(() => UserService());
   getIt.registerLazySingleton(() => CameraService());
+  getIt.registerLazySingleton(() => UserFriendshipService());
 }
