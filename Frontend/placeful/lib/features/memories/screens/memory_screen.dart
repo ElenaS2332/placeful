@@ -40,7 +40,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
           GoogleMap(
             initialCameraPosition: const CameraPosition(
               target: LatLng(41.9981, 21.4254),
-              zoom: 12,
+              zoom: 14,
             ),
             onMapCreated: (controller) => mapController = controller,
             markers: {
@@ -50,6 +50,11 @@ class _MemoryScreenState extends State<MemoryScreen> {
                 infoWindow: InfoWindow(title: "Skopje Center"),
               ),
             },
+            zoomGesturesEnabled: true,
+            zoomControlsEnabled: true,
+            myLocationButtonEnabled: true,
+            scrollGesturesEnabled: true,
+            rotateGesturesEnabled: true,
           ),
 
           Positioned(

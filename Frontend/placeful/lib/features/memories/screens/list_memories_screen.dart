@@ -17,24 +17,98 @@ class ListMemoriesScreen extends StatelessWidget {
 class _ListMemoriesScreenBody extends StatelessWidget {
   const _ListMemoriesScreenBody();
 
+  Color _getTileColor(int index) {
+    final colors = [
+      Colors.purple.shade300,
+      Colors.blue.shade300,
+      Colors.green.shade300,
+      Colors.orange.shade300,
+      Colors.red.shade300,
+      Colors.teal.shade300,
+    ];
+    return colors[index % colors.length];
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<ListMemoriesViewModel>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("All Memories")),
+      appBar: AppBar(
+        title: const Text("All Memories"),
+        backgroundColor: Colors.deepPurple,
+      ),
       body:
           vm.isLoading
               ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                itemCount: vm.memories.length,
-                itemBuilder: (context, index) {
-                  final memory = vm.memories[index];
-                  return ListTile(
-                    title: Text(memory.title),
-                    subtitle: Text(memory.description),
-                  );
-                },
+              : Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 1,
+                  ),
+                  itemCount: vm.memories.length,
+                  itemBuilder: (context, index) {
+                    final memory = vm.memories[index];
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: _getTileColor(index),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 6,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              memory.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              memory.description,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              memory.location?.latitude.toStringAsFixed(4) ??
+                                  "No Lat",
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
     );
   }

@@ -124,6 +124,56 @@ Future<void> _openCamera(BuildContext context) async {
 class _AddMemoryScreenBody extends StatelessWidget {
   const _AddMemoryScreenBody();
 
+  void showTopToast(
+    BuildContext context,
+    String message, {
+    bool success = true,
+  }) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            top: kToolbarHeight + 80,
+            left: 16,
+            right: 16,
+            child: Material(
+              color: Colors.transparent,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
+                decoration: BoxDecoration(
+                  color:
+                      success
+                          ? Colors.green.shade700.withValues(alpha: 0.9)
+                          : Colors.red,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  message,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+    );
+
+    overlay.insert(overlayEntry);
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<AddMemoryViewModel>(context);
@@ -158,10 +208,6 @@ class _AddMemoryScreenBody extends StatelessWidget {
                 ),
               ),
             ),
-            ElevatedButton(
-              onPressed: () => _showImageSourceDialog(context),
-              child: const Text("Add Image"),
-            ),
             TextField(
               readOnly: true,
               onTap: () async {
@@ -187,12 +233,31 @@ class _AddMemoryScreenBody extends StatelessWidget {
               children: [
                 Expanded(
                   child: ElevatedButton(
+                    onPressed: () => _showImageSourceDialog(context),
+                    child: const Text("Add Image"),
+                  ),
+                ),
+              ],
+            ),
+
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
                     onPressed:
                         vm.isLoading
                             ? null
                             : () async {
                               final success = await vm.addMemory();
                               if (!context.mounted) return;
+
+                              showTopToast(
+                                context,
+                                success
+                                    ? 'Memory successfully added!'
+                                    : 'An error occurred while adding memory.',
+                                success: success,
+                              );
 
                               if (success) Navigator.pop(context);
                             },

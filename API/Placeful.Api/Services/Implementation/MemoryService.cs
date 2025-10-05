@@ -10,6 +10,7 @@ public class MemoryService(PlacefulDbContext context) : IMemoryService
     public async Task<IEnumerable<Memory>> GetMemories()
     {
         return await context.Memories
+            .Include(m => m.Location)
             .ToListAsync();
     }
 
