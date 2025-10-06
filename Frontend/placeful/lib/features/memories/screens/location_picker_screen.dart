@@ -25,10 +25,11 @@ class _LocationPickerScreenBody extends StatefulWidget {
 
 class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
   OverlayEntry? _toastEntry;
+  bool _isToastVisible = false;
 
   void _showToast(String message, {bool success = true}) {
-    // Remove previous toast if exists
     _toastEntry?.remove();
+    _isToastVisible = true;
 
     final overlay = Overlay.of(context);
     _toastEntry = OverlayEntry(
@@ -47,7 +48,7 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
                 decoration: BoxDecoration(
                   color:
                       success
-                          ? Colors.green.shade700.withOpacity(0.9)
+                          ? Color.fromRGBO(141, 172, 22, 0.9)
                           : Colors.red.shade700,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: const [
@@ -123,12 +124,14 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
         onMapCreated: vm.onMapCreated,
         onTap: (position) async {
           vm.onMapTapped(position);
-
+          if (_isToastVisible) {
+            _isToastVisible = false;
+          }
           await showModalBottomSheet(
             context: context,
             isScrollControlled: true,
             builder: (ctx) {
-              final controller = TextEditingController(text: vm.locationName);
+              final controller = TextEditingController();
               return Padding(
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.of(ctx).viewInsets.bottom,
@@ -169,7 +172,7 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
                       onPressed: () {
                         final name = controller.text.trim();
                         vm.setLocationName(name);
-                        _showToast("Location saved: $name");
+                        _showToast(name);
                         Navigator.pop(ctx);
                       },
                       child: const Text("Save"),

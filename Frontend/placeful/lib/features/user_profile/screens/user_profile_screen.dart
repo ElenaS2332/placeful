@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:placeful/common/domain/models/user_profile.dart';
 import 'package:placeful/features/authentication/login_screen.dart';
 import 'package:placeful/features/friends/screens/add_friend_screen.dart';
-import 'package:placeful/features/memories/screens/memory_screen.dart';
+import 'package:placeful/features/memories/screens/memory_map_screen.dart';
 import 'package:placeful/features/user_profile/view_models/user_profile_viewmodel.dart';
 import 'package:provider/provider.dart';
 
@@ -35,7 +35,7 @@ class _UserProfileScreenBody extends StatelessWidget {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const MemoryScreen()),
+              MaterialPageRoute(builder: (_) => const MemoryMapScreen()),
             );
           },
         ),

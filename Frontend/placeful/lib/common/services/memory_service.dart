@@ -10,7 +10,7 @@ class MemoryService {
 
   Future<List<Memory>> getMemories({
     required int page,
-    int pageSize = 8,
+    int pageSize = 5,
   }) async {
     final List response = await _client.get(
       "memory?page=$page&pageSize=$pageSize",

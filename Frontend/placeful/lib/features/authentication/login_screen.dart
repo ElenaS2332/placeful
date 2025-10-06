@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:placeful/common/services/auth_service.dart';
 import 'package:placeful/common/services/service_locatior.dart';
 import 'package:placeful/features/authentication/register_screen.dart';
-import 'package:placeful/features/memories/screens/memory_screen.dart';
+import 'package:placeful/features/memories/screens/memory_map_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -34,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await _auth.loginWithEmail(email, pass);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MemoryScreen()),
+        MaterialPageRoute(builder: (_) => const MemoryMapScreen()),
       );
     } on FirebaseAuthException catch (e) {
       _showMessage(e.message ?? 'Login failed.');
