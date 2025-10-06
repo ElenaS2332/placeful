@@ -177,6 +177,9 @@ class _AddMemoryScreenBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<AddMemoryViewModel>(context);
+    final locationController = TextEditingController(
+      text: vm.location != null ? vm.location!.name : 'Add Location',
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text("Add New Memory")),
@@ -210,6 +213,7 @@ class _AddMemoryScreenBody extends StatelessWidget {
             ),
             TextField(
               readOnly: true,
+              controller: locationController,
               onTap: () async {
                 final selectedLocation = await Navigator.push(
                   context,
@@ -220,10 +224,11 @@ class _AddMemoryScreenBody extends StatelessWidget {
                 if (selectedLocation != null) {
                   final locationToAdd = Location.fromDto(selectedLocation);
                   vm.setLocation(locationToAdd);
+                  locationController.text = locationToAdd.name;
                 }
               },
+              style: TextStyle(color: Colors.grey.shade800, fontSize: 16),
               decoration: const InputDecoration(
-                labelText: "Location",
                 prefixIcon: Icon(Icons.location_on),
               ),
             ),
