@@ -1,5 +1,4 @@
-using System.Security.Claims;
-using Placeful.Api.Models;
+using Microsoft.AspNetCore.Mvc;
 using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Entities;
 using Placeful.Api.Models.Enums;
@@ -19,9 +18,13 @@ public static class MemoryEndpoints
         group.MapDelete("{memoryId:guid}", DeleteMemory).WithName(nameof(DeleteMemory)).RequireAuthorization(AuthPolicy.Authenticated);
     }
     
-    private static async Task<IResult> GetMemories(IMemoryService memoryService, HttpContext context)
+    private static async Task<IResult> GetMemories(
+        [FromQuery] int page,
+        [FromQuery] int pageSize,
+        IMemoryService memoryService, 
+        HttpContext context)
     {
-        var memories = await memoryService.GetMemories();
+        var memories = await memoryService.GetMemories(page, pageSize);
 
         var memoryDtos = memories.Select(m => new MemoryDto
         {

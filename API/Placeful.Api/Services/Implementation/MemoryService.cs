@@ -7,10 +7,13 @@ namespace Placeful.Api.Services.Implementation;
 
 public class MemoryService(PlacefulDbContext context) : IMemoryService
 {
-    public async Task<IEnumerable<Memory>> GetMemories()
+    public async Task<IEnumerable<Memory>> GetMemories(int page = 1, int pageSize = 10)
     {
         return await context.Memories
             .Include(m => m.Location)
+            .OrderByDescending(m => m.Date)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
     }
 
@@ -18,7 +21,7 @@ public class MemoryService(PlacefulDbContext context) : IMemoryService
     {
         var memory = await context.Memories.FirstOrDefaultAsync(c => c.Id == id);
 
-        if (memory is null) throw new Exception(); // create specific exceptions
+        if (memory is null) throw new Exception();
 
         return memory;
     }
@@ -80,12 +83,12 @@ public class MemoryService(PlacefulDbContext context) : IMemoryService
 
         await SaveChanges();
     }
-    
+
     private async Task<bool> SaveChanges()
     {
         return await context.SaveChangesAsync() >= 0;
     }
-    
+
     private async Task<bool> MemoryExists(Guid guid)
     {
         return await context.Memories.AnyAsync(c => c.Id == guid);

@@ -8,8 +8,13 @@ class MemoryService {
 
   final HttpService _client = getIt<HttpService>();
 
-  Future<List<Memory>> getMemories() async {
-    final List response = await _client.get("memory/");
+  Future<List<Memory>> getMemories({
+    required int page,
+    int pageSize = 8,
+  }) async {
+    final List response = await _client.get(
+      "memory?page=$page&pageSize=$pageSize",
+    );
     return response
         .map((c) => MemoryDto.fromJson(c))
         .map((dto) => Memory.fromDto(dto))
