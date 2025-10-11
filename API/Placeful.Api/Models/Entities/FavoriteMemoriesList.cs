@@ -1,10 +1,12 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Placeful.Api.Models.Entities;
 
 public class FavoriteMemoriesList
 {
     public Guid Id { get; init; }
-    public Guid UserProfileId { get; init; }
-    public Guid MemoryId { get; init; }
-    public UserProfile? UserProfile { get; set; }
-    public Memory? Memory { get; set; }
+
+    [MaxLength(1000)]
+    public String UserProfileId { get; init; } = String.Empty;
+    public List<Memory>? Memories { get; init; }
 }

@@ -1,70 +1,114 @@
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Placeful.Api.Data;
 using Placeful.Api.Models;
+using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Entities;
+using Placeful.Api.Models.Exceptions;
 using Placeful.Api.Services.Interface;
 
 namespace Placeful.Api.Services.Implementation;
 
-public class FavoriteMemoriesListService(PlacefulDbContext context) : IFavoriteMemoriesListService
+public class FavoriteMemoriesListService(PlacefulDbContext context, IHttpContextAccessor httpContextAccessor) : IFavoriteMemoriesListService
 {
-    public async Task<IEnumerable<FavoriteMemoriesList>> GetFavoriteMemoriesLists()
+    public async Task<FavoriteMemoriesList> GetFavoriteMemoriesListForCurrentUser()
     {
-        return await context.FavoriteMemoriesLists
-            .ToListAsync();
-    }
-
-    public async Task<FavoriteMemoriesList> GetFavoriteMemoriesList(Guid id)
-    {
-        var favoriteMemoriesList = await context.FavoriteMemoriesLists.FirstOrDefaultAsync(c => c.Id == id);
+        var userId = GetCurrentUserFirebaseUid();
+        
+        var favoriteMemoriesList = await context.FavoriteMemoriesLists
+            .Include(c => c.Memories)
+            .FirstOrDefaultAsync(c => c.UserProfileId == userId);
 
         if (favoriteMemoriesList is null) throw new Exception(); // create specific exceptions
 
         return favoriteMemoriesList;
     }
 
-    public async Task<FavoriteMemoriesList> GetFavoriteMemoriesListForUser(Guid userId)
+    public async Task AddMemoryToFavoriteMemoriesListForCurrentUser(Guid memoryId)
     {
-        var favoriteMemoriesList = await context.FavoriteMemoriesLists.FirstOrDefaultAsync(c => c.UserProfileId == userId);
+        var userId = GetCurrentUserFirebaseUid();
+        
+        var userProfile = await context.UserProfiles
+            .Include(u => u.FavoritesMemoriesList)
+            .ThenInclude(m => m!.Memories)
+            .FirstOrDefaultAsync(u => u.FirebaseUid == userId);
+        
+        if (userProfile is null) throw new UserProfileNotFoundException(userId);
 
-        if (favoriteMemoriesList is null) throw new Exception(); // create specific exceptions
+        var favoriteMemoriesList = userProfile.FavoritesMemoriesList;
+        
+        if (favoriteMemoriesList is null) throw new FavoriteMemoriesListNotFoundException(userId);
+        
+        if(favoriteMemoriesList.Memories is null) throw new MemoriesListForFavoriteListNotFoundException(favoriteMemoriesList.Id);
 
-        return favoriteMemoriesList;
+        var memoryFromDb = await context.Memories
+            .Include(m => m.Location)
+            .FirstOrDefaultAsync(m => m.Id == memoryId);
+        
+        if (memoryFromDb is null) throw new MemoryNotFoundException(memoryId);
+        
+        if (favoriteMemoriesList.Memories.Any(m => m.Id == memoryId)) throw new MemoryAlreadyAddedToFavoritesException(memoryId);
+        
+        favoriteMemoriesList.Memories.Add(memoryFromDb);
+        
+        await context.SaveChangesAsync();
     }
 
-    public async Task CreateFavoriteMemoriesList(FavoriteMemoriesList favoriteMemoriesList)
+    public async Task RemoveMemoryFromFavoriteMemoriesListForCurrentUser(Guid memoryId)
     {
-        await context.FavoriteMemoriesLists.AddAsync(favoriteMemoriesList);
-        await SaveChanges();
+        var userId = GetCurrentUserFirebaseUid();
+        
+        var userProfile = await context.UserProfiles
+            .Include(u => u.FavoritesMemoriesList)
+            .ThenInclude(m => m!.Memories)
+            .FirstOrDefaultAsync(u => u.FirebaseUid == userId);
+        
+        if (userProfile is null) throw new UserProfileNotFoundException(userId);
+
+        var favoriteMemoriesList = userProfile.FavoritesMemoriesList;
+        
+        if (favoriteMemoriesList is null) throw new FavoriteMemoriesListNotFoundException(userId);
+        
+        if(favoriteMemoriesList.Memories is null) throw new MemoriesListForFavoriteListNotFoundException(favoriteMemoriesList.Id);
+
+        var memoryFromDb = await context.Memories
+            .Include(m => m.Location)
+            .FirstOrDefaultAsync(m => m.Id == memoryId);
+        
+        if (memoryFromDb is null) throw new MemoryNotFoundException(memoryId);
+        
+        favoriteMemoriesList.Memories.Remove(memoryFromDb);
+        
+        await context.SaveChangesAsync();
     }
 
-    public async Task UpdateFavoriteMemoriesList(FavoriteMemoriesList favoriteMemoriesList)
+    public async Task ClearFavoriteMemoriesListForCurrentUser()
     {
-        var favoriteMemoriesListExists = await FavoriteMemoriesListExists(favoriteMemoriesList.Id);
+        var userId = GetCurrentUserFirebaseUid();
 
-        if (!favoriteMemoriesListExists) throw new Exception();
-
-        context.FavoriteMemoriesLists.Update(favoriteMemoriesList);
-
-        await SaveChanges();
-    }
-
-    public async Task DeleteFavoriteMemoriesList(Guid id)
-    {
-        var favoriteMemoriesListToBeDeleted = await GetFavoriteMemoriesList(id);
-
-        context.FavoriteMemoriesLists.Remove(favoriteMemoriesListToBeDeleted);
-
-        await SaveChanges();
+        var userProfile = await context.UserProfiles
+            .Include(u => u.FavoritesMemoriesList)
+            .FirstOrDefaultAsync(u => u.FirebaseUid == userId);
+        
+        if (userProfile is null) throw new UserProfileNotFoundException(userId);
+        
+        var favoriteMemoriesList = userProfile.FavoritesMemoriesList;
+        if (favoriteMemoriesList is null) throw new FavoriteMemoriesListNotFoundException(userId);
+        
+        userProfile.FavoritesMemoriesList = new FavoriteMemoriesList();
+        await context.SaveChangesAsync();
+        
+        context.FavoriteMemoriesLists.Remove(favoriteMemoriesList);
+        await context.SaveChangesAsync();
     }
     
-    private async Task<bool> SaveChanges()
+    private String GetCurrentUserFirebaseUid()
     {
-        return await context.SaveChangesAsync() >= 0;
-    }
-    
-    private async Task<bool> FavoriteMemoriesListExists(Guid guid)
-    {
-        return await context.FavoriteMemoriesLists.AnyAsync(c => c.Id == guid);
+        var currentUserUid = httpContextAccessor.HttpContext?.User
+            .FindFirstValue(ClaimTypes.NameIdentifier);
+        if (currentUserUid == null)
+            throw new UnauthorizedAccessException("User identifier not found in token.");
+        
+        return currentUserUid;
     }
 }

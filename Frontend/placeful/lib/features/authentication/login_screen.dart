@@ -33,8 +33,10 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await _auth.loginWithEmail(email, pass);
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
+      Navigator.pushAndRemoveUntil(
+        context,
         MaterialPageRoute(builder: (_) => const MemoryMapScreen()),
+        (route) => false,
       );
     } on FirebaseAuthException catch (e) {
       _showMessage(e.message ?? 'Login failed.');

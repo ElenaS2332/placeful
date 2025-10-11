@@ -1,6 +1,7 @@
 using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Entities;
 using Placeful.Api.Models.Enums;
+using Placeful.Api.Models.Exceptions;
 using Placeful.Api.Services.Interface;
 
 namespace Placeful.Api.Endpoints;
@@ -10,102 +11,79 @@ public static class FavoriteMemoriesListEndpoints
     public static void MapFavoriteMemoriesListEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("api/favorite-memories-list");
-        group.MapGet("", GetFavoriteMemoriesLists).WithName(nameof(GetFavoriteMemoriesLists)).RequireAuthorization(AuthPolicy.Authenticated);
-        group.MapGet("{favoriteMemoriesListId:guid}", GetFavoriteMemoriesList).WithName(nameof(GetFavoriteMemoriesList)).RequireAuthorization(AuthPolicy.Authenticated);
-        group.MapPost("", CreateFavoriteMemoriesList).WithName(nameof(CreateFavoriteMemoriesList)).RequireAuthorization(AuthPolicy.Authenticated);
-        group.MapPut("", UpdateFavoriteMemoriesList).WithName(nameof(UpdateFavoriteMemoriesList)).RequireAuthorization(AuthPolicy.Authenticated);
-        group.MapDelete("{favoriteMemoriesListId:guid}", DeleteFavoriteMemoriesList).WithName(nameof(DeleteFavoriteMemoriesList)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapGet("", GetFavoriteMemoriesListForCurrentUser).WithName(nameof(GetFavoriteMemoriesListForCurrentUser)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapPut("{memoryId:guid}", AddMemoryToFavoriteMemoriesListForCurrentUser).WithName(nameof(AddMemoryToFavoriteMemoriesListForCurrentUser)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapDelete("{memoryId:guid}", RemoveMemoryFromFavoriteMemoriesListForCurrentUser).WithName(nameof(RemoveMemoryFromFavoriteMemoriesListForCurrentUser)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapDelete("/all", ClearFavoriteMemoriesListForCurrentUser).WithName(nameof(ClearFavoriteMemoriesListForCurrentUser)).RequireAuthorization(AuthPolicy.Authenticated);
     }
     
-    private static async Task<IResult> GetFavoriteMemoriesLists(IFavoriteMemoriesListService favoriteMemoriesListService)
-    {
-        var favoriteMemoriesLists = await favoriteMemoriesListService.GetFavoriteMemoriesLists();
-        return Results.Ok(favoriteMemoriesLists.Select(f => new FavoriteMemoriesListDto
-        {
-            UserProfileId = f.UserProfileId,
-            MemoryId = f.MemoryId,
-            UserProfile = f.UserProfile,
-            Memory = f.Memory
-        }));
-    }
-    
-    private static async Task<IResult> GetFavoriteMemoriesList(
-        Guid favoriteMemoriesListId,
+    private static async Task<IResult> GetFavoriteMemoriesListForCurrentUser(
         IFavoriteMemoriesListService favoriteMemoriesListService)
     {
         try
         {
-            var favoriteMemoriesList = await favoriteMemoriesListService.GetFavoriteMemoriesList(favoriteMemoriesListId);
-
-            var dto = new FavoriteMemoriesListDto
-            {
-                UserProfileId = favoriteMemoriesList.UserProfileId,
-                MemoryId = favoriteMemoriesList.MemoryId,
-                UserProfile = favoriteMemoriesList.UserProfile,
-                Memory = favoriteMemoriesList.Memory
-            };
-
-            return Results.Ok(dto);
+            var favoriteMemoriesListDto = await favoriteMemoriesListService.GetFavoriteMemoriesListForCurrentUser();
+            
+            return Results.Ok(favoriteMemoriesListDto);
         }
         catch (Exception)
         {
             return Results.NotFound();
         }
     }
-
-    private static async Task<IResult> CreateFavoriteMemoriesList(
-        FavoriteMemoriesListDto favoriteMemoriesListDto,
+    private static async Task<IResult> AddMemoryToFavoriteMemoriesListForCurrentUser(
+        Guid memoryId,
         IFavoriteMemoriesListService favoriteMemoriesListService)
     {
-        var favoriteMemoriesList = new FavoriteMemoriesList
+        try
         {
-            UserProfileId = favoriteMemoriesListDto.UserProfileId,
-            MemoryId = favoriteMemoriesListDto.MemoryId,
-            UserProfile = favoriteMemoriesListDto.UserProfile,
-            Memory = favoriteMemoriesListDto.Memory
-        };
-
-        await favoriteMemoriesListService.CreateFavoriteMemoriesList(favoriteMemoriesList);
-        return Results.Ok();
+            await favoriteMemoriesListService.AddMemoryToFavoriteMemoriesListForCurrentUser(memoryId);
+            return Results.Ok(new { message = "Memory successfully added to favorites." });
+        }
+        catch (DomainException ex)
+        {
+            return Results.Problem(detail: ex.Message, statusCode: ex.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(detail: ex.Message, statusCode: 500);
+        }
     }
 
+    private static async Task<IResult> RemoveMemoryFromFavoriteMemoriesListForCurrentUser(
+        Guid memoryId,
+        IFavoriteMemoriesListService favoriteMemoriesListService)
+    {
+        try
+        {
+            await favoriteMemoriesListService.RemoveMemoryFromFavoriteMemoriesListForCurrentUser(memoryId);
+            return Results.Ok();
+        }
+        catch (DomainException ex)
+        {
+            return Results.Problem(detail: ex.Message, statusCode: ex.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(detail: ex.Message, statusCode: 500);
+        }
+    }
     
-    private static async Task<IResult> UpdateFavoriteMemoriesList(
-        FavoriteMemoriesListToUpdateDto favoriteMemoriesListToUpdateDto,
+    private static async Task<IResult> ClearFavoriteMemoriesListForCurrentUser(
         IFavoriteMemoriesListService favoriteMemoriesListService)
     {
         try
         {
-            var favoriteMemoriesList = new FavoriteMemoriesList
-            {
-                UserProfileId = favoriteMemoriesListToUpdateDto.UserProfileId,
-                MemoryId = favoriteMemoriesListToUpdateDto.MemoryId,
-                UserProfile = favoriteMemoriesListToUpdateDto.UserProfile,
-                Memory = favoriteMemoriesListToUpdateDto.Memory
-            };
-
-            await favoriteMemoriesListService.UpdateFavoriteMemoriesList(favoriteMemoriesList);
+            await favoriteMemoriesListService.ClearFavoriteMemoriesListForCurrentUser();
             return Results.Ok();
         }
-        catch (Exception ex) // TODO: handle more specific exceptions
+        catch (DomainException ex)
         {
-            return Results.NotFound();
+            return Results.Problem(detail: ex.Message, statusCode: ex.StatusCode);
         }
-    }
-
-
-    private static async Task<IResult> DeleteFavoriteMemoriesList(
-        Guid favoriteMemoriesListId,
-        IFavoriteMemoriesListService favoriteMemoriesListService)
-    {
-        try
+        catch (Exception ex)
         {
-            await favoriteMemoriesListService.DeleteFavoriteMemoriesList(favoriteMemoriesListId);
-            return Results.Ok();
-        }
-        catch (Exception ex) 
-        {
-            return Results.NotFound();
+            return Results.Problem(detail: ex.Message, statusCode: 500);
         }
     }
 

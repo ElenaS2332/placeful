@@ -15,15 +15,12 @@ class MemoryService {
     final List response = await _client.get(
       "memory?page=$page&pageSize=$pageSize",
     );
-    return response
-        .map((c) => MemoryDto.fromJson(c))
-        .map((dto) => Memory.fromDto(dto))
-        .toList();
+    return response.map((c) => Memory.fromJson(c)).toList();
   }
 
   Future<Memory> getMemory(String id) async {
     final Map<String, dynamic> response = await _client.get("memory/$id");
-    return Memory.fromDto(MemoryDto.fromJson(response));
+    return Memory.fromJson(response);
   }
 
   Future<void> addMemory(MemoryDto memoryDto) async {

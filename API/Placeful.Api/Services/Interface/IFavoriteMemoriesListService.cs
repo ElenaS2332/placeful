@@ -1,14 +1,14 @@
 using Placeful.Api.Models;
+using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Entities;
 
 namespace Placeful.Api.Services.Interface;
 
 public interface IFavoriteMemoriesListService
 {
-    Task<IEnumerable<FavoriteMemoriesList>> GetFavoriteMemoriesLists();
-    Task<FavoriteMemoriesList> GetFavoriteMemoriesList(Guid id);
-    Task<FavoriteMemoriesList> GetFavoriteMemoriesListForUser(Guid userId);
-    Task CreateFavoriteMemoriesList(FavoriteMemoriesList favoriteMemoriesList);
-    Task UpdateFavoriteMemoriesList(FavoriteMemoriesList favoriteMemoriesList);
-    Task DeleteFavoriteMemoriesList(Guid id);
+    Task<FavoriteMemoriesList> GetFavoriteMemoriesListForCurrentUser();
+    Task AddMemoryToFavoriteMemoriesListForCurrentUser(Guid memoryId);
+    Task RemoveMemoryFromFavoriteMemoriesListForCurrentUser(Guid memoryId);
+
+    Task ClearFavoriteMemoriesListForCurrentUser();
 }

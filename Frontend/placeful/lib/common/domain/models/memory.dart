@@ -15,14 +15,14 @@ class Memory {
     this.imageUrl,
   });
 
-  late final String id;
-  late final String title;
-  late final String description;
-  late final DateTime? date;
-  late final Location? location;
-  late final String? imageUrl;
+  final String id;
+  final String title;
+  final String description;
+  final DateTime? date;
+  final Location? location;
+  final String? imageUrl;
 
-  Memory.fromDto(MemoryDto dto)
+  Memory.fromDto(MemoryDto dto, this.id)
     : title = dto.title,
       description = dto.description,
       date = dto.date,

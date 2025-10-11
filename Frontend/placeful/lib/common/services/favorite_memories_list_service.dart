@@ -8,43 +8,28 @@ class FavoriteMemoriesListService {
 
   final HttpService _client = getIt<HttpService>();
 
-  Future<List<FavoriteMemoriesList>> getFavoriteMemoriesLists() async {
-    final List response = await _client.get("favorite-memories-list/");
-    return response
-        .map((c) => FavoriteMemoriesListDto.fromJson(c))
-        .map((dto) => FavoriteMemoriesList.fromDto(dto))
-        .toList();
-  }
-
-  Future<FavoriteMemoriesList> getFavoriteMemoriesList(String id) async {
+  Future<FavoriteMemoriesList> getFavoriteMemoriesListForCurrentUser() async {
     final Map<String, dynamic> response = await _client.get(
-      "favorite-memories-list/$id",
+      "favorite-memories-list",
     );
     return FavoriteMemoriesList.fromDto(
       FavoriteMemoriesListDto.fromJson(response),
     );
   }
 
-  Future<FavoriteMemoriesList> getFavoriteMemoriesListForUser(
-    String userId,
+  Future<void> addMemoryToFavoriteMemoriesListForCurrentUser(
+    String memoryId,
   ) async {
-    final Map<String, dynamic> response = await _client.get(
-      "favorite-memories-list/user/$userId",
-    );
-    return FavoriteMemoriesList.fromDto(
-      FavoriteMemoriesListDto.fromJson(response),
-    );
+    await _client.put("favorite-memories-list/$memoryId", memoryId);
   }
 
-  Future<void> createFavoriteMemoriesList(FavoriteMemoriesList list) async {
-    await _client.post("favorite-memories-list/", list.toJson());
+  Future<void> removeMemoryFromFavoriteMemoriesListForCurrentUser(
+    String memoryId,
+  ) async {
+    await _client.delete("favorite-memories-list/$memoryId");
   }
 
-  Future<void> updateFavoriteMemoriesList(FavoriteMemoriesList list) async {
-    await _client.put("favorite-memories-list/${list.id}", list.toJson());
-  }
-
-  Future<void> deleteFavoriteMemoriesList(String id) async {
-    await _client.delete("favorite-memories-list/$id");
+  Future<void> clearFavoriteMemoriesListForCurrentUser() async {
+    await _client.delete("favorite-memories-list/all");
   }
 }

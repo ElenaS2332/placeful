@@ -1,3 +1,4 @@
+import 'package:placeful/common/domain/dtos/register_user_dto.dart';
 import 'package:placeful/common/domain/dtos/user_dto.dart';
 import 'package:placeful/common/domain/models/user_profile.dart';
 import 'package:placeful/common/services/auth_service.dart';
@@ -29,7 +30,7 @@ class UserService {
     try {
       await _client.post(
         "user-profile/register",
-        UserDto(
+        RegisterUserDto(
           firebaseUid: firebaseUid,
           fullName: fullName,
           email: email,

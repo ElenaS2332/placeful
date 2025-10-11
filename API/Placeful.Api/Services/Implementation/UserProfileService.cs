@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Placeful.Api.Data;
 using Placeful.Api.Models;
+using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Entities;
 using Placeful.Api.Services.Interface;
 
@@ -36,17 +37,49 @@ public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor 
 
     public async Task<UserProfile> GetUserProfile(string firebaseUid)
     {
-        var userProfile = await context.UserProfiles.FirstOrDefaultAsync(c => c.FirebaseUid.Equals(firebaseUid));
+        var userProfile = await context.UserProfiles
+            .Include(u => u.FavoritesMemoriesList)
+            .FirstOrDefaultAsync(c => c.FirebaseUid.Equals(firebaseUid));
 
         if (userProfile is null) throw new Exception(); // create specific exceptions
 
         return userProfile;
     }
 
-    public async Task CreateUserProfile(UserProfile userProfile)
+    public async Task CreateUserProfile(UserProfileDto userProfileDto)
     {
-        await context.UserProfiles.AddAsync(userProfile);
-        await SaveChanges();
+        await using var transaction = await context.Database.BeginTransactionAsync();
+
+        try
+        {
+            var newFavoriteMemoriesList = new FavoriteMemoriesList
+            {
+                UserProfileId = userProfileDto.FirebaseUid,
+                Memories = new List<Memory>()
+            };
+
+            await context.FavoriteMemoriesLists.AddAsync(newFavoriteMemoriesList);
+            await context.SaveChangesAsync();
+            
+            var newUserProfile = new UserProfile
+            {
+                FirebaseUid = userProfileDto.FirebaseUid,
+                Email = userProfileDto.Email,
+                FullName = userProfileDto.FullName,
+                BirthDate = DateTime.SpecifyKind(userProfileDto.BirthDate, DateTimeKind.Utc),
+                FavoritesMemoriesList = newFavoriteMemoriesList,
+            };
+        
+            await context.UserProfiles.AddAsync(newUserProfile);
+            await context.SaveChangesAsync();
+            
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task UpdateUserProfile(UserProfile userProfile)

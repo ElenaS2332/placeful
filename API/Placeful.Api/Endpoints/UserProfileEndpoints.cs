@@ -64,17 +64,11 @@ public static class UserProfileEndpoints
     
     private static async Task<IResult> CreateUserProfile(UserProfileDto userProfileDto, IUserProfileService userProfileService)
     {
-        var newUserProfile = new UserProfile
-        {
-            FirebaseUid = userProfileDto.FirebaseUid,
-            Email = userProfileDto.Email,
-            FullName = userProfileDto.FullName,
-            BirthDate = DateTime.SpecifyKind(userProfileDto.BirthDate, DateTimeKind.Utc)
-        };
-
-        await userProfileService.CreateUserProfile(newUserProfile);
+        await userProfileService.CreateUserProfile(userProfileDto);
         return Results.Ok();
     }
+    
+    
 
     private static async Task<IResult> UpdateUserProfile(
         UserProfileToUpdateDto userProfileToUpdateDto,

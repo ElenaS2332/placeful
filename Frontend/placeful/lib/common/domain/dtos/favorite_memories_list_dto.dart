@@ -1,24 +1,14 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:placeful/common/domain/models/memory.dart';
-import 'package:placeful/common/domain/models/user_profile.dart';
 
 part 'favorite_memories_list_dto.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class FavoriteMemoriesListDto {
-  final String id;
   final String userProfileId;
-  final String memoryId;
-  final UserProfile userProfile;
-  final Memory memory;
+  final List<Memory>? memories;
 
-  FavoriteMemoriesListDto({
-    required this.id,
-    required this.userProfileId,
-    required this.memoryId,
-    required this.userProfile,
-    required this.memory,
-  });
+  FavoriteMemoriesListDto({required this.userProfileId, this.memories});
 
   factory FavoriteMemoriesListDto.fromJson(Map<String, dynamic> json) =>
       _$FavoriteMemoriesListDtoFromJson(json);

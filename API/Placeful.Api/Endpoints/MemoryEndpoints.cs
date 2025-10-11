@@ -25,17 +25,7 @@ public static class MemoryEndpoints
         HttpContext context)
     {
         var memories = await memoryService.GetMemories(page, pageSize);
-
-        var memoryDtos = memories.Select(m => new MemoryDto
-        {
-            Title = m.Title,
-            Description = m.Description,
-            Date = m.Date ?? DateTime.UtcNow,
-            Location = m.Location,
-            ImageUrl = m.ImageUrl
-        });
-
-        return Results.Ok(memoryDtos);
+        return Results.Ok(memories);
     }
     
     private static async Task<IResult> GetMemory(Guid memoryId, IMemoryService memoryService)
@@ -43,17 +33,7 @@ public static class MemoryEndpoints
         try
         {
             var memory = await memoryService.GetMemory(memoryId);
-
-            var memoryDto = new MemoryDto
-            {
-                Title = memory.Title,
-                Description = memory.Description,
-                Date = memory.Date ?? DateTime.UtcNow,
-                Location = memory.Location,
-                ImageUrl = memory.ImageUrl
-            };
-
-            return Results.Ok(memoryDto);
+            return Results.Ok(memory);
         }
         catch (Exception ex) 
         {

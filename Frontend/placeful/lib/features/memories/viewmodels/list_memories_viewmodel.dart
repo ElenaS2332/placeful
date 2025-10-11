@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:placeful/common/domain/models/memory.dart';
+import 'package:placeful/common/services/favorite_memories_list_service.dart';
 import 'package:placeful/common/services/memory_service.dart';
 import 'package:placeful/common/services/service_locatior.dart';
 
 class ListMemoriesViewModel extends ChangeNotifier {
   final MemoryService _memoryService = getIt.get<MemoryService>();
+  final FavoriteMemoriesListService _favoriteMemoriesListService =
+      getIt.get<FavoriteMemoriesListService>();
+
   final List<Memory> _memories = List<Memory>.empty(growable: true);
 
   bool _isLoading = false;
@@ -38,6 +42,21 @@ class ListMemoriesViewModel extends ChangeNotifier {
     _memories.addAll(fetched);
     _page++;
     _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> toggleFavorite(String memoryId) async {
+    final memoryAlreadyAddedToFavoriteList = _memories.any(
+      (m) => m.id == memoryId,
+    );
+
+    if (memoryAlreadyAddedToFavoriteList) {
+      await _favoriteMemoriesListService
+          .removeMemoryFromFavoriteMemoriesListForCurrentUser(memoryId);
+    } else {
+      await _favoriteMemoriesListService
+          .addMemoryToFavoriteMemoriesListForCurrentUser(memoryId);
+    }
     notifyListeners();
   }
 }

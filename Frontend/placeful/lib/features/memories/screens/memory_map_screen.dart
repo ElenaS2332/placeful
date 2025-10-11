@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:placeful/features/memories/screens/add_memory_screen.dart';
+import 'package:placeful/features/memories/screens/favorite_memories_screen.dart';
 import 'package:placeful/features/memories/screens/list_memories_screen.dart';
 import 'package:placeful/features/user_profile/screens/user_profile_screen.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +15,7 @@ class MemoryMapScreen extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return ChangeNotifierProvider(
-      create: (_) => MemoryMapViewModel()..fetchLatestMemories(context),
+      create: (_) => MemoryMapViewModel(),
       child: Consumer<MemoryMapViewModel>(
         builder: (context, vm, _) {
           return Scaffold(
@@ -29,6 +30,18 @@ class MemoryMapScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const UserProfileScreen(),
+                      ),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.star),
+                  tooltip: "Favorites",
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const FavoriteMemoriesScreen(),
                       ),
                     );
                   },
@@ -65,7 +78,7 @@ class MemoryMapScreen extends StatelessWidget {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 8,
                           offset: const Offset(0, -2),
                         ),

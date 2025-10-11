@@ -92,6 +92,7 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                       }
 
                       final memory = vm.memories[index];
+
                       return GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -114,48 +115,80 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                               ),
                             ],
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  memory.title,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                          child: Stack(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const SizedBox(height: 32),
+                                    Text(
+                                      memory.title,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      memory.description,
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      memory.location?.latitude.toStringAsFixed(
+                                            4,
+                                          ) ??
+                                          "No Lat",
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  memory.description,
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
+                              ),
+                              Positioned(
+                                top: 4,
+                                right: 4,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.9),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 4,
+                                        offset: const Offset(1, 2),
+                                      ),
+                                    ],
                                   ),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  memory.location?.latitude.toStringAsFixed(
-                                        4,
-                                      ) ??
-                                      "No Lat",
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
+                                  child: IconButton(
+                                    onPressed:
+                                        () => vm.toggleFavorite(memory.id),
+                                    icon: Icon(
+                                      vm.memories.any((m) => m.id == memory.id)
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: Colors.redAccent,
+                                    ),
                                   ),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       );

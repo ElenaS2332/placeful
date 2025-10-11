@@ -13,4 +13,6 @@ public class Memory
     public Location? Location { get; set; }
     [MaxLength(1000)]
     public string? ImageUrl { get; set; }
+    [MaxLength(1000)]
+    public string UserProfileId { get; set; } = string.Empty;
 }
