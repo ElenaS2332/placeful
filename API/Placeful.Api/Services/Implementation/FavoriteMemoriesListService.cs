@@ -76,8 +76,12 @@ public class FavoriteMemoriesListService(PlacefulDbContext context, IHttpContext
             .FirstOrDefaultAsync(m => m.Id == memoryId);
         
         if (memoryFromDb is null) throw new MemoryNotFoundException(memoryId);
-        
-        favoriteMemoriesList.Memories.Remove(memoryFromDb);
+
+        if (favoriteMemoriesList.Memories.Contains(memoryFromDb))
+        {
+            favoriteMemoriesList.Memories.Remove(memoryFromDb);
+        }
+        else throw new MemoryNotFoundException(memoryId);
         
         await context.SaveChangesAsync();
     }

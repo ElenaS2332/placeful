@@ -10,6 +10,7 @@ Memory _$MemoryFromJson(Map<String, dynamic> json) => Memory(
   id: json['id'] as String,
   title: json['title'] as String,
   description: json['description'] as String,
+  userProfileId: json['userProfileId'] as String,
   date: json['date'] == null ? null : DateTime.parse(json['date'] as String),
   location:
       json['location'] == null
@@ -25,4 +26,5 @@ Map<String, dynamic> _$MemoryToJson(Memory instance) => <String, dynamic>{
   'date': instance.date?.toIso8601String(),
   'location': instance.location?.toJson(),
   'imageUrl': instance.imageUrl,
+  'userProfileId': instance.userProfileId,
 };

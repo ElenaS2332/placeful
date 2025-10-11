@@ -11,20 +11,20 @@ public static class MemoryEndpoints
     public static void MapMemoryEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("api/memory");
-        group.MapGet("", GetMemories).WithName(nameof(GetMemories)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapGet("", GetMemoriesForCurrentUser).WithName(nameof(GetMemoriesForCurrentUser)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapGet("{memoryId:guid}", GetMemory).WithName(nameof(GetMemory)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapPost("", CreateMemory).WithName(nameof(CreateMemory)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapPut("", UpdateMemory).WithName(nameof(UpdateMemory)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapDelete("{memoryId:guid}", DeleteMemory).WithName(nameof(DeleteMemory)).RequireAuthorization(AuthPolicy.Authenticated);
     }
     
-    private static async Task<IResult> GetMemories(
+    private static async Task<IResult> GetMemoriesForCurrentUser(
         [FromQuery] int page,
         [FromQuery] int pageSize,
         IMemoryService memoryService, 
         HttpContext context)
     {
-        var memories = await memoryService.GetMemories(page, pageSize);
+        var memories = await memoryService.GetMemoriesForCurrentUser(page, pageSize);
         return Results.Ok(memories);
     }
     
@@ -43,16 +43,7 @@ public static class MemoryEndpoints
 
     private static async Task<IResult> CreateMemory(MemoryDto memoryDto, IMemoryService memoryService)
     {
-        var memory = new Memory
-        {
-            Title = memoryDto.Title,
-            Description = memoryDto.Description,
-            Date = memoryDto.Date ?? DateTime.UtcNow,
-            Location = memoryDto.Location,
-            ImageUrl = memoryDto.ImageUrl
-        };
-
-        await memoryService.CreateMemory(memory);
+        await memoryService.CreateMemory(memoryDto);
 
         return Results.Ok();
     }

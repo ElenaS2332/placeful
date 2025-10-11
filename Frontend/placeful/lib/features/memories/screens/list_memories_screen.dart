@@ -9,7 +9,7 @@ class ListMemoriesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ListMemoriesViewModel()..fetchMemories(),
+      create: (_) => ListMemoriesViewModel()..fetchMemoriesAndFavoriteList(),
       child: const _ListMemoriesScreenBody(),
     );
   }
@@ -38,7 +38,7 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
     if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - 100 &&
         !vm.isLoading) {
-      vm.fetchMemories(loadMore: true);
+      vm.fetchMemoriesAndFavoriteList(loadMore: true);
     }
   }
 
@@ -75,7 +75,7 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
             vm.memories.isEmpty && vm.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : RefreshIndicator(
-                  onRefresh: () async => vm.fetchMemories(),
+                  onRefresh: () async => vm.fetchMemoriesAndFavoriteList(),
                   child: GridView.builder(
                     controller: _scrollController,
                     gridDelegate:
@@ -166,7 +166,7 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                                 right: 4,
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white.withValues(alpha: 0.9),
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
