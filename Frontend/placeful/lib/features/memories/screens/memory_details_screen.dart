@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -25,8 +27,8 @@ class MemoryDetailsScreen extends StatelessWidget {
                   if (viewModel.imageUrl != null)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        viewModel.imageUrl!,
+                      child: Image.file(
+                        File(viewModel.imageUrl!),
                         fit: BoxFit.cover,
                         width: double.infinity,
                         height: 250,

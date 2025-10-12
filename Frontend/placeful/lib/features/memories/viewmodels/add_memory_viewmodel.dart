@@ -48,6 +48,10 @@ class AddMemoryViewModel extends ChangeNotifier {
 
   bool get isValid => title.isNotEmpty && description.isNotEmpty;
 
+  void notifyListenersVM() {
+    notifyListeners();
+  }
+
   Future<bool> addMemory() async {
     if (!isValid) {
       error = 'Please fill all required fields';

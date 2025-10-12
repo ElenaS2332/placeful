@@ -1,12 +1,12 @@
+import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:provider/provider.dart';
 import 'package:placeful/common/domain/models/location.dart';
 import 'package:placeful/features/memories/screens/location_picker_screen.dart';
 import 'package:placeful/features/memories/screens/take_image_screen.dart';
-import 'package:provider/provider.dart';
 import '../viewmodels/add_memory_viewmodel.dart';
 
 class AddMemoryScreen extends StatelessWidget {
@@ -21,7 +21,10 @@ class AddMemoryScreen extends StatelessWidget {
   }
 }
 
-Future<void> _showImageSourceDialog(BuildContext context) async {
+Future<void> _showImageSourceDialog(
+  BuildContext context,
+  AddMemoryViewModel vm,
+) async {
   showModalBottomSheet(
     context: context,
     builder: (_) {
@@ -41,7 +44,7 @@ Future<void> _showImageSourceDialog(BuildContext context) async {
               title: const Text("Open Gallery"),
               onTap: () async {
                 Navigator.pop(context);
-                await _openGallery(context);
+                await _openGallery(context, vm);
               },
             ),
           ],
@@ -51,57 +54,79 @@ Future<void> _showImageSourceDialog(BuildContext context) async {
   );
 }
 
-Future<void> _openGallery(BuildContext context) async {
-  var status = await Permission.photos.request(); // iOS
-  if (status.isGranted) {
-    final albums = await PhotoManager.getAssetPathList(
-      type: RequestType.image,
-      onlyAll: true,
-    );
-    final recentAlbum = albums.first;
-    final recentImages = await recentAlbum.getAssetListPaged(page: 0, size: 30);
+Future<void> _openGallery(BuildContext context, AddMemoryViewModel vm) async {
+  PermissionStatus status;
 
-    if (!context.mounted) return;
-
-    showModalBottomSheet(
-      context: context,
-      builder: (_) {
-        return GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            mainAxisSpacing: 2,
-            crossAxisSpacing: 2,
-          ),
-          itemCount: recentImages.length,
-          itemBuilder: (_, index) {
-            final asset = recentImages[index];
-            return FutureBuilder<Uint8List?>(
-              future: asset.thumbnailDataWithSize(
-                const ThumbnailSize(200, 200),
-              ),
-              builder: (_, snapshot) {
-                if (!snapshot.hasData) return const SizedBox();
-                return GestureDetector(
-                  onTap: () async {
-                    final file = await asset.file;
-                    if (!context.mounted) return;
-
-                    Navigator.pop(context, file?.path);
-                  },
-                  child: Image.memory(snapshot.data!, fit: BoxFit.cover),
-                );
-              },
-            );
-          },
-        );
-      },
-    );
+  if (Platform.isIOS) {
+    status = await Permission.photos.request();
+  } else if (Platform.isAndroid) {
+    if (await Permission.photos.isGranted ||
+        await Permission.storage.isGranted) {
+      status = PermissionStatus.granted;
+    } else {
+      status = await Permission.photos.request();
+      if (status.isDenied && Platform.version.compareTo('33') < 0) {
+        status = await Permission.storage.request();
+      }
+    }
   } else {
-    if (!context.mounted) return;
+    status = PermissionStatus.denied;
+  }
 
+  if (status.isDenied || status.isPermanentlyDenied) {
+    if (!context.mounted) return;
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text("Gallery permission denied")));
+    if (status.isPermanentlyDenied) await openAppSettings();
+    return;
+  }
+
+  final albums = await PhotoManager.getAssetPathList(
+    type: RequestType.image,
+    onlyAll: true,
+  );
+  if (albums.isEmpty) return;
+
+  final recentAlbum = albums.first;
+  final recentImages = await recentAlbum.getAssetListPaged(page: 0, size: 30);
+
+  if (!context.mounted) return;
+
+  final selectedPath = await showModalBottomSheet<String>(
+    context: context,
+    builder: (_) {
+      return GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 2,
+          crossAxisSpacing: 2,
+        ),
+        itemCount: recentImages.length,
+        itemBuilder: (_, index) {
+          final asset = recentImages[index];
+          return FutureBuilder<Uint8List?>(
+            future: asset.thumbnailDataWithSize(const ThumbnailSize(200, 200)),
+            builder: (_, snapshot) {
+              if (!snapshot.hasData) return const SizedBox();
+              return GestureDetector(
+                onTap: () async {
+                  final file = await asset.file;
+                  if (!context.mounted) return;
+                  Navigator.pop(context, file?.path);
+                },
+                child: Image.memory(snapshot.data!, fit: BoxFit.cover),
+              );
+            },
+          );
+        },
+      );
+    },
+  );
+
+  if (selectedPath != null) {
+    vm.imageUrl = selectedPath;
+    vm.notifyListenersVM();
   }
 }
 
@@ -148,7 +173,7 @@ class _AddMemoryScreenBody extends StatelessWidget {
                   color:
                       success
                           ? Colors.green.shade700.withValues(alpha: 0.9)
-                          : Colors.red,
+                          : Colors.red.shade700,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: const [
                     BoxShadow(
@@ -167,11 +192,8 @@ class _AddMemoryScreenBody extends StatelessWidget {
             ),
           ),
     );
-
     overlay.insert(overlayEntry);
-    Future.delayed(const Duration(seconds: 2), () {
-      overlayEntry.remove();
-    });
+    Future.delayed(const Duration(seconds: 2), () => overlayEntry.remove());
   }
 
   @override
@@ -183,7 +205,7 @@ class _AddMemoryScreenBody extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Add New Memory")),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
@@ -234,17 +256,37 @@ class _AddMemoryScreenBody extends StatelessWidget {
             ),
 
             const SizedBox(height: 12),
+
+            Consumer<AddMemoryViewModel>(
+              builder: (_, vm, __) {
+                if (vm.imageUrl == null) return const SizedBox.shrink();
+                return Container(
+                  width: double.infinity,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      image: FileImage(File(vm.imageUrl!)),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => _showImageSourceDialog(context),
+                    onPressed: () => _showImageSourceDialog(context, vm),
                     child: const Text("Add Image"),
                   ),
                 ),
               ],
             ),
 
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
