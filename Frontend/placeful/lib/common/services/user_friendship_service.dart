@@ -20,7 +20,7 @@ class UserFriendshipService {
 
     return response
         .map((json) => UserProfile.fromJson(json as Map<String, dynamic>))
-        .where((user) => user.id != currentUserId)
+        .where((user) => user.firebaseUid != currentUserId)
         .toList();
   }
 

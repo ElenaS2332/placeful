@@ -16,7 +16,8 @@ public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor 
         
         if (!string.IsNullOrWhiteSpace(searchQuery))
         {
-            query = query.Where(u => u.FullName.Contains(searchQuery));
+            var lowerQuery = searchQuery.ToLower();
+            query = query.Where(u => u.FullName.ToLower().Contains(lowerQuery));
         }
         
         return await query.ToListAsync();
@@ -28,7 +29,9 @@ public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor 
         if (firebaseUid == null)
             throw new UnauthorizedAccessException("User identifier not found in token.");
 
-        var userProfile = await context.UserProfiles.FirstOrDefaultAsync(c => c.FirebaseUid.Equals(firebaseUid));
+        var userProfile = await context.UserProfiles
+            .Include(u => u.Friends)
+            .FirstOrDefaultAsync(c => c.FirebaseUid.Equals(firebaseUid));
 
         if (userProfile is null) throw new Exception(); // create specific exceptions
 
@@ -39,6 +42,7 @@ public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor 
     {
         var userProfile = await context.UserProfiles
             .Include(u => u.FavoritesMemoriesList)
+            .Include(u => u.Friends)
             .FirstOrDefaultAsync(c => c.FirebaseUid.Equals(firebaseUid));
 
         if (userProfile is null) throw new Exception(); // create specific exceptions

@@ -86,27 +86,41 @@ class AddFriendScreen extends StatelessWidget {
                         const Center(child: CircularProgressIndicator())
                       else if (viewModel.searchResults.isNotEmpty)
                         ...viewModel.searchResults.map((UserProfile user) {
+                          final isPending = viewModel.isRequestPending(
+                            user.firebaseUid,
+                          );
                           return ListTile(
                             title: Text(user.fullName),
                             trailing: ElevatedButton(
-                              onPressed: () async {
-                                try {
-                                  await viewModel.addFriend(user.firebaseUid);
-                                  friendNameController.clear();
-                                } catch (e) {
-                                  if (!context.mounted) return;
-                                  _showErrorDialog(context, e.toString());
-                                }
-                              },
+                              onPressed:
+                                  isPending
+                                      ? null
+                                      : () async {
+                                        try {
+                                          await viewModel.addFriend(
+                                            user.firebaseUid,
+                                          );
+                                          friendNameController.clear();
+                                        } catch (e) {
+                                          if (!context.mounted) return;
+                                          _showErrorDialog(
+                                            context,
+                                            e.toString(),
+                                          );
+                                        }
+                                      },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF8668FF),
+                                backgroundColor:
+                                    isPending
+                                        ? Colors.grey
+                                        : const Color(0xFF8668FF),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              child: const Text(
-                                "Add",
-                                style: TextStyle(color: Colors.white),
+                              child: Text(
+                                isPending ? "Requested" : "Add",
+                                style: const TextStyle(color: Colors.white),
                               ),
                             ),
                           );

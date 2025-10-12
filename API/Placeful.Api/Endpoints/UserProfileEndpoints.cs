@@ -18,42 +18,25 @@ public static class UserProfileEndpoints
         group.MapPut("", UpdateUserProfile).WithName(nameof(UpdateUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapDelete("{userProfileId:guid}", DeleteUserProfile).WithName(nameof(DeleteUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
     }
-    
+
     private static async Task<IResult> GetUserProfiles(
-        [FromQuery(Name = "fullName")] string? searchQuery, 
+        [FromQuery(Name = "fullName")] string? searchQuery,
         IUserProfileService userProfileService
     )
     {
         var userProfiles = await userProfileService.GetUserProfiles(searchQuery);
 
-        var userProfilesDto = userProfiles.Select(u => new UserProfileDto
-        {
-            FirebaseUid = u.FirebaseUid,
-            Email = u.Email,
-            FullName = u.FullName,
-            BirthDate = DateTime.SpecifyKind(u.BirthDate, DateTimeKind.Utc)
-            
-        }).ToList();
-
-        return Results.Ok(userProfilesDto);
+        return Results.Ok(userProfiles);
     }
 
-    
+
     private static async Task<IResult> GetCurrentUserProfile(IUserProfileService userProfileService)
     {
         try
         {
             var currentUser = await userProfileService.GetCurrentUserProfile();
 
-            var currentUserDto = new UserProfileDto
-            {
-                FirebaseUid = currentUser.FirebaseUid,
-                Email = currentUser.Email,
-                FullName = currentUser.FullName,
-                BirthDate = DateTime.SpecifyKind(currentUser.BirthDate, DateTimeKind.Utc)
-            };
-
-            return Results.Ok(currentUserDto);
+            return Results.Ok(currentUser);
         }
         catch (Exception ex) // more specific exceptions can be used
         {
@@ -61,14 +44,14 @@ public static class UserProfileEndpoints
         }
     }
 
-    
+
     private static async Task<IResult> CreateUserProfile(UserProfileDto userProfileDto, IUserProfileService userProfileService)
     {
         await userProfileService.CreateUserProfile(userProfileDto);
         return Results.Ok();
     }
-    
-    
+
+
 
     private static async Task<IResult> UpdateUserProfile(
         UserProfileToUpdateDto userProfileToUpdateDto,

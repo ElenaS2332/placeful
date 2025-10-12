@@ -12,6 +12,7 @@ class AddFriendViewModel extends ChangeNotifier {
 
   final List<UserProfile> _searchResults = [];
   final List<UserFriendship> _friendRequests = [];
+  final Set<String> _pendingRequests = {};
 
   List<UserProfile> get searchResults => List.unmodifiable(_searchResults);
   List<UserFriendship> get friendRequests => List.unmodifiable(_friendRequests);
@@ -27,6 +28,8 @@ class AddFriendViewModel extends ChangeNotifier {
   AddFriendViewModel() {
     loadFriendRequests();
   }
+
+  bool isRequestPending(String userId) => _pendingRequests.contains(userId);
 
   void onSearchChanged(String query) {
     _debounce?.cancel();
@@ -61,7 +64,7 @@ class AddFriendViewModel extends ChangeNotifier {
   Future<void> addFriend(String userId) async {
     try {
       await _userFriendshipService.sendFriendRequest(userId);
-      _searchResults.clear();
+      _pendingRequests.add(userId);
       notifyListeners();
     } catch (e) {
       throw Exception('You already are friends with this person');

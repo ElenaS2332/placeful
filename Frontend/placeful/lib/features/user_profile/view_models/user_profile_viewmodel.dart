@@ -27,6 +27,7 @@ class UserProfileViewModel extends ChangeNotifier {
           fullName: profile.fullName,
           email: profile.email,
           birthDate: profile.birthDate,
+          friends: profile.friends,
         );
       } else {
         error = "No profile found";

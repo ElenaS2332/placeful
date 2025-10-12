@@ -64,7 +64,7 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
         var currentUserUid = GetCurrentUserFirebaseUid();
         var friendship = await GetFriendship(currentUserUid, otherUserUid);
         
-        if (friendship is null) throw new Exception(); {}
+        if (friendship is not null) throw new Exception(); {}
 
         UserProfile initiator = await userProfileService.GetUserProfile(currentUserUid);
         UserProfile receiver =  await userProfileService.GetUserProfile(otherUserUid);
