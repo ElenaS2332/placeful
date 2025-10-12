@@ -16,7 +16,6 @@ public class MemoryService(PlacefulDbContext context, IHttpContextAccessor httpC
         return await context.Memories
             .Where(m => m.UserProfileId == userId)
             .Include(m => m.Location)
-            .OrderByDescending(m => m.Date)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

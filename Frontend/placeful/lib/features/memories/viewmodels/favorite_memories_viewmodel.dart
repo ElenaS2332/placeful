@@ -10,7 +10,18 @@ class FavoriteMemoriesViewModel extends ChangeNotifier {
   bool _isLoading = false;
   FavoriteMemoriesList? favoriteMemoriesList;
 
+  String? errorMessage;
+
+  void _setError(String message) {
+    errorMessage = message;
+    notifyListeners();
+  }
+
   bool get isLoading => _isLoading;
+
+  void notifyListenersFromVM() {
+    super.notifyListeners();
+  }
 
   Future<void> fetchFavorites() async {
     _isLoading = true;
@@ -36,6 +47,7 @@ class FavoriteMemoriesViewModel extends ChangeNotifier {
       await _service.clearFavoriteMemoriesListForCurrentUser();
     } catch (e) {
       debugPrint('Error clearing favorites: $e');
+      _setError(e.toString());
     }
 
     _isLoading = false;

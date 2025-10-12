@@ -29,8 +29,7 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    _scrollController.addListener(_onScroll);
+    _scrollController = ScrollController()..addListener(_onScroll);
   }
 
   void _onScroll() {
@@ -62,140 +61,164 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
 
   @override
   Widget build(BuildContext context) {
-    final vm = Provider.of<ListMemoriesViewModel>(context);
+    return Consumer<ListMemoriesViewModel>(
+      builder: (context, vm, _) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (vm.errorMessage != null) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(vm.errorMessage!)));
+            vm.errorMessage = null;
+          }
+        });
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("All Memories"),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child:
-            vm.memories.isEmpty && vm.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
-                  onRefresh: () async => vm.fetchMemoriesAndFavoriteList(),
-                  child: GridView.builder(
-                    controller: _scrollController,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 1,
-                        ),
-                    itemCount: vm.memories.length + (vm.isLoading ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index >= vm.memories.length) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text("All Memories"),
+            backgroundColor: Colors.deepPurple,
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child:
+                vm.memories.isEmpty && vm.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : RefreshIndicator(
+                      onRefresh: () async => vm.fetchMemoriesAndFavoriteList(),
+                      child: GridView.builder(
+                        controller: _scrollController,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 1,
+                            ),
+                        itemCount: vm.memories.length + (vm.isLoading ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index >= vm.memories.length) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
 
-                      final memory = vm.memories[index];
+                          final memory = vm.memories[index];
 
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (_) => MemoryDetailsScreen(memory: memory),
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) =>
+                                          MemoryDetailsScreen(memory: memory),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: _getTileColor(index),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Stack(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const SizedBox(height: 32),
+                                        Text(
+                                          memory.title,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          memory.description,
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 12,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          memory.location?.latitude
+                                                  .toStringAsFixed(4) ??
+                                              "No Lat",
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 12,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 4,
+                                    right: 4,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.9,
+                                        ),
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black26,
+                                            blurRadius: 4,
+                                            offset: const Offset(1, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Consumer<ListMemoriesViewModel>(
+                                        builder: (context, vm, _) {
+                                          final isFavorite = vm
+                                              .favoriteMemoriesList
+                                              .memories!
+                                              .any((m) => m.id == memory.id);
+                                          return IconButton(
+                                            onPressed:
+                                                () => vm.toggleFavorite(
+                                                  memory.id,
+                                                ),
+                                            icon: Icon(
+                                              isFavorite
+                                                  ? Icons.favorite
+                                                  : Icons.favorite_border,
+                                              color: Colors.redAccent,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: _getTileColor(index),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black26,
-                                blurRadius: 6,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Stack(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const SizedBox(height: 32),
-                                    Text(
-                                      memory.title,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      memory.description,
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 12,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Text(
-                                      memory.location?.latitude.toStringAsFixed(
-                                            4,
-                                          ) ??
-                                          "No Lat",
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 12,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Positioned(
-                                top: 4,
-                                right: 4,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.9),
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black26,
-                                        blurRadius: 4,
-                                        offset: const Offset(1, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: IconButton(
-                                    onPressed:
-                                        () => vm.toggleFavorite(memory.id),
-                                    icon: Icon(
-                                      vm.memories.any((m) => m.id == memory.id)
-                                          ? Icons.favorite
-                                          : Icons.favorite_border,
-                                      color: Colors.redAccent,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-      ),
+                      ),
+                    ),
+          ),
+        );
+      },
     );
   }
 }

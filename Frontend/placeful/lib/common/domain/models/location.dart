@@ -1,6 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:placeful/common/domain/dtos/location_dto.dart';
-import 'memory.dart';
 
 part 'location.g.dart';
 
@@ -10,21 +9,18 @@ class Location {
   late final double latitude;
   late final double longitude;
   late final String name;
-  late final List<Memory> memories;
 
   Location({
     required this.id,
     required this.latitude,
     required this.longitude,
     required this.name,
-    this.memories = const [],
   });
 
   Location.fromDto(LocationDto dto)
     : name = dto.name,
       latitude = dto.latitude,
-      longitude = dto.longitude,
-      memories = dto.memories;
+      longitude = dto.longitude;
 
   factory Location.fromJson(Map<String, dynamic> json) =>
       _$LocationFromJson(json);

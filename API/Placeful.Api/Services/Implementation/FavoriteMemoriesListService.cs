@@ -11,17 +11,36 @@ namespace Placeful.Api.Services.Implementation;
 
 public class FavoriteMemoriesListService(PlacefulDbContext context, IHttpContextAccessor httpContextAccessor) : IFavoriteMemoriesListService
 {
-    public async Task<FavoriteMemoriesList> GetFavoriteMemoriesListForCurrentUser()
+    public async Task<FavoriteMemoriesList?> GetFavoriteMemoriesListForCurrentUser()
     {
         var userId = GetCurrentUserFirebaseUid();
-        
-        var favoriteMemoriesList = await context.FavoriteMemoriesLists
-            .Include(c => c.Memories)
-            .FirstOrDefaultAsync(c => c.UserProfileId == userId);
 
-        if (favoriteMemoriesList is null) throw new Exception(); // create specific exceptions
+        var favoriteList = await context.UserProfiles
+            .Where(u => u.FirebaseUid == userId)
+            .Select(u => new FavoriteMemoriesList
+            {
+                Id = u.FavoritesMemoriesList!.Id,
+                Memories = u.FavoritesMemoriesList.Memories != null
+                    ? u.FavoritesMemoriesList.Memories
+                        .Select(m => new Memory
+                        {
+                            Id = m.Id,
+                            Title = m.Title,
+                            Description = m.Description,
+                            Location = m.Location != null
+                                ? new Location
+                                {
+                                    Id = m.Location.Id,
+                                    Latitude = m.Location.Latitude,
+                                    Longitude = m.Location.Longitude
+                                }
+                                : null
+                        }).ToList()
+                    : new List<Memory>()
+            })
+            .FirstOrDefaultAsync();
 
-        return favoriteMemoriesList;
+        return favoriteList;
     }
 
     public async Task AddMemoryToFavoriteMemoriesListForCurrentUser(Guid memoryId)
@@ -49,7 +68,7 @@ public class FavoriteMemoriesListService(PlacefulDbContext context, IHttpContext
         
         if (favoriteMemoriesList.Memories.Any(m => m.Id == memoryId)) throw new MemoryAlreadyAddedToFavoritesException(memoryId);
         
-        favoriteMemoriesList.Memories.Add(memoryFromDb);
+        userProfile!.FavoritesMemoriesList!.Memories!.Add(memoryFromDb);
         
         await context.SaveChangesAsync();
     }
@@ -92,6 +111,7 @@ public class FavoriteMemoriesListService(PlacefulDbContext context, IHttpContext
 
         var userProfile = await context.UserProfiles
             .Include(u => u.FavoritesMemoriesList)
+            .ThenInclude(f => f!.Memories)
             .FirstOrDefaultAsync(u => u.FirebaseUid == userId);
         
         if (userProfile is null) throw new UserProfileNotFoundException(userId);

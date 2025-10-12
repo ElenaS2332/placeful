@@ -15,6 +15,12 @@ class ListMemoriesViewModel extends ChangeNotifier {
     userProfileId: '',
     memories: [],
   );
+  String? errorMessage;
+
+  void _setError(String message) {
+    errorMessage = message;
+    notifyListeners();
+  }
 
   bool _isLoading = false;
   bool _hasMore = true;
@@ -55,17 +61,36 @@ class ListMemoriesViewModel extends ChangeNotifier {
   }
 
   Future<void> toggleFavorite(String memoryId) async {
-    final memoryAlreadyAddedToFavoriteList = favoriteMemoriesList.memories!.any(
+    final memoryAlreadyAdded = favoriteMemoriesList.memories!.any(
       (m) => m.id == memoryId,
     );
 
-    if (memoryAlreadyAddedToFavoriteList) {
-      await _favoriteMemoriesListService
-          .removeMemoryFromFavoriteMemoriesListForCurrentUser(memoryId);
-    } else {
-      await _favoriteMemoriesListService
-          .addMemoryToFavoriteMemoriesListForCurrentUser(memoryId);
+    try {
+      if (memoryAlreadyAdded) {
+        favoriteMemoriesList.memories!.removeWhere((m) => m.id == memoryId);
+        notifyListeners();
+
+        await _favoriteMemoriesListService
+            .removeMemoryFromFavoriteMemoriesListForCurrentUser(memoryId);
+      } else {
+        favoriteMemoriesList.memories!.add(
+          memories.firstWhere((m) => m.id == memoryId),
+        );
+        notifyListeners();
+
+        await _favoriteMemoriesListService
+            .addMemoryToFavoriteMemoriesListForCurrentUser(memoryId);
+      }
+    } catch (e) {
+      if (memoryAlreadyAdded) {
+        favoriteMemoriesList.memories!.add(
+          memories.firstWhere((m) => m.id == memoryId),
+        );
+      } else {
+        favoriteMemoriesList.memories!.removeWhere((m) => m.id == memoryId);
+      }
+      notifyListeners();
+      _setError("Something went wrong");
     }
-    notifyListeners();
   }
 }
