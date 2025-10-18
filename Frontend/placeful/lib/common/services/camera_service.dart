@@ -4,18 +4,31 @@ class CameraService {
   CameraController? cameraController;
 
   Future<XFile?> takePicture() async {
+    if (cameraController == null || !cameraController!.value.isInitialized) {
+      return null;
+    }
     return cameraController!.takePicture();
   }
 
   Future<void> pauseCameraPreview() async {
-    await cameraController!.pausePreview();
+    if (cameraController != null && cameraController!.value.isInitialized) {
+      await cameraController!.pausePreview();
+    }
   }
 
   Future<void> resumeCameraPreview() async {
-    await cameraController!.resumePreview();
+    if (cameraController != null && cameraController!.value.isInitialized) {
+      await cameraController!.resumePreview();
+    }
   }
 
   Future<void> setFlashMode(FlashMode mode) async {
-    await cameraController!.setFlashMode(mode);
+    if (cameraController != null && cameraController!.value.isInitialized) {
+      await cameraController!.setFlashMode(mode);
+    }
+  }
+
+  void dispose() {
+    cameraController?.dispose();
   }
 }

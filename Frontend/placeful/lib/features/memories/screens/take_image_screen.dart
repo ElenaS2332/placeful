@@ -1,150 +1,160 @@
+import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:placeful/features/memories/viewmodels/take_image_viewmodel.dart';
-import 'package:placeful/features/memories/widgets/camera_shutter.dart';
-import 'package:provider/provider.dart';
 
-class TakeImageScreen extends StatelessWidget {
+class TakeImageScreen extends StatefulWidget {
   const TakeImageScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => TakeImageViewModel(),
-      child: const _TakeImageScreenBody(),
-    );
-  }
+  State<TakeImageScreen> createState() => _TakeImageScreenState();
 }
 
-class _TakeImageScreenBody extends StatefulWidget {
-  const _TakeImageScreenBody();
-
-  @override
-  State<_TakeImageScreenBody> createState() => _TakeImageScreenBodyState();
-}
-
-class _TakeImageScreenBodyState extends State<_TakeImageScreenBody> {
-  List<CameraDescription>? _availableCameras;
-  bool isBackCameraOn = true;
-
-  TakeImageViewModel get vm =>
-      Provider.of<TakeImageViewModel>(context, listen: false);
+class _TakeImageScreenState extends State<TakeImageScreen> {
+  CameraController? _controller;
+  XFile? _capturedImage;
+  bool _isInitialized = false;
+  bool _isBusy = false;
 
   @override
   void initState() {
     super.initState();
-    _getAvailableCameras();
+    _initCamera();
   }
 
-  Future<void> _getAvailableCameras() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    _availableCameras = await availableCameras();
+  Future<void> _initCamera() async {
+    try {
+      final cameras = await availableCameras();
+      final camera = cameras.first;
 
-    final backCamera = _availableCameras!.firstWhere(
-      (camera) => camera.lensDirection == CameraLensDirection.back,
-    );
+      final controller = CameraController(
+        camera,
+        ResolutionPreset.high,
+        enableAudio: false,
+      );
 
-    await _initCamera(backCamera);
-  }
+      await controller.initialize();
 
-  Future<void> _initCamera(CameraDescription description) async {
-    vm.cameraController?.dispose();
-    vm.cameraController = CameraController(
-      description,
-      ResolutionPreset.max,
-      enableAudio: false,
-    );
+      if (!mounted) return;
 
-    await vm.cameraController!.initialize();
-
-    if (mounted) {
       setState(() {
-        isBackCameraOn = description.lensDirection == CameraLensDirection.back;
+        _controller = controller;
+        _isInitialized = true;
       });
+    } catch (e) {
+      debugPrint("Camera init failed: $e");
     }
   }
 
-  Future<void> _toggleCameraLens() async {
-    final lensDirection = vm.cameraController!.description.lensDirection;
-    final newDescription = _availableCameras!.firstWhere(
-      (desc) =>
-          desc.lensDirection ==
-          (lensDirection == CameraLensDirection.front
-              ? CameraLensDirection.back
-              : CameraLensDirection.front),
-    );
-    await _initCamera(newDescription);
+  Future<void> _takePicture() async {
+    if (_controller == null || !_controller!.value.isInitialized || _isBusy) {
+      return;
+    }
+    setState(() => _isBusy = true);
+
+    try {
+      final file = await _controller!.takePicture();
+      setState(() {
+        _capturedImage = file;
+      });
+    } catch (e) {
+      debugPrint("Error taking picture: $e");
+    } finally {
+      setState(() => _isBusy = false);
+    }
+  }
+
+  Future<void> _retake() async {
+    setState(() => _capturedImage = null);
+  }
+
+  Future<void> _usePhoto() async {
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    if (mounted) {
+      Navigator.pop(context, _capturedImage);
+    }
   }
 
   @override
   void dispose() {
-    vm.cameraController?.dispose();
+    try {
+      if (_controller != null && _controller!.value.isInitialized) {
+        _controller!.stopImageStream().catchError((_) {});
+        _controller!.pausePreview().catchError((_) {});
+      }
+    } catch (_) {}
+
+    try {
+      _controller?.dispose();
+    } catch (e) {
+      debugPrint("Ignored camera dispose error: $e");
+    }
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
-    if (vm.cameraController == null ||
-        !vm.cameraController!.value.isInitialized) {
-      return const Center(child: CircularProgressIndicator());
+    if (!_isInitialized) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(child: CircularProgressIndicator(color: Colors.white)),
+      );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Take Image")),
+      backgroundColor: Colors.black,
       body: Stack(
         children: [
-          SizedBox(
-            width: size.width,
-            height: size.height,
-            child: FittedBox(
-              fit: BoxFit.cover,
-              child: SizedBox(
-                width: 100,
-                child: Transform.scale(
-                  scaleX: isBackCameraOn ? 1 : -1,
-                  child: CameraPreview(vm.cameraController!),
-                ),
-              ),
-            ),
+          Positioned.fill(
+            child:
+                _capturedImage == null
+                    ? CameraPreview(_controller!)
+                    : Image.file(File(_capturedImage!.path), fit: BoxFit.cover),
           ),
           Align(
             alignment: Alignment.bottomCenter,
-            child: Container(
-              color: Colors.black.withValues(alpha: 0.6),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 21, 0, 44),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // 🔦 Flash toggle button (if you add one later)
-                    // CameraShutter button can go here
-                    CameraShutter(viewModel: vm),
-                    IconButton(
-                      onPressed: _toggleCameraLens,
-                      icon: const Icon(
-                        Icons.switch_camera,
-                        color: Colors.white,
+            child:
+                _capturedImage == null
+                    ? Padding(
+                      padding: const EdgeInsets.only(bottom: 40),
+                      child: FloatingActionButton(
+                        backgroundColor: Colors.white,
+                        onPressed: _takePicture,
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.black,
+                        ),
+                      ),
+                    )
+                    : Container(
+                      color: Colors.black.withValues(alpha: 0.7),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 24,
+                        horizontal: 16,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _retake,
+                            icon: const Icon(Icons.close),
+                            label: const Text("Retake"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent,
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _usePhoto,
+                            icon: const Icon(Icons.check),
+                            label: const Text("Use Photo"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 40,
-            left: 24,
-            child: ElevatedButton(
-              onPressed: () async => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black.withValues(alpha: 0.5),
-                shape: const CircleBorder(),
-                padding: const EdgeInsets.all(12),
-              ),
-              child: const Icon(Icons.close),
-            ),
           ),
         ],
       ),

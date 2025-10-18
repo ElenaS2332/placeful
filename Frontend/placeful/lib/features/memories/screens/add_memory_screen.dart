@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -36,7 +37,7 @@ Future<void> _showImageSourceDialog(
               title: const Text("Open Camera"),
               onTap: () async {
                 Navigator.pop(context);
-                await _openCamera(context);
+                await _openCamera(context, vm);
               },
             ),
             ListTile(
@@ -54,6 +55,27 @@ Future<void> _showImageSourceDialog(
   );
 }
 
+Future<void> _openCamera(BuildContext context, AddMemoryViewModel vm) async {
+  final status = await Permission.camera.request();
+  if (!context.mounted) return;
+
+  if (status.isGranted) {
+    final capturedImage = await Navigator.push<XFile?>(
+      context,
+      MaterialPageRoute(builder: (_) => const TakeImageScreen()),
+    );
+
+    if (capturedImage != null && capturedImage.path.isNotEmpty) {
+      vm.imageUrl = capturedImage.path;
+      vm.notifyListenersVM();
+    }
+  } else {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Camera permission denied")));
+  }
+}
+
 Future<void> _openGallery(BuildContext context, AddMemoryViewModel vm) async {
   PermissionStatus status;
 
@@ -65,7 +87,7 @@ Future<void> _openGallery(BuildContext context, AddMemoryViewModel vm) async {
       status = PermissionStatus.granted;
     } else {
       status = await Permission.photos.request();
-      if (status.isDenied && Platform.version.compareTo('33') < 0) {
+      if (status.isDenied && ((int.tryParse(Platform.version) ?? 0) < 33)) {
         status = await Permission.storage.request();
       }
     }
@@ -113,7 +135,9 @@ Future<void> _openGallery(BuildContext context, AddMemoryViewModel vm) async {
                 onTap: () async {
                   final file = await asset.file;
                   if (!context.mounted) return;
-                  Navigator.pop(context, file?.path);
+                  if (file != null && file.existsSync()) {
+                    Navigator.pop(context, file.path);
+                  }
                 },
                 child: Image.memory(snapshot.data!, fit: BoxFit.cover),
               );
@@ -124,25 +148,9 @@ Future<void> _openGallery(BuildContext context, AddMemoryViewModel vm) async {
     },
   );
 
-  if (selectedPath != null) {
+  if (selectedPath != null && selectedPath.isNotEmpty) {
     vm.imageUrl = selectedPath;
     vm.notifyListenersVM();
-  }
-}
-
-Future<void> _openCamera(BuildContext context) async {
-  var status = await Permission.camera.request();
-  if (!context.mounted) return;
-
-  if (status.isGranted) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const TakeImageScreen()),
-    );
-  } else {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Camera permission denied")));
   }
 }
 
@@ -192,6 +200,7 @@ class _AddMemoryScreenBody extends StatelessWidget {
             ),
           ),
     );
+
     overlay.insert(overlayEntry);
     Future.delayed(const Duration(seconds: 2), () => overlayEntry.remove());
   }
@@ -213,11 +222,14 @@ class _AddMemoryScreenBody extends StatelessWidget {
               decoration: const InputDecoration(labelText: "Title"),
               onChanged: vm.setTitle,
             ),
+
             TextField(
               decoration: const InputDecoration(labelText: "Description"),
               onChanged: vm.setDescription,
             ),
+
             const SizedBox(height: 12),
+
             TextField(
               readOnly: true,
               controller: vm.dateController,
@@ -233,6 +245,7 @@ class _AddMemoryScreenBody extends StatelessWidget {
                 ),
               ),
             ),
+
             TextField(
               readOnly: true,
               controller: locationController,
@@ -259,14 +272,20 @@ class _AddMemoryScreenBody extends StatelessWidget {
 
             Consumer<AddMemoryViewModel>(
               builder: (_, vm, __) {
-                if (vm.imageUrl == null) return const SizedBox.shrink();
+                if (vm.imageUrl == null || vm.imageUrl!.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+
+                final file = File(vm.imageUrl!);
+                if (!file.existsSync()) return const SizedBox.shrink();
+
                 return Container(
                   width: double.infinity,
                   height: 250,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     image: DecorationImage(
-                      image: FileImage(File(vm.imageUrl!)),
+                      image: FileImage(file),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -275,6 +294,8 @@ class _AddMemoryScreenBody extends StatelessWidget {
             ),
 
             const SizedBox(height: 12),
+
+            // Add image button
             Row(
               children: [
                 Expanded(
@@ -287,6 +308,8 @@ class _AddMemoryScreenBody extends StatelessWidget {
             ),
 
             const SizedBox(height: 12),
+
+            // Add memory button
             Row(
               children: [
                 Expanded(
@@ -316,6 +339,7 @@ class _AddMemoryScreenBody extends StatelessWidget {
                 ),
               ],
             ),
+
             if (vm.error != null)
               Text(vm.error!, style: const TextStyle(color: Colors.red)),
           ],
