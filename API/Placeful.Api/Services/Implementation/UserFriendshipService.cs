@@ -13,17 +13,17 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
         var currentUserUid = GetCurrentUserFirebaseUid();
 
         return await context.UserFriendships
-            .Where(f => f.FriendshipAccepted == true && 
-                        (f.FriendshipInitiatorId.Equals(currentUserUid) || 
+            .Where(f => f.FriendshipAccepted == true &&
+                        (f.FriendshipInitiatorId.Equals(currentUserUid) ||
                          f.FriendshipReceiverId.Equals(currentUserUid)))
             .ToListAsync();
     }
-    
+
     public async Task<List<UserFriendship>> ListActiveFriendshipsForUser(string userUid)
     {
         return await context.UserFriendships
-            .Where(f => f.FriendshipAccepted == true && 
-                        (f.FriendshipInitiatorId.Equals(userUid) || 
+            .Where(f => f.FriendshipAccepted == true &&
+                        (f.FriendshipInitiatorId.Equals(userUid) ||
                          f.FriendshipReceiverId.Equals(userUid)))
             .ToListAsync();
     }
@@ -50,11 +50,11 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
 
         return friendship;
     }
-    
+
     private async Task<UserFriendship?> GetFriendship(String userAId, String userBId)
     {
         return await context.UserFriendships
-            .FirstOrDefaultAsync(f => 
+            .FirstOrDefaultAsync(f =>
                 (f.FriendshipInitiatorId == userAId && f.FriendshipReceiverId == userBId) ||
                 (f.FriendshipInitiatorId == userBId && f.FriendshipReceiverId == userAId));
     }
@@ -63,11 +63,12 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
     {
         var currentUserUid = GetCurrentUserFirebaseUid();
         var friendship = await GetFriendship(currentUserUid, otherUserUid);
-        
-        if (friendship is not null) throw new Exception(); {}
+
+        if (friendship is not null) throw new Exception();
+        { }
 
         UserProfile initiator = await userProfileService.GetUserProfile(currentUserUid);
-        UserProfile receiver =  await userProfileService.GetUserProfile(otherUserUid);
+        UserProfile receiver = await userProfileService.GetUserProfile(otherUserUid);
 
         var newFriendship = new UserFriendship
         {
@@ -77,7 +78,6 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
             FriendshipInitiator = initiator,
             FriendshipReceiver = receiver,
         };
-        
         await context.UserFriendships.AddAsync(newFriendship);
         await context.SaveChangesAsync();
         return newFriendship;
@@ -88,13 +88,29 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
         var currentUserUid = GetCurrentUserFirebaseUid();
 
         var friendship = await GetFriendship(currentUserUid, otherUserUid);
-        
+
         if (friendship is null) throw new Exception();
-        
+
         friendship.FriendshipAccepted = true;
         context.UserFriendships.Update(friendship);
+
+        UserProfile currentUser = await userProfileService.GetUserProfile(currentUserUid);
+        UserProfile otherUser = await userProfileService.GetUserProfile(otherUserUid);
+
+        if (currentUser.Friends is null)
+        {
+            currentUser.Friends = new List<UserProfile>();
+        }
+        currentUser.Friends.Add(otherUser);
+
+        if (otherUser.Friends is null)
+        {
+            otherUser.Friends = new List<UserProfile>();
+        }
+        otherUser.Friends.Add(currentUser);
+
         await context.SaveChangesAsync();
-        
+
         return friendship;
     }
 
@@ -103,9 +119,9 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
         var currentUserUid = GetCurrentUserFirebaseUid();
 
         var friendship = await GetFriendship(currentUserUid, otherUserUid);
-        
+
         if (friendship is null) throw new Exception();
-        
+
         context.UserFriendships.Remove(friendship);
         await context.SaveChangesAsync();
     }
@@ -132,7 +148,7 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
 
         return profiles.ToList();
     }
-    
+
     private string GetOtherProfileId(UserFriendship friendship, string id)
     {
         return friendship.FriendshipInitiatorId == id
@@ -145,7 +161,7 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
         var currentUserUid = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (currentUserUid == null)
             throw new UnauthorizedAccessException("User identifier not found in token.");
-        
+
         return currentUserUid;
     }
 }

@@ -28,10 +28,25 @@ public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor 
         var firebaseUid = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (firebaseUid == null)
             throw new UnauthorizedAccessException("User identifier not found in token.");
-
+        
         var userProfile = await context.UserProfiles
-            .Include(u => u.Friends)
-            .FirstOrDefaultAsync(c => c.FirebaseUid.Equals(firebaseUid));
+            .Where(u => u.FirebaseUid == firebaseUid)
+            .Select(u => new UserProfile
+            {
+                FirebaseUid = u.FirebaseUid,
+                Email = u.Email,
+                FullName = u.FullName,
+                BirthDate = u.BirthDate,
+                Friends = u.Friends != null
+                    ? u.Friends.Select(f => new UserProfile
+                    {
+                        FirebaseUid = f.FirebaseUid,
+                        Email = f.Email,
+                        FullName = f.FullName
+                    }).ToList()
+                    : new List<UserProfile>()
+            })
+            .FirstOrDefaultAsync();
 
         if (userProfile is null) throw new Exception(); // create specific exceptions
 

@@ -35,7 +35,7 @@ namespace Placeful.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FavoriteMemoriesLists");
+                    b.ToTable("FavoriteMemoriesLists", (string)null);
                 });
 
             modelBuilder.Entity("Placeful.Api.Models.Entities.Location", b =>
@@ -57,7 +57,7 @@ namespace Placeful.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Locations");
+                    b.ToTable("Locations", (string)null);
                 });
 
             modelBuilder.Entity("Placeful.Api.Models.Entities.Memory", b =>
@@ -100,7 +100,7 @@ namespace Placeful.Api.Migrations
 
                     b.HasIndex("LocationId");
 
-                    b.ToTable("Memories");
+                    b.ToTable("Memories", (string)null);
                 });
 
             modelBuilder.Entity("Placeful.Api.Models.Entities.UserFriendship", b =>
@@ -128,7 +128,7 @@ namespace Placeful.Api.Migrations
 
                     b.HasIndex("FriendshipReceiverId");
 
-                    b.ToTable("UserFriendships");
+                    b.ToTable("UserFriendships", (string)null);
                 });
 
             modelBuilder.Entity("Placeful.Api.Models.Entities.UserProfile", b =>
@@ -167,7 +167,7 @@ namespace Placeful.Api.Migrations
 
                     b.HasIndex("UserProfileId");
 
-                    b.ToTable("UserProfiles");
+                    b.ToTable("UserProfiles", (string)null);
                 });
 
             modelBuilder.Entity("Placeful.Api.Models.Entities.Memory", b =>
