@@ -10,12 +10,23 @@ import 'package:placeful/features/memories/viewmodels/memory_map_viewmodel.dart'
 class MemoryMapScreen extends StatelessWidget {
   const MemoryMapScreen({super.key});
 
+  final String _mapStyle = '''[
+    {
+      "featureType": "poi",
+      "stylers": [{"visibility": "off"}]
+    },
+    {
+      "featureType": "transit",
+      "stylers": [{"visibility": "off"}]
+    }
+  ]''';
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return ChangeNotifierProvider(
-      create: (_) => MemoryMapViewModel(),
+      create: (_) => MemoryMapViewModel()..fetchLatestMemories(),
       child: Consumer<MemoryMapViewModel>(
         builder: (context, vm, _) {
           return Scaffold(
@@ -57,13 +68,14 @@ class MemoryMapScreen extends StatelessWidget {
                         target: LatLng(41.9981, 21.4254),
                         zoom: 14,
                       ),
-                      onMapCreated: vm.onMapCreated,
                       markers: vm.markers,
                       zoomGesturesEnabled: true,
                       zoomControlsEnabled: true,
-                      myLocationButtonEnabled: true,
+                      myLocationEnabled: false,
+                      myLocationButtonEnabled: false,
                       scrollGesturesEnabled: true,
                       rotateGesturesEnabled: true,
+                      style: _mapStyle,
                     ),
                 Positioned(
                   bottom: 0,
@@ -78,7 +90,7 @@ class MemoryMapScreen extends StatelessWidget {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
+                          color: Colors.black.withAlpha(25),
                           blurRadius: 8,
                           offset: const Offset(0, -2),
                         ),
