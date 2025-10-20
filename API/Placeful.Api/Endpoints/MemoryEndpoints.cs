@@ -13,7 +13,7 @@ public static class MemoryEndpoints
         var group = app.MapGroup("api/memory");
         group.MapGet("", GetMemoriesForCurrentUser).WithName(nameof(GetMemoriesForCurrentUser)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapGet("{memoryId:guid}", GetMemory).WithName(nameof(GetMemory)).RequireAuthorization(AuthPolicy.Authenticated);
-        group.MapPost("", CreateMemory).WithName(nameof(CreateMemory)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapPost("", CreateMemory).WithName(nameof(CreateMemory)).DisableAntiforgery().RequireAuthorization(AuthPolicy.Authenticated);
         group.MapPut("", UpdateMemory).WithName(nameof(UpdateMemory)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapDelete("{memoryId:guid}", DeleteMemory).WithName(nameof(DeleteMemory)).RequireAuthorization(AuthPolicy.Authenticated);
     }
@@ -41,7 +41,7 @@ public static class MemoryEndpoints
         }
     }
 
-    private static async Task<IResult> CreateMemory(MemoryDto memoryDto, IMemoryService memoryService)
+    private static async Task<IResult> CreateMemory([FromForm] MemoryDto memoryDto, IMemoryService memoryService)
     {
         await memoryService.CreateMemory(memoryDto);
 

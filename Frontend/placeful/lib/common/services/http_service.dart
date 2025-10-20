@@ -75,6 +75,38 @@ class HttpService {
     response.ensureSuccessStatusCode();
     return _decodeBody(response.body);
   }
+
+  Future<dynamic> postWithMedia(
+    String path, {
+    required Map<String, String> fields,
+    required File file,
+    String fileFieldName = 'file',
+  }) async {
+    final uri = Uri.parse('$baseApiUrl$path');
+    final request = http.MultipartRequest('POST', uri);
+    final headers = await _buildHeaders();
+
+    headers.remove('Content-Type');
+    request.headers.addAll(headers);
+
+    request.fields.addAll(fields);
+
+    final stream = http.ByteStream(file.openRead());
+    final length = await file.length();
+    final multipartFile = http.MultipartFile(
+      fileFieldName,
+      stream,
+      length,
+      filename: file.path.split('/').last,
+    );
+
+    request.files.add(multipartFile);
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    response.ensureSuccessStatusCode();
+    return _decodeBody(response.body);
+  }
 }
 
 dynamic _decodeBody(String body) {

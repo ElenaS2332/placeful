@@ -66,8 +66,9 @@ Future<void> _openCamera(BuildContext context, AddMemoryViewModel vm) async {
     );
 
     if (capturedImage != null && capturedImage.path.isNotEmpty) {
-      vm.imageUrl = capturedImage.path;
-      vm.notifyListenersVM();
+      final file = File(capturedImage.path);
+      vm.setImageUrl(capturedImage.path);
+      vm.setSelectedImage(file);
     }
   } else {
     ScaffoldMessenger.of(
@@ -149,8 +150,9 @@ Future<void> _openGallery(BuildContext context, AddMemoryViewModel vm) async {
   );
 
   if (selectedPath != null && selectedPath.isNotEmpty) {
-    vm.imageUrl = selectedPath;
-    vm.notifyListenersVM();
+    final file = File(selectedPath);
+    vm.setImageUrl(selectedPath);
+    vm.setSelectedImage(file);
   }
 }
 
@@ -208,6 +210,7 @@ class _AddMemoryScreenBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<AddMemoryViewModel>(context);
+    final formKey = GlobalKey<FormState>();
     final locationController = TextEditingController(
       text: vm.location != null ? vm.location!.name : 'Add Location',
     );
@@ -216,133 +219,136 @@ class _AddMemoryScreenBody extends StatelessWidget {
       appBar: AppBar(title: const Text("Add New Memory")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              decoration: const InputDecoration(labelText: "Title"),
-              onChanged: vm.setTitle,
-            ),
+        child: Form(
+          key: formKey,
+          child: Column(
+            children: [
+              TextField(
+                decoration: const InputDecoration(labelText: "Title"),
+                onChanged: vm.setTitle,
+              ),
 
-            TextField(
-              decoration: const InputDecoration(labelText: "Description"),
-              onChanged: vm.setDescription,
-            ),
+              TextField(
+                decoration: const InputDecoration(labelText: "Description"),
+                onChanged: vm.setDescription,
+              ),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
 
-            TextField(
-              readOnly: true,
-              controller: vm.dateController,
-              onTap: () => vm.pickDate(context),
-              decoration: InputDecoration(
-                hintText: "Select Date",
-                filled: true,
-                fillColor: Colors.white24,
-                prefixIcon: const Icon(Icons.calendar_today),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+              TextField(
+                readOnly: true,
+                controller: vm.dateController,
+                onTap: () => vm.pickDate(context),
+                decoration: InputDecoration(
+                  hintText: "Select Date",
+                  filled: true,
+                  fillColor: Colors.white24,
+                  prefixIcon: const Icon(Icons.calendar_today),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-            ),
 
-            TextField(
-              readOnly: true,
-              controller: locationController,
-              onTap: () async {
-                final selectedLocation = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const LocationPickerScreen(),
-                  ),
-                );
-                if (selectedLocation != null) {
-                  final locationToAdd = Location.fromDto(selectedLocation);
-                  vm.setLocation(locationToAdd);
-                  locationController.text = locationToAdd.name;
-                }
-              },
-              style: TextStyle(color: Colors.grey.shade800, fontSize: 16),
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.location_on),
+              TextField(
+                readOnly: true,
+                controller: locationController,
+                onTap: () async {
+                  final selectedLocation = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LocationPickerScreen(),
+                    ),
+                  );
+                  if (selectedLocation != null) {
+                    final locationToAdd = Location.fromDto(selectedLocation);
+                    vm.setLocation(locationToAdd);
+                    locationController.text = locationToAdd.name;
+                  }
+                },
+                style: TextStyle(color: Colors.grey.shade800, fontSize: 16),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.location_on),
+                ),
               ),
-            ),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
 
-            Consumer<AddMemoryViewModel>(
-              builder: (_, vm, __) {
-                if (vm.imageUrl == null || vm.imageUrl!.isEmpty) {
-                  return const SizedBox.shrink();
-                }
+              Consumer<AddMemoryViewModel>(
+                builder: (_, vm, __) {
+                  if (vm.imageUrl == null || vm.imageUrl!.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
 
-                final file = File(vm.imageUrl!);
-                if (!file.existsSync()) return const SizedBox.shrink();
+                  final file = File(vm.imageUrl!);
+                  if (!file.existsSync()) return const SizedBox.shrink();
 
-                return Container(
-                  width: double.infinity,
-                  height: 250,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    image: DecorationImage(
-                      image: FileImage(file),
-                      fit: BoxFit.cover,
+                  return Container(
+                    width: double.infinity,
+                    height: 250,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      image: DecorationImage(
+                        image: FileImage(file),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 12),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => _showImageSourceDialog(context, vm),
+                      child: const Text("Add Image"),
                     ),
                   ),
-                );
-              },
-            ),
+                ],
+              ),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
 
-            // Add image button
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _showImageSourceDialog(context, vm),
-                    child: const Text("Add Image"),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed:
+                          vm.isLoading
+                              ? null
+                              : () async {
+                                if (!formKey.currentState!.validate()) return;
+
+                                final success = await vm.addMemory();
+                                if (!context.mounted) return;
+
+                                showTopToast(
+                                  context,
+                                  success
+                                      ? 'Memory successfully added!'
+                                      : 'An error occurred while adding memory.',
+                                  success: success,
+                                );
+
+                                if (success) Navigator.pop(context);
+                              },
+                      child:
+                          vm.isLoading
+                              ? const CircularProgressIndicator()
+                              : const Text("Add Memory"),
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
 
-            const SizedBox(height: 12),
-
-            // Add memory button
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed:
-                        vm.isLoading
-                            ? null
-                            : () async {
-                              final success = await vm.addMemory();
-                              if (!context.mounted) return;
-
-                              showTopToast(
-                                context,
-                                success
-                                    ? 'Memory successfully added!'
-                                    : 'An error occurred while adding memory.',
-                                success: success,
-                              );
-
-                              if (success) Navigator.pop(context);
-                            },
-                    child:
-                        vm.isLoading
-                            ? const CircularProgressIndicator()
-                            : const Text("Add Memory"),
-                  ),
-                ),
-              ],
-            ),
-
-            if (vm.error != null)
-              Text(vm.error!, style: const TextStyle(color: Colors.red)),
-          ],
+              if (vm.error != null)
+                Text(vm.error!, style: const TextStyle(color: Colors.red)),
+            ],
+          ),
         ),
       ),
     );

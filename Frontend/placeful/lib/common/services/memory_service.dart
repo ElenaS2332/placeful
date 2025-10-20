@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:placeful/common/domain/dtos/memory_dto.dart';
 import 'package:placeful/common/domain/models/memory.dart';
 import 'package:placeful/common/services/http_service.dart';
@@ -23,8 +24,32 @@ class MemoryService {
     return Memory.fromJson(response);
   }
 
-  Future<void> addMemory(MemoryDto memoryDto) async {
-    await _client.post("memory/", memoryDto.toJson());
+  Future<void> addMemory(MemoryDto memoryDto, {File? imageFile}) async {
+    if (imageFile != null) {
+      final fields = <String, String>{
+        'Title': memoryDto.title,
+        'Description': memoryDto.description,
+      };
+
+      if (memoryDto.date != null) {
+        fields['Date'] = memoryDto.date!.toIso8601String();
+      }
+
+      if (memoryDto.location != null) {
+        fields['LocationLatitude'] = memoryDto.location!.latitude.toString();
+        fields['LocationLongitude'] = memoryDto.location!.longitude.toString();
+        fields['LocationName'] = memoryDto.location!.name;
+      }
+
+      await _client.postWithMedia(
+        'memory/',
+        fields: fields,
+        file: imageFile,
+        fileFieldName: 'ImageFile',
+      );
+    } else {
+      await _client.post('memory/', memoryDto.toJson());
+    }
   }
 
   Future<void> updateMemory(Memory memory) async {

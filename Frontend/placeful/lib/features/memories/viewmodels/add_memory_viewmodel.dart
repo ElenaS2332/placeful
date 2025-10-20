@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:placeful/common/domain/dtos/location_dto.dart';
 import 'package:placeful/common/domain/dtos/memory_dto.dart';
@@ -16,29 +18,30 @@ class AddMemoryViewModel extends ChangeNotifier {
   Location? location;
   String? imageUrl = '';
 
+  File? selectedImageFile;
   bool isLoading = false;
   String? error;
 
   final dateController = TextEditingController();
 
+  void setSelectedImage(File file) {
+    selectedImageFile = file;
+  }
+
   void setTitle(String value) {
     title = value;
-    notifyListeners();
   }
 
   void setDescription(String value) {
     description = value;
-    notifyListeners();
   }
 
   void setDate(DateTime? value) {
     date = value;
-    notifyListeners();
   }
 
   void setLocation(Location value) {
     location = value;
-    notifyListeners();
   }
 
   void setImageUrl(String value) {
@@ -47,10 +50,6 @@ class AddMemoryViewModel extends ChangeNotifier {
   }
 
   bool get isValid => title.isNotEmpty && description.isNotEmpty;
-
-  void notifyListenersVM() {
-    notifyListeners();
-  }
 
   Future<bool> addMemory() async {
     if (!isValid) {
@@ -79,8 +78,7 @@ class AddMemoryViewModel extends ChangeNotifier {
         imageUrl: imageUrl,
       );
 
-      await memoryService.addMemory(memoryDto);
-
+      await memoryService.addMemory(memoryDto, imageFile: selectedImageFile);
       return true;
     } catch (e) {
       error = e.toString();
