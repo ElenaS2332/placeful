@@ -27,6 +27,7 @@ public class FavoriteMemoriesListService(PlacefulDbContext context, IHttpContext
                             Id = m.Id,
                             Title = m.Title,
                             Description = m.Description,
+                            ImageUrl = m.ImageUrl,
                             Location = m.Location != null
                                 ? new Location
                                 {

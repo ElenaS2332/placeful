@@ -19,22 +19,10 @@ class FavoriteMemoriesScreen extends StatelessWidget {
 class _FavoriteMemoriesBody extends StatelessWidget {
   const _FavoriteMemoriesBody();
 
-  Color _getTileColor(int index) {
-    final colors = [
-      Colors.amber.shade300,
-      Colors.orange.shade300,
-      Colors.pink.shade300,
-      Colors.teal.shade300,
-      Colors.indigo.shade300,
-    ];
-    return colors[index % colors.length];
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<FavoriteMemoriesViewModel>(
       builder: (context, vm, _) {
-        // show error messages if any
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (vm.errorMessage != null) {
             ScaffoldMessenger.of(
@@ -77,7 +65,6 @@ class _FavoriteMemoriesBody extends StatelessWidget {
                       );
 
                       if (confirm == true) {
-                        // Optimistically clear local list first
                         vm.favoriteMemoriesList!.memories!.clear();
                         vm.notifyListenersFromVM();
 
@@ -127,7 +114,7 @@ class _FavoriteMemoriesBody extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: _getTileColor(index),
+                            color: Colors.amber.shade300,
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
