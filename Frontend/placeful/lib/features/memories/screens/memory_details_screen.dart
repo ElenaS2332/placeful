@@ -27,8 +27,8 @@ class MemoryDetailsScreen extends StatelessWidget {
                   if (viewModel.imageUrl != null)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.file(
-                        File(viewModel.imageUrl!),
+                      child: Image.network(
+                        viewModel.imageUrl!,
                         fit: BoxFit.cover,
                         width: double.infinity,
                         height: 250,
@@ -122,6 +122,51 @@ class MemoryDetailsScreen extends StatelessWidget {
                               ),
                             )
                             : const SizedBox.shrink(),
+                  ),
+                  const SizedBox(height: 24),
+                  Center(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.delete),
+                      label: const Text("Delete Memory"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(50),
+                      ),
+                      onPressed: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder:
+                              (_) => AlertDialog(
+                                title: const Text("Confirm Delete"),
+                                content: const Text(
+                                  "Are you sure you want to delete this memory?",
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.pop(context, false),
+                                    child: const Text("Cancel"),
+                                  ),
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.pop(context, true),
+                                    child: const Text(
+                                      "Delete",
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                        );
+
+                        if (confirmed == true) {
+                          await viewModel.deleteMemory(viewModel.memory.id);
+                          if (!context.mounted) return;
+                          Navigator.pop(context);
+                        }
+                      },
+                    ),
                   ),
                 ],
               ),

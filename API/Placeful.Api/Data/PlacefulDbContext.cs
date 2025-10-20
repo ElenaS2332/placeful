@@ -29,5 +29,10 @@ public class PlacefulDbContext(DbContextOptions<PlacefulDbContext> options) : Db
             .HasForeignKey(f => f.FriendshipReceiverId)
             .HasPrincipalKey(u => u.FirebaseUid) 
             .OnDelete(DeleteBehavior.Restrict);
+        
+        modelBuilder.Entity<Memory>()
+            .HasOne(m => m.Location)
+            .WithMany(l => l.Memories) 
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

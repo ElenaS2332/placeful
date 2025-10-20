@@ -98,7 +98,12 @@ public class MemoryService(PlacefulDbContext context,
     public async Task DeleteMemory(Guid id)
     {
         var memoryToBeDeleted = await GetMemory(id);
-
+        
+        if (!string.IsNullOrEmpty(memoryToBeDeleted.ImageUrl))
+        {
+            await blobStorageService.DeleteFileAsync(memoryToBeDeleted.ImageUrl);
+        }
+        
         context.Memories.Remove(memoryToBeDeleted);
 
         await SaveChanges();

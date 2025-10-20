@@ -26,4 +26,15 @@ public class BlobStorageService : IBlobStorageService
 
         return blobClient.Uri.ToString();
     }
+
+    public async Task DeleteFileAsync(string blobUrl)
+    {
+        var uri = new Uri(blobUrl);
+        var blobName = uri.Segments.Last();
+        var containerName = uri.Segments[1].TrimEnd('/');
+
+        var blobClient = _containerClient.GetBlobClient(blobName);
+
+        await blobClient.DeleteIfExistsAsync();
+    }
 }
