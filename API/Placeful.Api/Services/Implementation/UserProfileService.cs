@@ -4,6 +4,7 @@ using Placeful.Api.Data;
 using Placeful.Api.Models;
 using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Entities;
+using Placeful.Api.Models.Exceptions.UserProfileExceptions;
 using Placeful.Api.Services.Interface;
 
 namespace Placeful.Api.Services.Implementation;
@@ -48,7 +49,7 @@ public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor 
             })
             .FirstOrDefaultAsync();
 
-        if (userProfile is null) throw new Exception(); // create specific exceptions
+        if (userProfile is null) throw new UserProfileNotFoundException(firebaseUid);
 
         return userProfile;
     }
@@ -60,7 +61,7 @@ public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor 
             .Include(u => u.Friends)
             .FirstOrDefaultAsync(c => c.FirebaseUid.Equals(firebaseUid));
 
-        if (userProfile is null) throw new Exception(); // create specific exceptions
+        if (userProfile is null) throw new UserProfileNotFoundException(firebaseUid);
 
         return userProfile;
     }
@@ -103,9 +104,9 @@ public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor 
 
     public async Task UpdateUserProfile(UserProfile userProfile)
     {
-        var userProfileExists = await UserProfileExists(userProfile.Id);
+        var userProfileExists = await UserProfileExists(userProfile.FirebaseUid);
 
-        if (!userProfileExists) throw new Exception();
+        if (!userProfileExists) throw new UserProfileNotFoundException(userProfile.FirebaseUid);
 
         context.UserProfiles.Update(userProfile);
 
@@ -126,8 +127,8 @@ public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor 
         return await context.SaveChangesAsync() >= 0;
     }
     
-    private async Task<bool> UserProfileExists(Guid guid)
+    private async Task<bool> UserProfileExists(String firebaseUid)
     {
-        return await context.UserProfiles.AnyAsync(c => c.Id == guid);
+        return await context.UserProfiles.AnyAsync(c => c.FirebaseUid == firebaseUid);
     }
 }

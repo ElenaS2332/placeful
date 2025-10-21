@@ -5,6 +5,9 @@ using Placeful.Api.Models;
 using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Entities;
 using Placeful.Api.Models.Exceptions;
+using Placeful.Api.Models.Exceptions.FavoriteMemoriesListExceptions;
+using Placeful.Api.Models.Exceptions.MemoryExceptions;
+using Placeful.Api.Models.Exceptions.UserProfileExceptions;
 using Placeful.Api.Services.Interface;
 
 namespace Placeful.Api.Services.Implementation;

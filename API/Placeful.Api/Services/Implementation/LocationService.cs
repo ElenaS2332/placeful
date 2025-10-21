@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Placeful.Api.Data;
 using Placeful.Api.Models;
 using Placeful.Api.Models.Entities;
+using Placeful.Api.Models.Exceptions.LocationExceptions;
 using Placeful.Api.Services.Interface;
 
 namespace Placeful.Api.Services.Implementation;
@@ -18,7 +19,7 @@ public class LocationService(PlacefulDbContext context) : ILocationService
     {
         var location = await context.Locations.FirstOrDefaultAsync(c => c.Id == id);
 
-        if (location is null) throw new Exception(); // create specific exceptions
+        if (location is null) throw new LocationNotFoundException(id); 
 
         return location;
     }

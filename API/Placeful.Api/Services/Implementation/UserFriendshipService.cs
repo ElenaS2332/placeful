@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Placeful.Api.Data;
 using Placeful.Api.Models.Entities;
+using Placeful.Api.Models.Exceptions.UserFriendshipExceptions;
 using Placeful.Api.Services.Interface;
 
 namespace Placeful.Api.Services.Implementation;
@@ -45,7 +46,7 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
 
         if (friendship == null)
         {
-            throw new Exception();
+            throw new UserFriendshipNotFoundException(currentUserUid, otherUserUid);
         }
 
         return friendship;
@@ -64,7 +65,7 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
         var currentUserUid = GetCurrentUserFirebaseUid();
         var friendship = await GetFriendship(currentUserUid, otherUserUid);
 
-        if (friendship is not null) throw new Exception();
+        if (friendship is not null) throw new UserFriendshipAlreadyExistsException(currentUserUid, otherUserUid);
         { }
 
         UserProfile initiator = await userProfileService.GetUserProfile(currentUserUid);
@@ -89,7 +90,7 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
 
         var friendship = await GetFriendship(currentUserUid, otherUserUid);
 
-        if (friendship is null) throw new Exception();
+        if (friendship is null) throw new UserFriendshipNotFoundException(currentUserUid, otherUserUid);
 
         friendship.FriendshipAccepted = true;
         context.UserFriendships.Update(friendship);
@@ -120,7 +121,7 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
 
         var friendship = await GetFriendship(currentUserUid, otherUserUid);
 
-        if (friendship is null) throw new Exception();
+        if (friendship is null) throw new UserFriendshipNotFoundException(currentUserUid, otherUserUid);
 
         context.UserFriendships.Remove(friendship);
         await context.SaveChangesAsync();

@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Placeful.Api.Data;
 using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Entities;
+using Placeful.Api.Models.Exceptions.FavoriteMemoriesListExceptions;
+using Placeful.Api.Models.Exceptions.MemoryExceptions;
 using Placeful.Api.Services.Interface;
 
 namespace Placeful.Api.Services.Implementation;
@@ -30,7 +32,7 @@ public class MemoryService(PlacefulDbContext context,
         var memory = await context.Memories
             .FirstOrDefaultAsync(c => c.Id == id && c.UserProfileId == userId);
 
-        if (memory is null) throw new Exception();
+        if (memory is null) throw new MemoryNotFoundException(id);
 
         return memory;
     }

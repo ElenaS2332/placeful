@@ -1,4 +1,4 @@
-namespace Placeful.Api.Models.Exceptions;
+namespace Placeful.Api.Models.Exceptions.UserProfileExceptions;
 
 public class UserProfileNotFoundException(string userId)
     : DomainException($"User profile with ID '{userId}' not found.", StatusCodes.Status404NotFound);

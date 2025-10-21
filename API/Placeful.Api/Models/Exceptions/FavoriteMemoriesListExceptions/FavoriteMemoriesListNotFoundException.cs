@@ -1,4 +1,4 @@
-namespace Placeful.Api.Models.Exceptions;
+namespace Placeful.Api.Models.Exceptions.FavoriteMemoriesListExceptions;
 
 public class FavoriteMemoriesListNotFoundException(String userId)
     : DomainException($"Favorite Memories List for user with id {userId} not found.", StatusCodes.Status404NotFound);
