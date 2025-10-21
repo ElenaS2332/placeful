@@ -3,6 +3,8 @@ import 'package:placeful/common/domain/models/user_profile.dart';
 import 'package:placeful/features/authentication/login_screen.dart';
 import 'package:placeful/features/friends/screens/add_friend_screen.dart';
 import 'package:placeful/features/memories/screens/memory_map_screen.dart';
+import 'package:placeful/features/user_profile/screens/edit_profile_screen.dart';
+import 'package:placeful/features/user_profile/view_models/edit_profile_viewmodel.dart';
 import 'package:placeful/features/user_profile/view_models/user_profile_viewmodel.dart';
 import 'package:provider/provider.dart';
 
@@ -45,6 +47,29 @@ class _UserProfileScreenBody extends StatelessWidget {
         ),
         centerTitle: true,
         actions: [
+          if (vm.profileDto != null)
+            TextButton(
+              onPressed: () async {
+                final updated = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (_) => ChangeNotifierProvider(
+                          create:
+                              (_) => EditProfileViewModel(user: vm.profileDto!),
+                          child: const EditProfileScreen(),
+                        ),
+                  ),
+                );
+
+                if (updated == true) {
+                  await vm.loadUserProfile();
+                }
+              },
+
+              child: const Text('Edit Profile'),
+            ),
+
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black),
             onPressed: () async {

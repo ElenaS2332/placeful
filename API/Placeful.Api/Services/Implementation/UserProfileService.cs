@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using FirebaseAdmin.Auth;
 using Microsoft.EntityFrameworkCore;
 using Placeful.Api.Data;
 using Placeful.Api.Models;
@@ -102,12 +103,37 @@ public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor 
         }
     }
 
-    public async Task UpdateUserProfile(UserProfile userProfile)
+    public async Task UpdateUserProfile(UpdateUserProfileDto updateUserProfileDto)
     {
-        var userProfileExists = await UserProfileExists(userProfile.FirebaseUid);
+        var firebaseUid = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (firebaseUid == null)
+            throw new UnauthorizedAccessException("User identifier not found in token.");
 
-        if (!userProfileExists) throw new UserProfileNotFoundException(userProfile.FirebaseUid);
+        var userProfile = await UserProfileExists(firebaseUid);
 
+        if (userProfile is null) throw new UserProfileNotFoundException(firebaseUid);
+
+        if (updateUserProfileDto.FullName is not null)
+        {
+            userProfile.FullName = updateUserProfileDto.FullName!;
+        }
+        
+        if (updateUserProfileDto.BirthDate is not null)
+        {
+            userProfile.BirthDate = updateUserProfileDto.BirthDate.Value.ToUniversalTime();
+        }
+        
+        if (!string.IsNullOrWhiteSpace(updateUserProfileDto.Email) && updateUserProfileDto.Email != userProfile.Email)
+        {
+            await FirebaseAuth.DefaultInstance.UpdateUserAsync(new UserRecordArgs()
+            {
+                Uid = firebaseUid,
+                Email = updateUserProfileDto.Email
+            });
+
+            userProfile.Email = updateUserProfileDto.Email; 
+        }
+        
         context.UserProfiles.Update(userProfile);
 
         await SaveChanges();
@@ -127,8 +153,8 @@ public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor 
         return await context.SaveChangesAsync() >= 0;
     }
     
-    private async Task<bool> UserProfileExists(String firebaseUid)
+    private async Task<UserProfile?> UserProfileExists(String firebaseUid)
     {
-        return await context.UserProfiles.AnyAsync(c => c.FirebaseUid == firebaseUid);
+        return await context.UserProfiles.FirstOrDefaultAsync(c => c.FirebaseUid == firebaseUid);
     }
 }

@@ -54,19 +54,12 @@ public static class UserProfileEndpoints
 
 
     private static async Task<IResult> UpdateUserProfile(
-        UserProfileToUpdateDto userProfileToUpdateDto,
+        UpdateUserProfileDto updateUserProfileDto,
         IUserProfileService userProfileService)
     {
         try
         {
-            var updatedProfile = new UserProfile
-            {
-                Email = userProfileToUpdateDto.Email,
-                FullName = userProfileToUpdateDto.FullName,
-                BirthDate = DateTime.SpecifyKind(userProfileToUpdateDto.BirthDate, DateTimeKind.Utc)
-            };
-
-            await userProfileService.UpdateUserProfile(updatedProfile);
+            await userProfileService.UpdateUserProfile(updateUserProfileDto);
             return Results.Ok();
         }
         catch (Exception ex) // more specific exceptions like UserProfileNotFound

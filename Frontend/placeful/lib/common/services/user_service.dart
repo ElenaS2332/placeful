@@ -1,4 +1,5 @@
 import 'package:placeful/common/domain/dtos/register_user_dto.dart';
+import 'package:placeful/common/domain/dtos/update_user_dto.dart';
 import 'package:placeful/common/domain/dtos/user_dto.dart';
 import 'package:placeful/common/domain/models/user_profile.dart';
 import 'package:placeful/common/services/auth_service.dart';
@@ -40,5 +41,9 @@ class UserService {
     } on Exception catch (e) {
       loggerService.logError('$e');
     }
+  }
+
+  Future<void> updateUser(UpdateUserDto userDto) async {
+    await _client.put("user-profile", userDto.toJson());
   }
 }
