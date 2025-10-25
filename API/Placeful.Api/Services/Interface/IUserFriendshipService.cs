@@ -7,6 +7,7 @@ public interface IUserFriendshipService
     public Task<List<UserFriendship>> ListCurrentUserActiveFriendships();
     public Task<List<UserFriendship>> ListActiveFriendshipsForUser(string userUid);
     public Task<List<UserFriendship>> ListCurrentUserFriendRequests();
+    public Task<int> GetCountForCurrentUserFriendRequests();
     public Task<UserFriendship> GetFriendshipDetails(String otherUserUid);
     public Task<UserFriendship> RequestFriendship(String otherUserUid);
     public Task<UserFriendship> AcceptFriendship(String otherUserUid);

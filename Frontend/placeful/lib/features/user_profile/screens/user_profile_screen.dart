@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:placeful/common/domain/models/user_profile.dart';
+import 'package:placeful/common/domain/models/user_friendship.dart';
 import 'package:placeful/features/authentication/login_screen.dart';
 import 'package:placeful/features/friends/screens/add_friend_screen.dart';
 import 'package:placeful/features/memories/screens/memory_map_screen.dart';
@@ -15,7 +16,12 @@ class UserProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => UserProfileViewModel()..loadUserProfile(),
+      create: (_) {
+        final vm = UserProfileViewModel();
+        vm.loadUserProfile();
+        vm.loadFriendRequests();
+        return vm;
+      },
       child: const _UserProfileScreenBody(),
     );
   }
@@ -55,6 +61,22 @@ class _UserProfileScreenBody extends StatelessWidget {
         ),
         centerTitle: true,
         actions: [
+          if (vm.profileDto != null)
+            IconButton(
+              icon: Icon(
+                Icons.person_add_alt_1_rounded,
+                size: 28,
+                color: Colors.deepPurple,
+              ),
+              tooltip: "Friend Requests",
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AddFriendScreen()),
+                );
+                await vm.loadFriendRequests();
+                await vm.loadUserProfile();
+              },
+            ),
           if (vm.profileDto != null)
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.deepPurple),
@@ -99,15 +121,24 @@ class _UserProfileScreenBody extends StatelessWidget {
                 ? Center(child: Text(vm.error!))
                 : vm.profileDto == null
                 ? const Center(child: Text("No profile found"))
-                : _buildProfile(context, UserProfile.fromDto(vm.profileDto!)),
+                : _buildProfile(
+                  context,
+                  UserProfile.fromDto(vm.profileDto!),
+                  vm,
+                ),
       ),
     );
   }
 
-  Widget _buildProfile(BuildContext context, UserProfile profile) {
+  Widget _buildProfile(
+    BuildContext context,
+    UserProfile profile,
+    UserProfileViewModel vm,
+  ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(20),
@@ -187,16 +218,14 @@ class _UserProfileScreenBody extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 30),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              "Friends (${profile.friends?.length ?? 0})",
-              style: GoogleFonts.poppins(
-                textStyle: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple,
-                ),
+
+          Text(
+            "Friends (${profile.friends?.length ?? 0})",
+            style: GoogleFonts.poppins(
+              textStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
               ),
             ),
           ),
@@ -208,96 +237,131 @@ class _UserProfileScreenBody extends StatelessWidget {
               )
               : Column(
                 children:
-                    profile.friends!.map((friend) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 6),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.purple.shade50,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 6,
-                              offset: const Offset(0, 3),
+                    profile.friends!
+                        .map((friend) => _friendTile(context, friend, vm))
+                        .toList(),
+              ),
+          const SizedBox(height: 30),
+          Text(
+            "Friend Requests (${vm.friendRequestsCount})",
+            style: GoogleFonts.poppins(
+              textStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          vm.isLoadingRequests
+              ? const Center(child: CircularProgressIndicator())
+              : vm.friendRequests.isEmpty
+              ? Text(
+                "No friend requests.",
+                style: GoogleFonts.poppins(color: Colors.grey),
+              )
+              : Column(
+                children:
+                    vm.friendRequests.map((UserFriendship req) {
+                      final initiator = req.friendshipInitiator;
+                      return ListTile(
+                        title: Text(initiator?.fullName ?? ''),
+                        trailing: TextButton(
+                          onPressed: () async {
+                            await vm.acceptFriendRequest(
+                              req.friendshipInitiatorId ?? '',
+                            );
+                            await vm.loadUserProfile();
+                            await vm.loadFriendRequests();
+                          },
+                          style: TextButton.styleFrom(
+                            backgroundColor: const Color(0xFF8668FF),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
                             ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: const Color(
-                                0xFF8668FF,
-                              ).withValues(alpha: 0.2),
-                              child: Text(
-                                friend.fullName[0].toUpperCase(),
-                                style: const TextStyle(
-                                  color: Color(0xFF8668FF),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  friend.fullName,
-                                  style: GoogleFonts.poppins(
-                                    textStyle: const TextStyle(
-                                      color: Colors.deepPurple,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  friend.email,
-                                  style: GoogleFonts.poppins(
-                                    textStyle: const TextStyle(
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                          ),
+                          child: const Text("Accept"),
                         ),
                       );
                     }).toList(),
               ),
-          const SizedBox(height: 30),
-          Row(
+        ],
+      ),
+    );
+  }
+
+  Widget _friendTile(
+    BuildContext context,
+    UserProfile friend,
+    UserProfileViewModel vm,
+  ) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.purple.shade50,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: const Color(0xFF8668FF).withOpacity(0.2),
+            child: Text(
+              friend.fullName[0].toUpperCase(),
+              style: const TextStyle(
+                color: Color(0xFF8668FF),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const AddFriendScreen(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    backgroundColor: Colors.deepPurple,
+              Text(
+                friend.fullName,
+                style: GoogleFonts.poppins(
+                  textStyle: const TextStyle(
+                    color: Colors.deepPurple,
+                    fontWeight: FontWeight.w600,
                   ),
-                  child: Text(
-                    'Add Friends',
-                    style: GoogleFonts.poppins(
-                      textStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ),
+                ),
+              ),
+              Text(
+                friend.email,
+                style: GoogleFonts.poppins(
+                  textStyle: const TextStyle(color: Colors.grey),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 30),
+          const Spacer(),
+          TextButton(
+            onPressed: () async {
+              await vm.removeFriend(friend.firebaseUid);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Friend removed"),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+              }
+            },
+            child: const Text("Remove"),
+          ),
         ],
       ),
     );

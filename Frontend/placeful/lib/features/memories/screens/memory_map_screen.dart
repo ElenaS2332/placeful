@@ -11,6 +11,45 @@ import 'package:google_fonts/google_fonts.dart';
 class MemoryMapScreen extends StatelessWidget {
   const MemoryMapScreen({super.key});
 
+  Widget _friendRequestIcon(int count) {
+    return SizedBox(
+      width: 36,
+      height: 36,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          const Center(
+            child: Icon(Icons.person, size: 28, color: Colors.deepPurple),
+          ),
+          if (count > 0)
+            Positioned(
+              right: -2,
+              top: -2,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                child: Center(
+                  child: Text(
+                    '$count',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   final String _mapStyle = '''[
     {
       "featureType": "poi",
@@ -67,15 +106,18 @@ class MemoryMapScreen extends StatelessWidget {
               iconTheme: const IconThemeData(color: Colors.black87),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.person),
+                  icon: _friendRequestIcon(vm.friendRequestsCount),
                   tooltip: "User Profile",
-                  onPressed: () {
-                    Navigator.push(
-                      context,
+                  onPressed: () async {
+                    final updated = await Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => const UserProfileScreen(),
+                        builder: (context) => const UserProfileScreen(),
                       ),
                     );
+
+                    if (updated == true) {
+                      await vm.fetchFriendshipRequests();
+                    }
                   },
                 ),
                 IconButton(

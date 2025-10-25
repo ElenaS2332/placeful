@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:placeful/common/domain/models/user_friendship.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:placeful/common/domain/models/user_profile.dart';
 import 'package:placeful/features/friends/viewmodels/add_friend_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -42,11 +42,21 @@ class AddFriendScreen extends StatelessWidget {
             child: Scaffold(
               resizeToAvoidBottomInset: true,
               appBar: AppBar(
+                title: Text(
+                  "Add Friend",
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
                 backgroundColor: Colors.white,
                 elevation: 0,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(context, true),
                 ),
               ),
               backgroundColor: Colors.white,
@@ -81,7 +91,6 @@ class AddFriendScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
 
-                      // Search results
                       if (viewModel.isSearching)
                         const Center(child: CircularProgressIndicator())
                       else if (viewModel.searchResults.isNotEmpty)
@@ -121,47 +130,6 @@ class AddFriendScreen extends StatelessWidget {
                               child: Text(
                                 isPending ? "Requested" : "Add",
                                 style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          );
-                        }),
-
-                      const SizedBox(height: 20),
-                      const Divider(),
-                      Text(
-                        "Friend Requests",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Friend requests
-                      if (viewModel.isLoadingRequests)
-                        const Center(child: CircularProgressIndicator())
-                      else if (viewModel.friendRequests.isEmpty)
-                        const Text("No friend requests.")
-                      else
-                        ...viewModel.friendRequests.map((UserFriendship user) {
-                          final initiator = user.friendshipInitiator;
-                          return ListTile(
-                            title: Text(initiator?.fullName ?? ''),
-                            trailing: ElevatedButton(
-                              onPressed:
-                                  () => viewModel.acceptFriendRequest(
-                                    user.friendshipInitiatorId ?? '',
-                                  ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: const Text(
-                                "Accept",
-                                style: TextStyle(color: Colors.white),
                               ),
                             ),
                           );

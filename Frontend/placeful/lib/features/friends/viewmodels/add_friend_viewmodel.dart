@@ -67,7 +67,7 @@ class AddFriendViewModel extends ChangeNotifier {
       _pendingRequests.add(userId);
       notifyListeners();
     } catch (e) {
-      throw Exception('You already are friends with this person');
+      rethrow;
     }
   }
 

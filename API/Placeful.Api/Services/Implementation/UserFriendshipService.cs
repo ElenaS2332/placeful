@@ -34,9 +34,21 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
         var currentUserUid = GetCurrentUserFirebaseUid();
 
         return await context.UserFriendships
+            .Include(f => f.FriendshipInitiator)
+            .Include(f => f.FriendshipReceiver)
             .Where(f => f.FriendshipAccepted == false &&
                         f.FriendshipReceiverId.Equals(currentUserUid))
             .ToListAsync();
+    }
+    
+    public async Task<int> GetCountForCurrentUserFriendRequests()
+    {
+        var currentUserUid = GetCurrentUserFirebaseUid();
+
+        return await context.UserFriendships
+            .Where(f => f.FriendshipAccepted == false &&
+                        f.FriendshipReceiverId.Equals(currentUserUid))
+            .CountAsync();
     }
 
     public async Task<UserFriendship> GetFriendshipDetails(String otherUserUid)
@@ -52,29 +64,35 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
         return friendship;
     }
 
-    private async Task<UserFriendship?> GetFriendship(String userAId, String userBId)
+    private async Task<UserFriendship?> GetFriendship(string userAId, string userBId)
     {
-        return await context.UserFriendships
+        var friendship = await context.UserFriendships
+            .Include(f => f.FriendshipInitiator)
+            .ThenInclude(i => i!.FavoritesMemoriesList)
+            .Include(f => f.FriendshipReceiver)
+            .ThenInclude(r => r!.FavoritesMemoriesList)
             .FirstOrDefaultAsync(f =>
                 (f.FriendshipInitiatorId == userAId && f.FriendshipReceiverId == userBId) ||
                 (f.FriendshipInitiatorId == userBId && f.FriendshipReceiverId == userAId));
+        return friendship;
     }
+
 
     public async Task<UserFriendship> RequestFriendship(String otherUserUid)
     {
         var currentUserUid = GetCurrentUserFirebaseUid();
         var friendship = await GetFriendship(currentUserUid, otherUserUid);
 
-        if (friendship is not null) throw new UserFriendshipAlreadyExistsException(currentUserUid, otherUserUid);
-        { }
-
+        if (friendship is not null && friendship.FriendshipAccepted) throw new UserFriendshipAlreadyExistsException(currentUserUid, otherUserUid);
+        if (friendship is not null && !friendship.FriendshipAccepted)throw new UserFrienshipAlreadySentException(currentUserUid, otherUserUid);
+        
         UserProfile initiator = await userProfileService.GetUserProfile(currentUserUid);
         UserProfile receiver = await userProfileService.GetUserProfile(otherUserUid);
-
+        
         var newFriendship = new UserFriendship
         {
-            FriendshipInitiatorId = initiator.FirebaseUid,
-            FriendshipReceiverId = receiver.FirebaseUid,
+            FriendshipInitiatorId = initiator!.FirebaseUid,
+            FriendshipReceiverId = receiver!.FirebaseUid,
             FriendshipAccepted = false,
             FriendshipInitiator = initiator,
             FriendshipReceiver = receiver,
@@ -95,8 +113,8 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
         friendship.FriendshipAccepted = true;
         context.UserFriendships.Update(friendship);
 
-        UserProfile currentUser = await userProfileService.GetUserProfile(currentUserUid);
-        UserProfile otherUser = await userProfileService.GetUserProfile(otherUserUid);
+        UserProfile currentUser = friendship.FriendshipReceiver!;
+        UserProfile otherUser = friendship.FriendshipInitiator!;
 
         if (currentUser.Friends is null)
         {
@@ -123,7 +141,20 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
 
         if (friendship is null) throw new UserFriendshipNotFoundException(currentUserUid, otherUserUid);
 
+        UserProfile currentUser = await userProfileService.GetUserProfile(currentUserUid);
+        UserProfile otherUser = await userProfileService.GetUserProfile(otherUserUid);
+
+        if (currentUser.Friends is not null && currentUser.Friends.Contains(otherUser))
+        {
+            currentUser.Friends.Remove(otherUser);
+        }
+
+        if (otherUser.Friends is not null && otherUser.Friends.Contains(currentUser))
+        {
+            otherUser.Friends.Remove(currentUser);
+        }
         context.UserFriendships.Remove(friendship);
+        
         await context.SaveChangesAsync();
     }
 

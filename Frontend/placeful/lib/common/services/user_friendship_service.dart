@@ -1,3 +1,8 @@
+import 'dart:io';
+
+import 'package:placeful/common/domain/exceptions/friend_request_already_sent_exception.dart';
+import 'package:placeful/common/domain/exceptions/friendship_already_exists_exception.dart';
+import 'package:placeful/common/domain/exceptions/http_response_exception.dart';
 import 'package:placeful/common/domain/models/user_friendship.dart';
 import 'package:placeful/common/domain/models/user_profile.dart';
 import 'package:placeful/common/services/auth_service.dart';
@@ -38,13 +43,17 @@ class UserFriendshipService {
         'user-friendship/request/$otherUserId',
         '',
       );
+
       return UserFriendship.fromJson(response);
+    } on HttpResponseException catch (e) {
+      if (e.statusCode == 409) {
+        throw FriendRequestAlreadySentException();
+      } else if (e.statusCode == 422) {
+        throw FriendshipAlreadyExistsException();
+      } else {
+        rethrow;
+      }
     } catch (e) {
-      // } on HttpResponseException catch (e) {
-      //   if (e.statusCode == 422) {
-      //     throw FriendRequestException(
-      //         "You are already friends with this person.");
-      //   }
       rethrow;
     }
   }
@@ -57,12 +66,17 @@ class UserFriendshipService {
         .toList();
   }
 
-  Future<UserFriendship> acceptFriendRequest(String otherUserId) async {
-    final response = await _client.patch(
-      'user-friendship/accept/$otherUserId',
-      '',
-    );
-    return UserFriendship.fromJson(response);
+  Future<int> getCountForFriendRequests() async {
+    final response = await _client.get('user-friendship/requests/count');
+    return response as int;
+  }
+
+  Future<void> acceptFriendRequest(String otherUserId) async {
+    await _client.patch('user-friendship/accept/$otherUserId', '');
+  }
+
+  Future<void> removeFriend(String otherUserId) async {
+    await _client.delete('user-friendship/remove/$otherUserId');
   }
 
   Future<List<UserProfile>> getMutualFriends(String otherUserId) async {
