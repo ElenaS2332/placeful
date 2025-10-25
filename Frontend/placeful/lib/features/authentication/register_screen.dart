@@ -137,7 +137,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         prefixIcon: prefix,
         suffixIcon: suffix,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
       );
@@ -164,7 +164,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         body: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF8668FF), Color(0xFF7751F8)],
+              colors: [Color(0xFF6CA0FF), Color(0xFF1F45FF)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -289,7 +289,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   vertical: 14,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
                               ),
                               child:
@@ -301,15 +301,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           strokeWidth: 2,
                                           valueColor:
                                               AlwaysStoppedAnimation<Color>(
-                                                Color(0xFF8668FF),
+                                                Color(0xFF1F45FF),
                                               ),
                                         ),
                                       )
                                       : Text(
                                         'REGISTER',
-                                        style: GoogleFonts.nunito(
+                                        style: GoogleFonts.poppins(
                                           textStyle: const TextStyle(
-                                            color: Color(0xFF8668FF),
+                                            color: Color(0xFF1F45FF),
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -321,7 +321,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 20),
                   TextButton(
                     onPressed:

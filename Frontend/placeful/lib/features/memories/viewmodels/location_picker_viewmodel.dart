@@ -27,6 +27,7 @@ class LocationPickerViewModel extends ChangeNotifier {
   LocationDto? getSelectedLocation() {
     if (_selectedPosition == null) return null;
     return LocationDto(
+      id: '',
       latitude: _selectedPosition!.latitude,
       longitude: _selectedPosition!.longitude,
       name: _locationName.isEmpty ? "Unnamed location" : _locationName,

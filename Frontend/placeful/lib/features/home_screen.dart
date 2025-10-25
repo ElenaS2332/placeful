@@ -5,6 +5,7 @@ import 'package:placeful/features/authentication/register_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
   @override
   HomePageState createState() => HomePageState();
 }
@@ -35,9 +36,9 @@ class HomePageState extends State<HomePage>
       builder: (context, _) {
         final t = Curves.easeInOut.transform(_ctl.value);
         final c1 =
-            Color.lerp(const Color(0xFF7751F8), const Color(0xFF80D0C7), t)!;
+            Color.lerp(const Color(0xFF6A11CB), const Color(0xFF3C1053), t)!;
         final c2 =
-            Color.lerp(const Color(0xFF8668FF), const Color(0xFF008ABF), t)!;
+            Color.lerp(const Color(0xFFB721FF), const Color(0xFF6A11CB), t)!;
 
         return Scaffold(
           backgroundColor: Colors.transparent,
@@ -54,54 +55,68 @@ class HomePageState extends State<HomePage>
                 children: [
                   Positioned(
                     top: 80,
-                    left: 40,
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: const BoxDecoration(
-                        color: Colors.white24,
-                        shape: BoxShape.circle,
+                    left: -30,
+                    child: Transform.rotate(
+                      angle: -0.3,
+                      child: Icon(
+                        Icons.eco_rounded,
+                        size: 160,
+                        color: Colors.white.withOpacity(0.12),
                       ),
                     ),
                   ),
                   Positioned(
-                    bottom: 160,
-                    right: 30,
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: const BoxDecoration(
-                        color: Colors.white12,
-                        shape: BoxShape.circle,
+                    bottom: 60,
+                    right: -20,
+                    child: Transform.rotate(
+                      angle: 0.4,
+                      child: Icon(
+                        Icons.eco_rounded,
+                        size: 180,
+                        color: Colors.white.withOpacity(0.15),
                       ),
                     ),
                   ),
 
                   Column(
                     children: [
-                      const Spacer(flex: 2),
+                      const Spacer(flex: 3),
 
-                      Container(
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [Colors.white24, Colors.transparent],
-                            radius: 0.8,
-                          ),
+                      ShaderMask(
+                        shaderCallback:
+                            (bounds) => const LinearGradient(
+                              colors: [Colors.white, Color(0xFFE3D1FF)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ).createShader(bounds),
+                        child: const Icon(
+                          Icons.location_on_rounded,
+                          size: 100,
+                          color: Colors.white,
                         ),
-                        padding: const EdgeInsets.all(16),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 28),
 
-                      // Neon title
                       Text(
-                        'TRIVIA SPIN!',
-                        style: GoogleFonts.nunito(
+                        'PLACEFUL',
+                        style: GoogleFonts.poppins(
                           textStyle: const TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.w900,
+                            fontSize: 44,
+                            fontWeight: FontWeight.bold,
                             color: Colors.white,
                             letterSpacing: 6,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+                      Text(
+                        'Discover, capture & relive your memories',
+                        style: GoogleFonts.nunito(
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white70,
+                            letterSpacing: 0.8,
                           ),
                         ),
                       ),
@@ -156,7 +171,7 @@ class HomePageState extends State<HomePage>
       height: 50,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Colors.white70, Colors.white54],
+          colors: [Colors.white, Color(0xFFE3D1FF)],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -164,8 +179,8 @@ class HomePageState extends State<HomePage>
         boxShadow: const [
           BoxShadow(
             color: Colors.black26,
-            blurRadius: 12,
-            offset: Offset(0, 6),
+            blurRadius: 10,
+            offset: Offset(0, 5),
           ),
         ],
       ),
@@ -181,9 +196,9 @@ class HomePageState extends State<HomePage>
         ),
         child: Text(
           label.toUpperCase(),
-          style: GoogleFonts.nunito(
+          style: GoogleFonts.poppins(
             textStyle: const TextStyle(
-              color: Color(0xFF7751F8),
+              color: Color(0xFF6A11CB),
               fontSize: 16,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.2,

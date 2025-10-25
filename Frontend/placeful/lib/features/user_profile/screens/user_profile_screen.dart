@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:placeful/common/domain/models/user_profile.dart';
 import 'package:placeful/features/authentication/login_screen.dart';
 import 'package:placeful/features/friends/screens/add_friend_screen.dart';
@@ -26,14 +27,15 @@ class _UserProfileScreenBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<UserProfileViewModel>(context);
+    final bgColor = const Color(0xFFF7F5FF);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: bgColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.deepPurple),
           onPressed: () {
             Navigator.pushReplacement(
               context,
@@ -41,14 +43,22 @@ class _UserProfileScreenBody extends StatelessWidget {
             );
           },
         ),
-        title: const Text(
+        title: Text(
           'My Profile',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(
+            textStyle: const TextStyle(
+              color: Colors.deepPurple,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
         ),
         centerTitle: true,
         actions: [
           if (vm.profileDto != null)
-            TextButton(
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.deepPurple),
+              tooltip: "Edit Profile",
               onPressed: () async {
                 final updated = await Navigator.push(
                   context,
@@ -61,17 +71,11 @@ class _UserProfileScreenBody extends StatelessWidget {
                         ),
                   ),
                 );
-
-                if (updated == true) {
-                  await vm.loadUserProfile();
-                }
+                if (updated == true) await vm.loadUserProfile();
               },
-
-              child: const Text('Edit Profile'),
             ),
-
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black),
+            icon: const Icon(Icons.logout, color: Colors.deepPurple),
             onPressed: () async {
               await vm.signOut();
               if (context.mounted) {
@@ -88,7 +92,9 @@ class _UserProfileScreenBody extends StatelessWidget {
       body: SafeArea(
         child:
             vm.isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                  child: CircularProgressIndicator(color: Colors.deepPurple),
+                )
                 : vm.error != null
                 ? Center(child: Text(vm.error!))
                 : vm.profileDto == null
@@ -100,88 +106,166 @@ class _UserProfileScreenBody extends StatelessWidget {
 
   Widget _buildProfile(BuildContext context, UserProfile profile) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 20),
-          CircleAvatar(
-            radius: 60,
-            backgroundColor: const Color(0xFF8668FF),
-            child:
-                profile.fullName.isNotEmpty
-                    ? Text(
-                      profile.fullName[0].toUpperCase(),
-                      style: const TextStyle(fontSize: 40, color: Colors.white),
-                    )
-                    : const Icon(Icons.person, size: 60, color: Colors.white),
-          ),
-          const SizedBox(height: 15),
-          Text(
-            profile.fullName.isNotEmpty ? profile.fullName : "Guest User",
-            style: const TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.purple.shade50,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Colors.white,
+                  child:
+                      profile.fullName.isNotEmpty
+                          ? Text(
+                            profile.fullName[0].toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 40,
+                              color: Colors.deepPurple,
+                            ),
+                          )
+                          : const Icon(
+                            Icons.person,
+                            size: 60,
+                            color: Colors.deepPurple,
+                          ),
+                ),
+                const SizedBox(height: 15),
+                Text(
+                  profile.fullName.isNotEmpty ? profile.fullName : "Guest User",
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
+                ),
+                Text(
+                  profile.email.isNotEmpty
+                      ? profile.email
+                      : "No email provided",
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.cake, size: 20, color: Colors.deepPurple),
+                    const SizedBox(width: 8),
+                    Text(
+                      "${profile.birthDate.day}.${profile.birthDate.month}.${profile.birthDate.year}",
+                      style: GoogleFonts.poppins(
+                        textStyle: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          Text(
-            profile.email.isNotEmpty ? profile.email : "No email provided",
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.cake, size: 20, color: Colors.grey),
-              const SizedBox(width: 8),
-              Text(
-                "Born: ${profile.birthDate.day}.${profile.birthDate.month}.${profile.birthDate.year}",
-                style: const TextStyle(fontSize: 16, color: Colors.black87),
+          const SizedBox(height: 30),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "Friends (${profile.friends?.length ?? 0})",
+              style: GoogleFonts.poppins(
+                textStyle: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
+                ),
               ),
-            ],
-          ),
-          const Divider(height: 40),
-          Text(
-            "Friends (${profile.friends?.length ?? 0})",
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 10),
           profile.friends == null || profile.friends!.isEmpty
-              ? const Text(
+              ? Text(
                 "No friends yet",
-                style: TextStyle(color: Colors.grey),
+                style: GoogleFonts.poppins(color: Colors.grey),
               )
-              : ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: profile.friends?.length,
-                itemBuilder: (_, index) {
-                  final friend = profile.friends?[index];
-                  return Card(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: const Color(
-                          0xFF8668FF,
-                        ).withValues(alpha: 0.2),
-                        child: Text(
-                          friend?.fullName[0].toUpperCase() ?? '',
-                          style: const TextStyle(
-                            color: Color(0xFF8668FF),
-                            fontWeight: FontWeight.bold,
-                          ),
+              : Column(
+                children:
+                    profile.friends!.map((friend) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.purple.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 6,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
-                      ),
-                      title: Text(friend?.fullName ?? ''),
-                      subtitle: Text(friend?.email ?? ''),
-                    ),
-                  );
-                },
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: const Color(
+                                0xFF8668FF,
+                              ).withOpacity(0.2),
+                              child: Text(
+                                friend.fullName[0].toUpperCase(),
+                                style: const TextStyle(
+                                  color: Color(0xFF8668FF),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  friend.fullName,
+                                  style: GoogleFonts.poppins(
+                                    textStyle: const TextStyle(
+                                      color: Colors.deepPurple,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  friend.email,
+                                  style: GoogleFonts.poppins(
+                                    textStyle: const TextStyle(
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
               ),
+          const SizedBox(height: 30),
           Row(
             children: [
               Expanded(
@@ -194,20 +278,26 @@ class _UserProfileScreenBody extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8668FF),
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
+                      borderRadius: BorderRadius.circular(30),
                     ),
+                    backgroundColor: Colors.deepPurple,
                   ),
-                  child: const Text(
+                  child: Text(
                     'Add Friends',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
+                    style: GoogleFonts.poppins(
+                      textStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 30),
         ],
       ),
     );

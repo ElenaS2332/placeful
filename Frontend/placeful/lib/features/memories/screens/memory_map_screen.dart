@@ -6,6 +6,7 @@ import 'package:placeful/features/memories/screens/list_memories_screen.dart';
 import 'package:placeful/features/user_profile/screens/user_profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:placeful/features/memories/viewmodels/memory_map_viewmodel.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MemoryMapScreen extends StatelessWidget {
   const MemoryMapScreen({super.key});
@@ -24,14 +25,46 @@ class MemoryMapScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final bgColor = const Color(0xFFF7F5FF);
 
     return ChangeNotifierProvider(
       create: (_) => MemoryMapViewModel()..fetchLatestMemories(),
       child: Consumer<MemoryMapViewModel>(
         builder: (context, vm, _) {
+          final purpleMarker = BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueViolet,
+          );
+
+          final markers =
+              vm.allMemories.map((memory) {
+                return Marker(
+                  markerId: MarkerId(memory.id),
+                  position: LatLng(
+                    memory.location?.latitude ?? 41.9981,
+                    memory.location?.longitude ?? 21.4254,
+                  ),
+                  infoWindow: InfoWindow(title: memory.title),
+                  icon: purpleMarker,
+                );
+              }).toSet();
+
           return Scaffold(
+            extendBodyBehindAppBar: true,
+            backgroundColor: bgColor,
             appBar: AppBar(
-              title: const Text("Memories Map"),
+              title: Text(
+                "Memories Map",
+                style: GoogleFonts.poppins(
+                  textStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              backgroundColor: bgColor,
+              elevation: 0,
+              iconTheme: const IconThemeData(color: Colors.black87),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.person),
@@ -62,15 +95,19 @@ class MemoryMapScreen extends StatelessWidget {
             body: Stack(
               children: [
                 vm.isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.deepPurple,
+                      ),
+                    )
                     : GoogleMap(
                       initialCameraPosition: const CameraPosition(
                         target: LatLng(41.9981, 21.4254),
-                        zoom: 14,
+                        zoom: 16,
                       ),
-                      markers: vm.markers,
+                      markers: markers,
                       zoomGesturesEnabled: true,
-                      zoomControlsEnabled: true,
+                      zoomControlsEnabled: false,
                       myLocationEnabled: false,
                       myLocationButtonEnabled: false,
                       scrollGesturesEnabled: true,
@@ -78,13 +115,32 @@ class MemoryMapScreen extends StatelessWidget {
                       style: _mapStyle,
                     ),
                 Positioned(
+                  bottom: screenHeight * 0.2,
+                  right: 16,
+                  child: FloatingActionButton(
+                    heroTag: "myLocation",
+                    backgroundColor: Colors.white,
+                    child: const Icon(Icons.my_location),
+                    onPressed: () {
+                      // Move camera to current location if available
+                    },
+                  ),
+                ),
+                Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
                   child: Container(
-                    height: screenHeight * 0.25,
+                    height: screenHeight * 0.18,
                     decoration: BoxDecoration(
-                      color: Colors.pink.shade50,
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.purple.shade200.withOpacity(0.9),
+                          Colors.purple.shade400.withOpacity(0.9),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(24),
                       ),
@@ -101,40 +157,79 @@ class MemoryMapScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ElevatedButton.icon(
-                            icon: const Icon(Icons.grid_view),
-                            label: const Text("List All Memories"),
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size.fromHeight(50),
-                              backgroundColor: Colors.grey[200],
-                              foregroundColor: Colors.black87,
+                          Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Colors.white, Colors.white70],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const ListMemoriesScreen(),
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.grid_view),
+                              label: Text(
+                                "List All Memories",
+                                style: GoogleFonts.poppins(
+                                  textStyle: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.deepPurple,
+                                  ),
                                 ),
-                              );
-                            },
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                minimumSize: const Size.fromHeight(48),
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const ListMemoriesScreen(),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                           const SizedBox(height: 12),
-                          ElevatedButton.icon(
-                            icon: const Icon(Icons.add),
-                            label: const Text("Add New Memory"),
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size.fromHeight(50),
-                              backgroundColor: Colors.pink,
-                              foregroundColor: Colors.white,
+                          Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Colors.white, Colors.white70],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const AddMemoryScreen(),
+                            child: ElevatedButton.icon(
+                              icon: const Icon(
+                                Icons.add,
+                                color: Colors.deepPurple,
+                              ),
+                              label: Text(
+                                "Add New Memory",
+                                style: GoogleFonts.poppins(
+                                  textStyle: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.deepPurple,
+                                  ),
                                 ),
-                              );
-                            },
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                minimumSize: const Size.fromHeight(48),
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const AddMemoryScreen(),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ],
                       ),

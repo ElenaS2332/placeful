@@ -9,7 +9,7 @@ using Placeful.Api.Services.Interface;
 
 namespace Placeful.Api.Services.Implementation;
 
-public class MemoryService(PlacefulDbContext context, 
+public class MemoryService(PlacefulDbContext context,
     IHttpContextAccessor httpContextAccessor,
     IBlobStorageService blobStorageService) : IMemoryService
 {
@@ -40,7 +40,7 @@ public class MemoryService(PlacefulDbContext context,
     public async Task CreateMemory(MemoryDto memoryDto)
     {
         await using var transaction = await context.Database.BeginTransactionAsync();
-        
+
         try
         {
             if (memoryDto.ImageFile is not null && memoryDto.ImageFile.Length > 0)
@@ -48,10 +48,10 @@ public class MemoryService(PlacefulDbContext context,
                 var imageUrl = await blobStorageService.UploadFileAsync(memoryDto.ImageFile);
                 memoryDto.ImageUrl = imageUrl;
             }
-            
+
             var location = new Location();
-            if (memoryDto.LocationName is not null && 
-                memoryDto.LocationLatitude is not null && 
+            if (memoryDto.LocationName is not null &&
+                memoryDto.LocationLatitude is not null &&
                 memoryDto.LocationLongitude is not null)
             {
                 location = new Location
@@ -70,6 +70,7 @@ public class MemoryService(PlacefulDbContext context,
             {
                 Title = memoryDto.Title,
                 Description = memoryDto.Description,
+                Date = (memoryDto.Date ?? DateTime.UtcNow).ToUniversalTime(),
                 ImageUrl = memoryDto.ImageUrl,
                 Location = location,
                 UserProfileId = userId
@@ -86,26 +87,47 @@ public class MemoryService(PlacefulDbContext context,
         }
     }
 
-    public async Task UpdateMemory(Memory memory)
+    public async Task UpdateMemory(MemoryToUpdateDto dto)
     {
-        var memoryExists = await MemoryExists(memory.Id);
+        // Get the existing memory
+        var memory = await context.Memories.FindAsync(dto.Id);
+        if (memory == null) throw new KeyNotFoundException("Memory not found");
 
-        if (!memoryExists) throw new Exception();
+        // Update fields if provided
+        if (!string.IsNullOrEmpty(dto.Title))
+            memory.Title = dto.Title;
+
+        if (!string.IsNullOrEmpty(dto.Description))
+            memory.Description = dto.Description;
+
+        if (dto.Date.HasValue)
+            memory.Date = dto.Date.Value.ToUniversalTime();
+
+        if (dto.Location != null)
+            memory.Location = dto.Location;
+
+        if (dto.ImageFile != null)
+        {
+            memory.ImageUrl = await blobStorageService.UploadFileAsync(dto.ImageFile);
+        }
+        else if (!string.IsNullOrEmpty(dto.ImageUrl))
+        {
+            memory.ImageUrl = dto.ImageUrl;
+        }
 
         context.Memories.Update(memory);
-
         await SaveChanges();
     }
 
     public async Task DeleteMemory(Guid id)
     {
         var memoryToBeDeleted = await GetMemory(id);
-        
+
         if (!string.IsNullOrEmpty(memoryToBeDeleted.ImageUrl))
         {
             await blobStorageService.DeleteFileAsync(memoryToBeDeleted.ImageUrl);
         }
-        
+
         context.Memories.Remove(memoryToBeDeleted);
 
         await SaveChanges();
@@ -120,13 +142,13 @@ public class MemoryService(PlacefulDbContext context,
     {
         return await context.Memories.AnyAsync(c => c.Id == guid);
     }
-    
+
     private String GetCurrentUserFirebaseUid()
     {
         var currentUserUid = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (currentUserUid == null)
             throw new UnauthorizedAccessException("User identifier not found in token.");
-        
+
         return currentUserUid;
     }
 }

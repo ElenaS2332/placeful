@@ -3,6 +3,7 @@ import 'package:placeful/common/domain/models/memory.dart';
 import 'package:placeful/features/memories/screens/memory_details_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:placeful/features/memories/viewmodels/favorite_memories_viewmodel.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class FavoriteMemoriesScreen extends StatelessWidget {
   const FavoriteMemoriesScreen({super.key});
@@ -33,60 +34,67 @@ class _FavoriteMemoriesBody extends StatelessWidget {
         });
 
         return Scaffold(
+          backgroundColor: const Color(0xFFF8F6FF),
           appBar: AppBar(
-            title: const Text("Favorite Memories"),
+            backgroundColor: const Color(0xFFF8F6FF),
+            elevation: 0,
+            title: Text(
+              "Favorite Memories",
+              style: GoogleFonts.poppins(
+                textStyle: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            centerTitle: true,
             actions: [
-              vm.favoriteMemoriesList != null &&
-                      vm.favoriteMemoriesList!.memories != null &&
-                      vm.favoriteMemoriesList!.memories!.isNotEmpty
-                  ? IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder:
-                            (context) => AlertDialog(
-                              title: const Text("Clear All Favorites"),
-                              content: const Text(
-                                "Are you sure you want to clear all favorite memories?",
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed:
-                                      () => Navigator.pop(context, false),
-                                  child: const Text("Cancel"),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: const Text("Clear"),
-                                ),
-                              ],
+              if (vm.favoriteMemoriesList?.memories?.isNotEmpty ?? false)
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.black87),
+                  tooltip: "Clear Favorites",
+                  onPressed: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder:
+                          (_) => AlertDialog(
+                            title: const Text("Clear All Favorites"),
+                            content: const Text(
+                              "Are you sure you want to clear all favorite memories?",
                             ),
-                      );
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text("Cancel"),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text("Clear"),
+                              ),
+                            ],
+                          ),
+                    );
 
-                      if (confirm == true) {
-                        vm.favoriteMemoriesList!.memories!.clear();
+                    if (confirm == true) {
+                      vm.favoriteMemoriesList!.memories!.clear();
+                      vm.notifyListenersFromVM();
+
+                      try {
+                        await vm.clearFavorites();
+                      } catch (_) {
+                        vm.errorMessage = "Something went wrong";
                         vm.notifyListenersFromVM();
-
-                        try {
-                          await vm.clearFavorites();
-                        } catch (_) {
-                          vm.errorMessage = "Something went wrong";
-                          vm.notifyListenersFromVM();
-                        }
                       }
-                    },
-                  )
-                  : const SizedBox.shrink(),
+                    }
+                  },
+                ),
             ],
-            backgroundColor: Colors.amber.shade700,
           ),
           body:
               vm.isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : vm.favoriteMemoriesList == null ||
-                      vm.favoriteMemoriesList!.memories == null ||
-                      vm.favoriteMemoriesList!.memories!.isEmpty
+                  : (vm.favoriteMemoriesList?.memories?.isEmpty ?? true)
                   ? const Center(
                     child: Text(
                       "No favorite memories yet",
@@ -114,11 +122,18 @@ class _FavoriteMemoriesBody extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.amber.shade300,
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.purple.shade300,
+                                Colors.purple.shade500,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black26,
+                                color: Colors.black.withOpacity(0.08),
                                 blurRadius: 6,
                                 offset: const Offset(0, 3),
                               ),
@@ -133,18 +148,22 @@ class _FavoriteMemoriesBody extends StatelessWidget {
                                   children: [
                                     Text(
                                       item.title,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                      style: GoogleFonts.poppins(
+                                        textStyle: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       item.description,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white70,
+                                      style: GoogleFonts.poppins(
+                                        textStyle: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.white70,
+                                        ),
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,

@@ -5,10 +5,10 @@ part 'location.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class Location {
-  late final String id;
-  late final double latitude;
-  late final double longitude;
-  late final String name;
+  final String id;
+  final double latitude;
+  final double longitude;
+  final String name;
 
   Location({
     required this.id,
@@ -18,7 +18,8 @@ class Location {
   });
 
   Location.fromDto(LocationDto dto)
-    : name = dto.name,
+    : id = dto.id,
+      name = dto.name,
       latitude = dto.latitude,
       longitude = dto.longitude;
 

@@ -49,8 +49,32 @@ class MemoryService {
     }
   }
 
-  Future<void> updateMemory(Memory memory) async {
-    await _client.put("memory/${memory.id}", memory.toJson());
+  Future<void> updateMemory(Memory memory, {File? imageFile}) async {
+    final fields = <String, String>{
+      'Title': memory.title,
+      'Description': memory.description,
+    };
+
+    if (memory.date != null) {
+      fields['Date'] = memory.date!.toIso8601String();
+    }
+
+    if (memory.location != null) {
+      fields['LocationLatitude'] = memory.location!.latitude.toString();
+      fields['LocationLongitude'] = memory.location!.longitude.toString();
+      fields['LocationName'] = memory.location!.name;
+    }
+
+    if (imageFile != null) {
+      await _client.postWithMedia(
+        'memory/${memory.id}',
+        fields: fields,
+        file: imageFile,
+        fileFieldName: 'ImageFile',
+      );
+    } else {
+      await _client.put("memory/${memory.id}", memory.toJson());
+    }
   }
 
   Future<void> deleteMemory(String id) async {

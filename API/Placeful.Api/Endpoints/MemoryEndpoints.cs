@@ -48,25 +48,22 @@ public static class MemoryEndpoints
         return Results.Ok();
     }
     
-    private static async Task<IResult> UpdateMemory(MemoryToUpdateDto memoryToUpdateDto, IMemoryService memoryService)
+    private static async Task<IResult> UpdateMemory(
+        [FromForm] MemoryToUpdateDto memoryToUpdateDto, 
+        IMemoryService memoryService)
     {
         try
         {
-            var memory = new Memory
-            {
-                Title = memoryToUpdateDto.Title,
-                Description = memoryToUpdateDto.Description,
-                Date = memoryToUpdateDto.Date ?? DateTime.UtcNow,
-                Location = memoryToUpdateDto.Location,
-                ImageUrl = memoryToUpdateDto.ImageUrl
-            };
-
-            await memoryService.UpdateMemory(memory);
+            await memoryService.UpdateMemory(memoryToUpdateDto);
             return Results.Ok();
         }
-        catch (Exception ex) // more specific exceptions like MemoryNotFound
+        catch (KeyNotFoundException)
         {
             return Results.NotFound();
+        }
+        catch (Exception)
+        {
+            return Results.Problem("Error updating memory.");
         }
     }
 

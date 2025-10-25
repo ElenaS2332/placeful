@@ -104,6 +104,19 @@ class _TakeImageScreenState extends State<TakeImageScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 1,
+        title: Text(
+          "Take image",
+          style: const TextStyle(
+            color: Colors.deepPurple,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.deepPurple),
+      ),
       body: Stack(
         children: [
           Positioned.fill(

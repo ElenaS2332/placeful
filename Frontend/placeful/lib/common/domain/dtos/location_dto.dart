@@ -4,11 +4,13 @@ part 'location_dto.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class LocationDto {
-  late final double latitude;
-  late final double longitude;
+  final String id;
+  final double latitude;
+  final double longitude;
   final String name;
 
   LocationDto({
+    required this.id,
     required this.latitude,
     required this.longitude,
     required this.name,

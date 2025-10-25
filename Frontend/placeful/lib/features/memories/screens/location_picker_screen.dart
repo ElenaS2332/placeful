@@ -25,17 +25,15 @@ class _LocationPickerScreenBody extends StatefulWidget {
 
 class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
   OverlayEntry? _toastEntry;
-  bool _isToastVisible = false;
 
-  void _showToast(String message, {bool success = true}) {
+  void _showToast(String message) {
     _toastEntry?.remove();
-    _isToastVisible = true;
 
     final overlay = Overlay.of(context);
     _toastEntry = OverlayEntry(
       builder:
           (context) => Positioned(
-            top: kToolbarHeight + 16,
+            top: kToolbarHeight + 100,
             left: 16,
             right: 16,
             child: Material(
@@ -46,11 +44,8 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
                   horizontal: 16,
                 ),
                 decoration: BoxDecoration(
-                  color:
-                      success
-                          ? Color.fromRGBO(141, 172, 22, 0.9)
-                          : Colors.red.shade700,
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.deepPurple.shade100.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(12),
                   boxShadow: const [
                     BoxShadow(
                       color: Colors.black26,
@@ -61,36 +56,30 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
                 ),
                 child: Text(
                   message,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  style: const TextStyle(
+                    color: Colors.deepPurple,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
             ),
           ),
     );
-
     overlay.insert(_toastEntry!);
-  }
-
-  @override
-  void dispose() {
-    _toastEntry?.remove();
-    super.dispose();
+    Future.delayed(const Duration(seconds: 2), () => _toastEntry?.remove());
   }
 
   final String mapStyleNoPOI = '''
   [
     {
       "featureType": "poi",
-      "stylers": [
-        { "visibility": "off" }
-      ]
+      "stylers": [{"visibility": "off"}]
     },
     {
       "featureType": "transit",
-      "stylers": [
-        { "visibility": "off" }
-      ]
+      "stylers": [{"visibility": "off"}]
     }
   ]
   ''';
@@ -101,10 +90,21 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Pick Location"),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        title: const Text(
+          "Pick Location",
+          style: TextStyle(
+            color: Colors.deepPurple,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.deepPurple),
         actions: [
           IconButton(
             icon: const Icon(Icons.check),
+            color: Colors.deepPurple,
             onPressed:
                 vm.selectedPosition == null
                     ? null
@@ -124,17 +124,19 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
         onMapCreated: vm.onMapCreated,
         onTap: (position) async {
           vm.onMapTapped(position);
-          if (_isToastVisible) {
-            _isToastVisible = false;
-          }
+
           await showModalBottomSheet(
             context: context,
             isScrollControlled: true,
+            backgroundColor: Colors.white,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            ),
             builder: (ctx) {
               final controller = TextEditingController();
               return Padding(
                 padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                  bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
                   left: 16,
                   right: 16,
                   top: 20,
@@ -147,14 +149,19 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
                       ),
                     ),
                     const SizedBox(height: 10),
                     TextField(
                       controller: controller,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         hintText: "e.g. My Favorite Spot",
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
                       ),
                       autofocus: true,
                       textInputAction: TextInputAction.done,
@@ -167,17 +174,29 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
                         Navigator.pop(ctx);
                       },
                     ),
-                    const SizedBox(height: 10),
-                    ElevatedButton(
+                    const SizedBox(height: 12),
+                    TextButton(
                       onPressed: () {
                         final name = controller.text.trim();
-                        vm.setLocationName(name);
-                        _showToast(name);
+                        if (name.isNotEmpty) {
+                          vm.setLocationName(name);
+                          _showToast(name);
+                        }
                         Navigator.pop(ctx);
                       },
-                      child: const Text("Save"),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.deepPurple,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text(
+                        "Save",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 16),
                   ],
                 ),
               );
@@ -191,6 +210,9 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
                   gmap.Marker(
                     markerId: const gmap.MarkerId("selected"),
                     position: vm.selectedPosition!,
+                    icon: gmap.BitmapDescriptor.defaultMarkerWithHue(
+                      gmap.BitmapDescriptor.hueViolet,
+                    ),
                     infoWindow: gmap.InfoWindow(
                       title:
                           vm.locationName.isEmpty

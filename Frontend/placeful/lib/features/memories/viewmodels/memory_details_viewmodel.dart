@@ -17,12 +17,17 @@ class MemoryDetailsViewModel extends ChangeNotifier {
       LatLng(memory.location?.latitude ?? 0, memory.location?.longitude ?? 0);
   String get title => memory.title;
   String get description => memory.description;
+  DateTime? get date => memory.date;
   String? get imageUrl => memory.imageUrl;
   String get locationName => memory.location?.name ?? 'Unknown location';
 
   void toggleMap() {
     _showMap = !_showMap;
     notifyListeners();
+  }
+
+  Future<void> updateMemory(Memory memory) async {
+    await memoryService.updateMemory(memory);
   }
 
   Future<void> deleteMemory(String id) async {

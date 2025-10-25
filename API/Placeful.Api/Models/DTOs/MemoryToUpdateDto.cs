@@ -4,9 +4,11 @@ namespace Placeful.Api.Models.DTOs;
 
 public class MemoryToUpdateDto
 {
-    public string Title { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
+    public string Id { get; set; } = string.Empty;
+    public string? Title { get; set; }
+    public string? Description { get; set; }
     public DateTime? Date { get; set; }
-    public Location? Location { get; set; } = new Location();
-    public string ImageUrl { get; set; } = string.Empty;
+    public Location? Location { get; set; }
+    public IFormFile? ImageFile { get; set; }
+    public string? ImageUrl { get; set; }
 }

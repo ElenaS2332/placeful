@@ -4,13 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:placeful/common/domain/dtos/location_dto.dart';
 import 'package:placeful/common/domain/dtos/memory_dto.dart';
 import 'package:placeful/common/domain/models/location.dart';
+import 'package:placeful/common/domain/models/memory.dart';
 import 'package:placeful/common/services/memory_service.dart';
 import 'package:placeful/common/services/service_locatior.dart';
 
 class AddMemoryViewModel extends ChangeNotifier {
   final MemoryService memoryService = getIt.get<MemoryService>();
+  final Memory? memoryToEdit;
 
-  AddMemoryViewModel();
+  AddMemoryViewModel(this.memoryToEdit) {
+    if (memoryToEdit != null) {
+      titleController.text = memoryToEdit!.title;
+      descriptionController.text = memoryToEdit!.description;
+      if (memoryToEdit!.date != null) {
+        dateController.text = memoryToEdit!.date!.toIso8601String();
+      }
+    }
+  }
 
   String title = '';
   String description = '';
@@ -22,6 +32,8 @@ class AddMemoryViewModel extends ChangeNotifier {
   bool isLoading = false;
   String? error;
 
+  final titleController = TextEditingController();
+  final descriptionController = TextEditingController();
   final dateController = TextEditingController();
 
   void setSelectedImage(File file) {
@@ -70,6 +82,7 @@ class AddMemoryViewModel extends ChangeNotifier {
         location:
             location != null
                 ? LocationDto(
+                  id: location!.id,
                   latitude: location!.latitude,
                   longitude: location!.longitude,
                   name: location!.name,
@@ -79,6 +92,71 @@ class AddMemoryViewModel extends ChangeNotifier {
       );
 
       await memoryService.addMemory(memoryDto, imageFile: selectedImageFile);
+      return true;
+    } catch (e) {
+      error = e.toString();
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  //   Future<void> reloadMemory(x§) async {
+  //   final updatedMemory = await memoryService.getMemory(memory.id);
+  //   memory.title = updatedMemory.title;
+  //   memory.description = updatedMemory.description;
+  //   memory.date = updatedMemory.date;
+  //   memory.location = updatedMemory.location;
+  //   memory.imageUrl = updatedMemory.imageUrl;
+  //   notifyListeners();
+  // }
+
+  Future<bool> saveMemory() async {
+    if (!isValid) {
+      error = 'Please fill all required fields';
+      notifyListeners();
+      return false;
+    }
+
+    isLoading = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      final memoryDto = MemoryDto(
+        title: title,
+        description: description,
+        date: date,
+        location:
+            location != null
+                ? LocationDto(
+                  id: location!.id,
+                  latitude: location!.latitude,
+                  longitude: location!.longitude,
+                  name: location!.name,
+                )
+                : null,
+        imageUrl: imageUrl,
+      );
+
+      if (memoryToEdit != null) {
+        // Updating existing memory
+        await memoryService.updateMemory(
+          memoryToEdit!.copyWith(
+            title: title,
+            description: description,
+            date: date,
+            location: location,
+            imageUrl: imageUrl,
+          ),
+          imageFile: selectedImageFile,
+        );
+      } else {
+        // Adding new memory
+        await memoryService.addMemory(memoryDto, imageFile: selectedImageFile);
+      }
+
       return true;
     } catch (e) {
       error = e.toString();
@@ -106,6 +184,8 @@ class AddMemoryViewModel extends ChangeNotifier {
   @override
   void dispose() {
     dateController.dispose();
+    titleController.dispose();
+    descriptionController.dispose();
     super.dispose();
   }
 }
