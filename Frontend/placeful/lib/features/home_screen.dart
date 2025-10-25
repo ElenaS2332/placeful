@@ -61,7 +61,7 @@ class HomePageState extends State<HomePage>
                       child: Icon(
                         Icons.eco_rounded,
                         size: 160,
-                        color: Colors.white.withOpacity(0.12),
+                        color: Colors.white.withValues(alpha: 0.12),
                       ),
                     ),
                   ),
@@ -73,7 +73,7 @@ class HomePageState extends State<HomePage>
                       child: Icon(
                         Icons.eco_rounded,
                         size: 180,
-                        color: Colors.white.withOpacity(0.15),
+                        color: Colors.white.withValues(alpha: 0.15),
                       ),
                     ),
                   ),

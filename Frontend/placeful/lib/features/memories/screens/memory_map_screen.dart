@@ -135,8 +135,8 @@ class MemoryMapScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.purple.shade200.withOpacity(0.9),
-                          Colors.purple.shade400.withOpacity(0.9),
+                          Colors.purple.shade200.withValues(alpha: 0.9),
+                          Colors.purple.shade400.withValues(alpha: 0.9),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,

@@ -107,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen>
                         child: Icon(
                           Icons.eco_rounded,
                           size: 150,
-                          color: Colors.white.withOpacity(0.12),
+                          color: Colors.white.withValues(alpha: 0.12),
                         ),
                       ),
                     ),
@@ -119,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen>
                         child: Icon(
                           Icons.eco_rounded,
                           size: 180,
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                         ),
                       ),
                     ),
@@ -131,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen>
                         child: Icon(
                           Icons.eco_rounded,
                           size: 100,
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha: 0.1),
                         ),
                       ),
                     ),
@@ -183,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen>
 
                             Container(
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
+                                color: Colors.white.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: const [
                                   BoxShadow(
@@ -212,7 +212,9 @@ class _LoginScreenState extends State<LoginScreen>
                                         color: Colors.white70,
                                       ),
                                       filled: true,
-                                      fillColor: Colors.white.withOpacity(0.15),
+                                      fillColor: Colors.white.withValues(
+                                        alpha: 0.15,
+                                      ),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide.none,
@@ -234,7 +236,9 @@ class _LoginScreenState extends State<LoginScreen>
                                         color: Colors.white70,
                                       ),
                                       filled: true,
-                                      fillColor: Colors.white.withOpacity(0.15),
+                                      fillColor: Colors.white.withValues(
+                                        alpha: 0.15,
+                                      ),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide.none,

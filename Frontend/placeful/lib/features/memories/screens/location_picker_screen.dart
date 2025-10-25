@@ -44,7 +44,7 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
                   horizontal: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.deepPurple.shade100.withOpacity(0.9),
+                  color: Colors.deepPurple.shade100.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: const [
                     BoxShadow(
