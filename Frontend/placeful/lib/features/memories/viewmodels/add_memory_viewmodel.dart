@@ -1,6 +1,6 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:placeful/common/domain/dtos/location_dto.dart';
 import 'package:placeful/common/domain/dtos/memory_dto.dart';
 import 'package:placeful/common/domain/models/location.dart';
@@ -13,14 +13,10 @@ class AddMemoryViewModel extends ChangeNotifier {
   final Memory? memoryToEdit;
 
   AddMemoryViewModel(this.memoryToEdit) {
-    if (memoryToEdit != null) {
-      titleController.text = memoryToEdit!.title;
-      descriptionController.text = memoryToEdit!.description;
-      if (memoryToEdit!.date != null) {
-        dateController.text = memoryToEdit!.date!.toIso8601String();
-      }
-    }
+    _initializeMemory();
   }
+
+  bool isInitializing = true;
 
   String title = '';
   String description = '';
@@ -35,6 +31,45 @@ class AddMemoryViewModel extends ChangeNotifier {
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
   final dateController = TextEditingController();
+  final locationController = TextEditingController();
+
+  bool _showMap = false;
+  bool get showMap => _showMap;
+
+  LatLng memoryLocation = LatLng(0, 0);
+
+  Future<void> _initializeMemory() async {
+    if (memoryToEdit != null) {
+      titleController.text = memoryToEdit!.title;
+      descriptionController.text = memoryToEdit!.description;
+      title = memoryToEdit!.title;
+      description = memoryToEdit!.description;
+
+      if (memoryToEdit!.date != null) {
+        dateController.text =
+            '${memoryToEdit!.date!.day}/${memoryToEdit!.date!.month}/${memoryToEdit!.date!.year}';
+        date = memoryToEdit!.date;
+      }
+
+      if (memoryToEdit!.location != null) {
+        locationController.text = memoryToEdit!.location!.name;
+        location = memoryToEdit!.location;
+        setMemoryLocation(
+          LatLng(
+            memoryToEdit!.location!.latitude,
+            memoryToEdit!.location!.longitude,
+          ),
+        );
+      }
+
+      if (memoryToEdit!.imageUrl != null) {
+        imageUrl = memoryToEdit!.imageUrl;
+      }
+    }
+
+    isInitializing = false;
+    notifyListeners();
+  }
 
   void setSelectedImage(File file) {
     selectedImageFile = file;
@@ -61,56 +96,17 @@ class AddMemoryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool get isValid => title.isNotEmpty && description.isNotEmpty;
-
-  Future<bool> addMemory() async {
-    if (!isValid) {
-      error = 'Please fill all required fields';
-      notifyListeners();
-      return false;
-    }
-
-    isLoading = true;
-    error = null;
+  void setMemoryLocation(LatLng value) {
+    memoryLocation = value;
     notifyListeners();
-
-    try {
-      final memoryDto = MemoryDto(
-        title: title,
-        description: description,
-        date: date,
-        location:
-            location != null
-                ? LocationDto(
-                  id: location!.id,
-                  latitude: location!.latitude,
-                  longitude: location!.longitude,
-                  name: location!.name,
-                )
-                : null,
-        imageUrl: imageUrl,
-      );
-
-      await memoryService.addMemory(memoryDto, imageFile: selectedImageFile);
-      return true;
-    } catch (e) {
-      error = e.toString();
-      return false;
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
   }
 
-  //   Future<void> reloadMemory(x§) async {
-  //   final updatedMemory = await memoryService.getMemory(memory.id);
-  //   memory.title = updatedMemory.title;
-  //   memory.description = updatedMemory.description;
-  //   memory.date = updatedMemory.date;
-  //   memory.location = updatedMemory.location;
-  //   memory.imageUrl = updatedMemory.imageUrl;
-  //   notifyListeners();
-  // }
+  bool get isValid => title.isNotEmpty && description.isNotEmpty;
+
+  void toggleMap() {
+    _showMap = !_showMap;
+    notifyListeners();
+  }
 
   Future<bool> saveMemory() async {
     if (!isValid) {
@@ -141,7 +137,6 @@ class AddMemoryViewModel extends ChangeNotifier {
       );
 
       if (memoryToEdit != null) {
-        // Updating existing memory
         await memoryService.updateMemory(
           memoryToEdit!.copyWith(
             title: title,
@@ -153,7 +148,6 @@ class AddMemoryViewModel extends ChangeNotifier {
           imageFile: selectedImageFile,
         );
       } else {
-        // Adding new memory
         await memoryService.addMemory(memoryDto, imageFile: selectedImageFile);
       }
 
@@ -186,6 +180,7 @@ class AddMemoryViewModel extends ChangeNotifier {
     dateController.dispose();
     titleController.dispose();
     descriptionController.dispose();
+    locationController.dispose();
     super.dispose();
   }
 }

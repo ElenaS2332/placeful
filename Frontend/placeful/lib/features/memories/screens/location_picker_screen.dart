@@ -119,6 +119,7 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
       body: Stack(
         children: [
           gmap.GoogleMap(
+            myLocationEnabled: true,
             initialCameraPosition: initialCameraPosition,
             style: mapStyleNoPOI,
             onMapCreated: (controller) async {

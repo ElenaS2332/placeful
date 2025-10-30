@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ import 'package:placeful/common/domain/models/location.dart';
 import 'package:placeful/features/memories/screens/location_picker_screen.dart';
 import 'package:placeful/features/memories/screens/take_image_screen.dart';
 import '../viewmodels/add_memory_viewmodel.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
 
 class AddMemoryScreen extends StatelessWidget {
   const AddMemoryScreen({super.key, this.memoryToEdit});
@@ -95,6 +97,7 @@ class AddMemoryScreenBody extends StatelessWidget {
         }
       }
     }
+
     if (status.isDenied || status.isPermanentlyDenied) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -109,6 +112,7 @@ class AddMemoryScreenBody extends StatelessWidget {
       onlyAll: true,
     );
     if (albums.isEmpty) return;
+
     final recentAlbum = albums.first;
     final recentImages = await recentAlbum.getAssetListPaged(page: 0, size: 30);
     if (!context.mounted) return;
@@ -158,9 +162,10 @@ class AddMemoryScreenBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = Provider.of<AddMemoryViewModel>(context);
     final formKey = GlobalKey<FormState>();
-    final locationController = TextEditingController(
-      text: vm.location?.name ?? 'Add Location',
-    );
+
+    if (vm.isInitializing) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -232,19 +237,30 @@ class AddMemoryScreenBody extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               TextField(
-                controller: locationController,
+                controller: vm.locationController,
                 readOnly: true,
                 onTap: () async {
-                  final selectedLocation = await Navigator.push(
+                  if (!context.mounted) return;
+                  if (vm.showMap) vm.toggleMap();
+                  final selectedLocationDto = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => const LocationPickerScreen(),
                     ),
                   );
-                  if (selectedLocation != null) {
-                    final loc = Location.fromDto(selectedLocation);
+
+                  if (selectedLocationDto != null) {
+                    final loc = Location.fromDto(selectedLocationDto);
+
                     vm.setLocation(loc);
-                    locationController.text = loc.name;
+                    vm.memoryLocation = gmap.LatLng(
+                      loc.latitude,
+                      loc.longitude,
+                    );
+
+                    vm.locationController.text = loc.name;
+
+                    if (!vm.showMap) vm.toggleMap();
                   }
                 },
                 decoration: InputDecoration(
@@ -259,15 +275,78 @@ class AddMemoryScreenBody extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              if (vm.imageUrl != null && vm.imageUrl!.isNotEmpty)
-                Container(
-                  height: 250,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    image: DecorationImage(
-                      image: FileImage(File(vm.imageUrl!)),
-                      fit: BoxFit.cover,
+              if (vm.location != null)
+                Center(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.map),
+                    label: Text(vm.showMap ? "Hide Map" : "Show on Map"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF8668FF),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
+                    onPressed: vm.toggleMap,
+                  ),
+                ),
+              const SizedBox(height: 16),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child:
+                    vm.showMap
+                        ? Container(
+                          key: const ValueKey('map'),
+                          height: 200,
+                          margin: const EdgeInsets.only(top: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade400),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: GoogleMap(
+                              initialCameraPosition: CameraPosition(
+                                target: vm.memoryLocation,
+                                zoom: 15,
+                              ),
+                              markers: {
+                                Marker(
+                                  markerId: const MarkerId('memory'),
+                                  position: vm.memoryLocation,
+                                  infoWindow: InfoWindow(
+                                    title: vm.title,
+                                    snippet: vm.location!.name,
+                                  ),
+                                ),
+                              },
+                              zoomControlsEnabled: false,
+                              myLocationButtonEnabled: false,
+                              scrollGesturesEnabled: true,
+                              tiltGesturesEnabled: false,
+                            ),
+                          ),
+                        )
+                        : const SizedBox.shrink(),
+              ),
+              const SizedBox(height: 16),
+              if (vm.imageUrl != null && vm.imageUrl!.isNotEmpty)
+                SizedBox(
+                  height: 250,
+                  child: Image.network(
+                    vm.imageUrl!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 250,
+                    errorBuilder:
+                        (_, __, ___) => Container(
+                          height: 250,
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: Icon(Icons.image_not_supported),
+                          ),
+                        ),
                   ),
                 ),
               if (vm.imageUrl != null && vm.imageUrl!.isNotEmpty)
@@ -325,6 +404,7 @@ class AddMemoryScreenBody extends StatelessWidget {
                               : "Save Memory",
                         ),
               ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
