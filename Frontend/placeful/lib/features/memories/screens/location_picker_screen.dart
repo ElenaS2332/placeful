@@ -28,7 +28,6 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
 
   void _showToast(String message) {
     _toastEntry?.remove();
-
     final overlay = Overlay.of(context);
     _toastEntry = OverlayEntry(
       builder:
@@ -73,20 +72,22 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
 
   final String mapStyleNoPOI = '''
   [
-    {
-      "featureType": "poi",
-      "stylers": [{"visibility": "off"}]
-    },
-    {
-      "featureType": "transit",
-      "stylers": [{"visibility": "off"}]
-    }
+    {"featureType": "poi","stylers": [{"visibility": "off"}]},
+    {"featureType": "transit","stylers": [{"visibility": "off"}]}
   ]
   ''';
 
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<LocationPickerViewModel>(context);
+
+    final initialCameraPosition =
+        vm.currentPosition != null
+            ? gmap.CameraPosition(target: vm.currentPosition!, zoom: 16)
+            : const gmap.CameraPosition(
+              target: gmap.LatLng(41.9981, 21.4254),
+              zoom: 14,
+            );
 
     return Scaffold(
       appBar: AppBar(
@@ -115,113 +116,130 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
           ),
         ],
       ),
-      body: gmap.GoogleMap(
-        initialCameraPosition: const gmap.CameraPosition(
-          target: gmap.LatLng(41.9981, 21.4254),
-          zoom: 16,
-        ),
-        style: mapStyleNoPOI,
-        onMapCreated: vm.onMapCreated,
-        onTap: (position) async {
-          vm.onMapTapped(position);
-
-          await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.white,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            builder: (ctx) {
-              final controller = TextEditingController();
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
-                  left: 16,
-                  right: 16,
-                  top: 20,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "Enter location name",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: controller,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        hintText: "e.g. My Favorite Spot",
-                        filled: true,
-                        fillColor: Colors.grey.shade100,
-                      ),
-                      autofocus: true,
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (value) {
-                        final name = value.trim();
-                        if (name.isNotEmpty) {
-                          vm.setLocationName(name);
-                          _showToast(name);
-                        }
-                        Navigator.pop(ctx);
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: () {
-                        final name = controller.text.trim();
-                        if (name.isNotEmpty) {
-                          vm.setLocationName(name);
-                          _showToast(name);
-                        }
-                        Navigator.pop(ctx);
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.deepPurple,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: const Text(
-                        "Save",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              );
+      body: Stack(
+        children: [
+          gmap.GoogleMap(
+            initialCameraPosition: initialCameraPosition,
+            style: mapStyleNoPOI,
+            onMapCreated: (controller) async {
+              await vm.onMapCreated(controller);
             },
-          );
-        },
-        markers:
-            vm.selectedPosition == null
-                ? {}
-                : {
-                  gmap.Marker(
-                    markerId: const gmap.MarkerId("selected"),
-                    position: vm.selectedPosition!,
-                    icon: gmap.BitmapDescriptor.defaultMarkerWithHue(
-                      gmap.BitmapDescriptor.hueViolet,
-                    ),
-                    infoWindow: gmap.InfoWindow(
-                      title:
-                          vm.locationName.isEmpty
-                              ? "Unnamed location"
-                              : vm.locationName,
-                    ),
-                  ),
-                },
+            onTap: (position) async {
+              vm.onMapTapped(position);
+              await _showNameBottomSheet(context, vm);
+            },
+            markers:
+                vm.selectedPosition == null
+                    ? {}
+                    : {
+                      gmap.Marker(
+                        markerId: const gmap.MarkerId("selected"),
+                        position: vm.selectedPosition!,
+                        icon: gmap.BitmapDescriptor.defaultMarkerWithHue(
+                          gmap.BitmapDescriptor.hueViolet,
+                        ),
+                        infoWindow: gmap.InfoWindow(
+                          title:
+                              vm.locationName.isEmpty
+                                  ? "Unnamed location"
+                                  : vm.locationName,
+                        ),
+                      ),
+                    },
+          ),
+          Positioned(
+            bottom: 20,
+            right: 16,
+            child: FloatingActionButton(
+              backgroundColor: Colors.white,
+              child: const Icon(Icons.my_location, color: Colors.deepPurple),
+              onPressed: () async {
+                await vm.onMapCreated(vm.mapController!);
+              },
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Future<void> _showNameBottomSheet(
+    BuildContext context,
+    LocationPickerViewModel vm,
+  ) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        final controller = TextEditingController();
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+            left: 16,
+            right: 16,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Enter location name",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  hintText: "e.g. My Favorite Spot",
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                ),
+                autofocus: true,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (value) {
+                  final name = value.trim();
+                  if (name.isNotEmpty) {
+                    vm.setLocationName(name);
+                    _showToast(name);
+                  }
+                  Navigator.pop(ctx);
+                },
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () {
+                  final name = controller.text.trim();
+                  if (name.isNotEmpty) {
+                    vm.setLocationName(name);
+                    _showToast(name);
+                  }
+                  Navigator.pop(ctx);
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.deepPurple,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text(
+                  "Save",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
     );
   }
 }

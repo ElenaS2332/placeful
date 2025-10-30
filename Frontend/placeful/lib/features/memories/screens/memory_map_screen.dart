@@ -27,7 +27,7 @@ class MemoryMapScreen extends StatelessWidget {
               top: -2,
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.red,
                   shape: BoxShape.circle,
                 ),
@@ -51,14 +51,8 @@ class MemoryMapScreen extends StatelessWidget {
   }
 
   final String _mapStyle = '''[
-    {
-      "featureType": "poi",
-      "stylers": [{"visibility": "off"}]
-    },
-    {
-      "featureType": "transit",
-      "stylers": [{"visibility": "off"}]
-    }
+    {"featureType": "poi", "stylers": [{"visibility": "off"}]},
+    {"featureType": "transit", "stylers": [{"visibility": "off"}]}
   ]''';
 
   @override
@@ -67,7 +61,11 @@ class MemoryMapScreen extends StatelessWidget {
     final bgColor = const Color(0xFFF7F5FF);
 
     return ChangeNotifierProvider(
-      create: (_) => MemoryMapViewModel()..fetchLatestMemories(),
+      create: (_) {
+        final vm = MemoryMapViewModel();
+        vm.initializeMap();
+        return vm;
+      },
       child: Consumer<MemoryMapViewModel>(
         builder: (context, vm, _) {
           final purpleMarker = BitmapDescriptor.defaultMarkerWithHue(
@@ -114,7 +112,6 @@ class MemoryMapScreen extends StatelessWidget {
                         builder: (context) => const UserProfileScreen(),
                       ),
                     );
-
                     if (updated == true) {
                       await vm.fetchFriendshipRequests();
                     }
@@ -143,14 +140,24 @@ class MemoryMapScreen extends StatelessWidget {
                       ),
                     )
                     : GoogleMap(
-                      initialCameraPosition: const CameraPosition(
-                        target: LatLng(41.9981, 21.4254),
-                        zoom: 16,
-                      ),
+                      initialCameraPosition:
+                          vm.currentLocation != null
+                              ? CameraPosition(
+                                target: vm.currentLocation!,
+                                zoom: 16,
+                              )
+                              : const CameraPosition(
+                                target: LatLng(41.9981, 21.4254),
+                                zoom: 14,
+                              ),
+
+                      onMapCreated: (controller) {
+                        vm.setMapController(controller);
+                      },
                       markers: markers,
                       zoomGesturesEnabled: true,
                       zoomControlsEnabled: false,
-                      myLocationEnabled: false,
+                      myLocationEnabled: true,
                       myLocationButtonEnabled: false,
                       scrollGesturesEnabled: true,
                       rotateGesturesEnabled: true,
@@ -162,9 +169,9 @@ class MemoryMapScreen extends StatelessWidget {
                   child: FloatingActionButton(
                     heroTag: "myLocation",
                     backgroundColor: Colors.white,
-                    child: const Icon(Icons.my_location),
-                    onPressed: () {
-                      // Move camera to current location if available
+                    child: const Icon(Icons.my_location, color: Colors.black),
+                    onPressed: () async {
+                      await vm.setCurrentLocation();
                     },
                   ),
                 ),
