@@ -11,4 +11,5 @@ public interface IMemoryService
     Task UpdateMemory(MemoryToUpdateDto memoryToUpdateDto);
     Task DeleteMemory(Guid id);
     Task ShareMemory(Guid memoryId, String friendFirebaseUserId);
+    Task<IEnumerable<SharedMemoryDto>> ListSharedMemoriesForCurrentUser();
 }

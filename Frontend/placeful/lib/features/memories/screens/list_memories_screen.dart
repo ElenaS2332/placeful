@@ -206,7 +206,7 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                                     MaterialPageRoute(
                                       builder:
                                           (_) => MemoryDetailsScreen(
-                                            memory: memory,
+                                            memoryId: memory.id,
                                           ),
                                     ),
                                   );

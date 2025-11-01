@@ -115,7 +115,8 @@ class _FavoriteMemoriesBody extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => MemoryDetailsScreen(memory: item),
+                              builder:
+                                  (_) => MemoryDetailsScreen(memoryId: item.id),
                             ),
                           );
                         },

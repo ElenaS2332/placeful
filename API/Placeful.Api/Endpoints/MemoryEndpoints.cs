@@ -14,6 +14,7 @@ public static class MemoryEndpoints
         var group = app.MapGroup("api/memory");
         group.MapGet("", GetMemoriesForCurrentUser).WithName(nameof(GetMemoriesForCurrentUser)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapGet("{memoryId:guid}", GetMemory).WithName(nameof(GetMemory)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapGet("/shared", GetSharedMemoriesForCurrentUser).WithName(nameof(GetSharedMemoriesForCurrentUser)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapPost("", CreateMemory).WithName(nameof(CreateMemory)).DisableAntiforgery().RequireAuthorization(AuthPolicy.Authenticated);
         group.MapPost("{memoryId:guid}/share/{friendFirebaseUserId}", ShareMemory).WithName(nameof(ShareMemory)).DisableAntiforgery().RequireAuthorization(AuthPolicy.Authenticated);
         group.MapPut("", UpdateMemory).WithName(nameof(UpdateMemory)).RequireAuthorization(AuthPolicy.Authenticated);
@@ -36,6 +37,19 @@ public static class MemoryEndpoints
         {
             var memory = await memoryService.GetMemory(memoryId);
             return Results.Ok(memory);
+        }
+        catch (Exception ex)
+        {
+            return Results.NotFound();
+        }
+    }
+    
+    private static async Task<IResult> GetSharedMemoriesForCurrentUser(IMemoryService memoryService)
+    {
+        try
+        {
+            var sharedMemories = await memoryService.ListSharedMemoriesForCurrentUser();
+            return Results.Ok(sharedMemories);
         }
         catch (Exception ex)
         {

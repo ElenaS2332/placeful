@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Placeful.Api.Data;
 using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Entities;
-using Placeful.Api.Models.Exceptions.FavoriteMemoriesListExceptions;
 using Placeful.Api.Models.Exceptions.MemoryExceptions;
 using Placeful.Api.Models.Exceptions.UserProfileExceptions;
 using Placeful.Api.Services.Interface;
@@ -31,7 +30,8 @@ public class MemoryService(PlacefulDbContext context,
         var userId = GetCurrentUserFirebaseUid();
 
         var memory = await context.Memories
-            .FirstOrDefaultAsync(c => c.Id == id && c.UserProfileId == userId);
+            .Include(m => m.Location)
+            .FirstOrDefaultAsync(c => c.Id == id);
 
         if (memory is null) throw new MemoryNotFoundException(id);
 
@@ -179,6 +179,26 @@ public class MemoryService(PlacefulDbContext context,
         await context.SaveChangesAsync();
     }
 
+    public async Task<IEnumerable<SharedMemoryDto>> ListSharedMemoriesForCurrentUser()
+    {
+        var currentUserId = GetCurrentUserFirebaseUid();
+        
+        var currentUser = await context.UserProfiles.FirstOrDefaultAsync(u => u.FirebaseUid == currentUserId);
+        
+        if (currentUser is null) throw new UserProfileNotFoundException(currentUserId);
+
+        var memories = await context.SharedMemories
+            .Include(m => m.SharedFromUser)
+            .Include(m => m.Memory)
+            .ThenInclude(m => m!.Location)
+            .Where(s => s.SharedWithUserId == currentUser.Id)
+            .ToListAsync();
+        
+        var sharedMemories = memories.Select(m => new SharedMemoryDto(m));
+        
+        return sharedMemories;
+    }
+
     private async Task<bool> SaveChanges()
     {
         return await context.SaveChangesAsync() >= 0;
@@ -188,7 +208,7 @@ public class MemoryService(PlacefulDbContext context,
     {
         return await context.Memories.AnyAsync(c => c.Id == guid);
     }
-
+    
     private String GetCurrentUserFirebaseUid()
     {
         var currentUserUid = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);

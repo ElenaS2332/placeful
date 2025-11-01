@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:placeful/common/domain/dtos/memory_dto.dart';
+import 'package:placeful/common/domain/dtos/shared_memory_dto.dart';
 import 'package:placeful/common/domain/exceptions/http_response_exception.dart';
 import 'package:placeful/common/domain/exceptions/memory_already_shared_exception.dart';
 import 'package:placeful/common/domain/models/memory.dart';
+import 'package:placeful/common/domain/models/shared_memory.dart';
 import 'package:placeful/common/services/http_service.dart';
 import 'package:placeful/common/services/service_locatior.dart';
 
@@ -93,5 +95,10 @@ class MemoryService {
         rethrow;
       }
     }
+  }
+
+  Future<List<SharedMemoryDto>> listSharedMemoriesForCurrentUser() async {
+    final List response = await _client.get("memory/shared");
+    return response.map((c) => SharedMemoryDto.fromJson(c)).toList();
   }
 }

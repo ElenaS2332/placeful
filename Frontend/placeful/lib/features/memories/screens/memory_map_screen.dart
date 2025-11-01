@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:placeful/features/memories/screens/add_memory_screen.dart';
 import 'package:placeful/features/memories/screens/favorite_memories_screen.dart';
 import 'package:placeful/features/memories/screens/list_memories_screen.dart';
 import 'package:placeful/features/user_profile/screens/user_profile_screen.dart';
-import 'package:provider/provider.dart';
 import 'package:placeful/features/memories/viewmodels/memory_map_viewmodel.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:placeful/features/memories/screens/shared_memory_screen.dart';
+import 'package:provider/provider.dart';
 
 class MemoryMapScreen extends StatelessWidget {
   const MemoryMapScreen({super.key});
+
+  final String _mapStyle = '''[
+    {"featureType": "poi", "stylers": [{"visibility": "off"}]},
+    {"featureType": "transit", "stylers": [{"visibility": "off"}]}
+  ]''';
 
   Widget _friendRequestIcon(int count) {
     return SizedBox(
@@ -50,10 +56,76 @@ class MemoryMapScreen extends StatelessWidget {
     );
   }
 
-  final String _mapStyle = '''[
-    {"featureType": "poi", "stylers": [{"visibility": "off"}]},
-    {"featureType": "transit", "stylers": [{"visibility": "off"}]}
-  ]''';
+  void _showTopToast(BuildContext context) {
+    final overlay = Overlay.of(context);
+    if (overlay == null) return;
+
+    late OverlayEntry overlayEntry;
+    overlayEntry = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            top: 120,
+            left: 20,
+            right: 20,
+            child: Material(
+              color: Colors.transparent,
+              child: Dismissible(
+                key: const Key('shared_memories_toast'),
+                direction: DismissDirection.up,
+                onDismissed: (_) => overlayEntry.remove(),
+                child: GestureDetector(
+                  onTap: () {
+                    overlayEntry.remove();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SharedMemoryScreen(),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.deepPurple.shade400,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Unlock new memories",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          "See the memories your friends shared with you",
+                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+    );
+
+    overlay.insert(overlayEntry);
+    // Future.delayed(const Duration(seconds: 10)).then((_) {
+    //   if (overlayEntry.mounted) overlayEntry.remove();
+    // });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -150,9 +222,13 @@ class MemoryMapScreen extends StatelessWidget {
                                 target: LatLng(41.9981, 21.4254),
                                 zoom: 14,
                               ),
-
                       onMapCreated: (controller) {
                         vm.setMapController(controller);
+
+                        Future.delayed(
+                          const Duration(microseconds: 500),
+                          () => _showTopToast(context),
+                        );
                       },
                       markers: markers,
                       zoomGesturesEnabled: true,
@@ -206,79 +282,30 @@ class MemoryMapScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Colors.white, Colors.white70],
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ElevatedButton.icon(
-                              icon: const Icon(Icons.grid_view),
-                              label: Text(
-                                "List All Memories",
-                                style: GoogleFonts.poppins(
-                                  textStyle: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Colors.deepPurple,
-                                  ),
+                          _buildGradientButton(
+                            label: "List All Memories",
+                            icon: Icons.grid_view,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ListMemoriesScreen(),
                                 ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                minimumSize: const Size.fromHeight(48),
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const ListMemoriesScreen(),
-                                  ),
-                                );
-                              },
-                            ),
+                              );
+                            },
                           ),
                           const SizedBox(height: 12),
-                          Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Colors.white, Colors.white70],
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ElevatedButton.icon(
-                              icon: const Icon(
-                                Icons.add,
-                                color: Colors.deepPurple,
-                              ),
-                              label: Text(
-                                "Add New Memory",
-                                style: GoogleFonts.poppins(
-                                  textStyle: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Colors.deepPurple,
-                                  ),
+                          _buildGradientButton(
+                            label: "Add New Memory",
+                            icon: Icons.add,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const AddMemoryScreen(),
                                 ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                minimumSize: const Size.fromHeight(48),
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const AddMemoryScreen(),
-                                  ),
-                                );
-                              },
-                            ),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -289,6 +316,39 @@ class MemoryMapScreen extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildGradientButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Colors.white, Colors.white70]),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ElevatedButton.icon(
+        icon: Icon(icon, color: Colors.deepPurple),
+        label: Text(
+          label,
+          style: GoogleFonts.poppins(
+            textStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.deepPurple,
+            ),
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          minimumSize: const Size.fromHeight(48),
+        ),
+        onPressed: onTap,
       ),
     );
   }

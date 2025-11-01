@@ -5,23 +5,22 @@ import 'package:placeful/features/friends/screens/select_friend_screen.dart';
 import 'package:placeful/features/memories/screens/add_memory_screen.dart';
 import 'package:placeful/features/memories/viewmodels/add_memory_viewmodel.dart';
 import 'package:provider/provider.dart';
-import 'package:placeful/common/domain/models/memory.dart';
 import 'package:placeful/features/memories/viewmodels/memory_details_viewmodel.dart';
 
 class MemoryDetailsScreen extends StatelessWidget {
-  final Memory memory;
+  final String memoryId;
 
-  const MemoryDetailsScreen({super.key, required this.memory});
+  const MemoryDetailsScreen({super.key, required this.memoryId});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => MemoryDetailsViewModel(memory),
+      create: (_) => MemoryDetailsViewModel(memoryId)..loadMemoryDetails(),
       child: Consumer<MemoryDetailsViewModel>(
         builder: (context, viewModel, _) {
           return Scaffold(
             appBar: AppBar(
-              title: Text(viewModel.title),
+              title: Text(viewModel.memory?.title ?? 'Memory Details'),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.edit),
@@ -71,8 +70,8 @@ class MemoryDetailsScreen extends StatelessWidget {
                           ),
                     );
 
-                    if (confirmed == true) {
-                      await viewModel.deleteMemory(viewModel.memory.id);
+                    if (viewModel.memory != null && confirmed == true) {
+                      await viewModel.deleteMemory(viewModel.memory!.id);
                       if (!context.mounted) return;
                       Navigator.pop(context);
                     }
@@ -155,11 +154,12 @@ class MemoryDetailsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (viewModel.imageUrl != null)
+                  if (viewModel.memory != null &&
+                      viewModel.memory!.imageUrl != null)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: Image.network(
-                        viewModel.imageUrl!,
+                        viewModel.memory!.imageUrl!,
                         fit: BoxFit.cover,
                         width: double.infinity,
                         height: 250,
@@ -176,7 +176,7 @@ class MemoryDetailsScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   Text(
-                    viewModel.title,
+                    viewModel.memory?.title ?? 'Untitled',
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -193,8 +193,9 @@ class MemoryDetailsScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        viewModel.memory.date != null
-                            ? "${viewModel.memory.date!.day.toString().padLeft(2, '0')}/${viewModel.memory.date!.month.toString().padLeft(2, '0')}/${viewModel.memory.date!.year}"
+                        viewModel.memory != null &&
+                                viewModel.memory!.date != null
+                            ? "${viewModel.memory?.date!.day.toString().padLeft(2, '0')}/${viewModel.memory!.date!.month.toString().padLeft(2, '0')}/${viewModel.memory!.date!.year}"
                             : "No date specified",
                         style: const TextStyle(
                           fontSize: 14,
@@ -207,7 +208,7 @@ class MemoryDetailsScreen extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   Text(
-                    viewModel.description,
+                    viewModel.memory?.description ?? 'No description provided.',
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 16),
@@ -217,7 +218,7 @@ class MemoryDetailsScreen extends StatelessWidget {
                       const Icon(Icons.location_on, color: Color(0xFF8668FF)),
                       const SizedBox(width: 8),
                       Text(
-                        viewModel.locationName,
+                        viewModel.memory?.location?.name ?? 'Unknown location',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -250,7 +251,9 @@ class MemoryDetailsScreen extends StatelessWidget {
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child:
-                        viewModel.showMap
+                        viewModel.showMap &&
+                                viewModel.memory != null &&
+                                viewModel.memory!.location != null
                             ? Container(
                               key: const ValueKey('map'),
                               height: 200,
@@ -263,16 +266,26 @@ class MemoryDetailsScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(16),
                                 child: GoogleMap(
                                   initialCameraPosition: CameraPosition(
-                                    target: viewModel.memoryLocation,
+                                    target: LatLng(
+                                      viewModel.memory!.location?.latitude ?? 0,
+                                      viewModel.memory!.location?.longitude ??
+                                          0,
+                                    ),
                                     zoom: 15,
                                   ),
                                   markers: {
                                     Marker(
                                       markerId: const MarkerId('memory'),
-                                      position: viewModel.memoryLocation,
+                                      position: LatLng(
+                                        viewModel.memory!.location?.latitude ??
+                                            0,
+                                        viewModel.memory!.location?.longitude ??
+                                            0,
+                                      ),
                                       infoWindow: InfoWindow(
-                                        title: viewModel.title,
-                                        snippet: viewModel.locationName,
+                                        title: viewModel.memory?.title,
+                                        snippet:
+                                            viewModel.memory?.location?.name,
                                       ),
                                     ),
                                   },

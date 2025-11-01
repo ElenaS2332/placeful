@@ -18,10 +18,6 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<PlacefulDbContext>(options =>
 {
-    options.UseNpgsql(connectionString)
-        .EnableSensitiveDataLogging()  
-        .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information);
-    
     options.UseNpgsql(connectionString, npgsqlOptions =>
     {
         npgsqlOptions.EnableRetryOnFailure(
