@@ -26,9 +26,9 @@ class SharedMemoryViewModel extends ChangeNotifier {
     }
   }
 
-  Color getColorForFriend(String friendId) {
-    if (_friendColors.containsKey(friendId)) {
-      return _friendColors[friendId]!;
+  Color getColorForFriend(String friendName) {
+    if (_friendColors.containsKey(friendName)) {
+      return _friendColors[friendName]!;
     }
     final colors = [
       Colors.deepPurple,
@@ -39,7 +39,7 @@ class SharedMemoryViewModel extends ChangeNotifier {
       Colors.cyan,
     ];
     final color = colors[_friendColors.length % colors.length];
-    _friendColors[friendId] = color;
+    _friendColors[friendName] = color;
     return color;
   }
 }

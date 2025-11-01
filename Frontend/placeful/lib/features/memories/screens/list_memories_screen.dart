@@ -98,7 +98,7 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                   child: Icon(
                     Icons.eco_rounded,
                     size: 180,
-                    color: Colors.purple.withValues(alpha: 0.15),
+                    color: Colors.purple.withOpacity(0.15),
                   ),
                 ),
               ),
@@ -110,7 +110,7 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                   child: Icon(
                     Icons.eco_rounded,
                     size: 200,
-                    color: Colors.purple.withValues(alpha: 0.18),
+                    color: Colors.purple.withOpacity(0.18),
                   ),
                 ),
               ),
@@ -178,7 +178,7 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                                   crossAxisCount: 2,
                                   crossAxisSpacing: 16,
                                   mainAxisSpacing: 16,
-                                  childAspectRatio: 0.7,
+                                  childAspectRatio: 0.75,
                                 ),
                             itemCount:
                                 vm.memories.length + (vm.isLoading ? 1 : 0),
@@ -246,12 +246,12 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                                                   ),
                                               child: Image.network(
                                                 memory.imageUrl!,
-                                                height: 160,
+                                                height: 140,
                                                 width: double.infinity,
                                                 fit: BoxFit.cover,
                                                 errorBuilder:
                                                     (_, __, ___) => Container(
-                                                      height: 160,
+                                                      height: 200,
                                                       color: Colors.grey[300],
                                                       child: const Center(
                                                         child: Icon(
@@ -271,35 +271,55 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 mainAxisAlignment:
-                                                    MainAxisAlignment.center,
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
                                                 children: [
-                                                  Text(
-                                                    _truncate(memory.title),
-                                                    style: GoogleFonts.poppins(
-                                                      textStyle:
-                                                          const TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.white,
-                                                            fontSize: 16,
-                                                          ),
-                                                    ),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        _truncate(memory.title),
+                                                        style: GoogleFonts.poppins(
+                                                          textStyle:
+                                                              const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    Colors
+                                                                        .white,
+                                                                fontSize: 16,
+                                                              ),
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow:
+                                                            TextOverflow
+                                                                .ellipsis,
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        _truncate(
+                                                          memory.description,
+                                                          40,
+                                                        ),
+                                                        maxLines: 2,
+                                                        overflow:
+                                                            TextOverflow
+                                                                .ellipsis,
+                                                        style: GoogleFonts.nunito(
+                                                          textStyle:
+                                                              const TextStyle(
+                                                                color:
+                                                                    Colors
+                                                                        .white70,
+                                                                fontSize: 12,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    _truncate(
-                                                      memory.description,
-                                                    ),
-                                                    style: GoogleFonts.nunito(
-                                                      textStyle:
-                                                          const TextStyle(
-                                                            color:
-                                                                Colors.white70,
-                                                            fontSize: 12,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 4),
                                                   Row(
                                                     children: [
                                                       const Icon(
@@ -314,7 +334,12 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                                                             memory
                                                                 .location
                                                                 ?.name,
+                                                            25,
                                                           ),
+                                                          maxLines: 1,
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
                                                           style: GoogleFonts.nunito(
                                                             textStyle:
                                                                 const TextStyle(
@@ -324,10 +349,6 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                                                                   fontSize: 12,
                                                                 ),
                                                           ),
-                                                          maxLines: 1,
-                                                          overflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
                                                         ),
                                                       ),
                                                     ],
@@ -346,8 +367,8 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                                         right: 8,
                                         child: Container(
                                           decoration: BoxDecoration(
-                                            color: Colors.white.withValues(
-                                              alpha: 0.8,
+                                            color: Colors.white.withOpacity(
+                                              0.8,
                                             ),
                                             shape: BoxShape.circle,
                                             boxShadow: const [

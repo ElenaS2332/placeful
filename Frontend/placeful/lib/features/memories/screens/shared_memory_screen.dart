@@ -11,7 +11,7 @@ class SharedMemoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<SharedMemoryViewModel>(
-      create: (BuildContext context) {
+      create: (context) {
         final vm = SharedMemoryViewModel();
         vm.loadSharedMemories();
         return vm;
@@ -75,12 +75,7 @@ class _SharedMemoryScreenBody extends StatelessWidget {
                   itemCount: vm.sharedMemories.length,
                   itemBuilder: (context, index) {
                     final sharedMemory = vm.sharedMemories[index];
-                    final friend = sharedMemory.friendFullName;
-
-                    // generate color per friend
-                    // final color = vm.getColorForFriend(
-                    //   friend?.firebaseUid ?? '',
-                    // );
+                    final friend = sharedMemory.friendFullName ?? "Friend";
 
                     return GestureDetector(
                       onTap: () {
@@ -95,46 +90,108 @@ class _SharedMemoryScreenBody extends StatelessWidget {
                         );
                       },
                       child: Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
+                        height: 180,
+                        margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
-                          color: Colors.amber.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.black, width: 1),
+                          image:
+                              sharedMemory.memoryImageUrl != null
+                                  ? DecorationImage(
+                                    image: NetworkImage(
+                                      sharedMemory.memoryImageUrl!,
+                                    ),
+                                    fit: BoxFit.cover,
+                                  )
+                                  : null,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 5,
-                              offset: const Offset(0, 2),
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              sharedMemory.memoryTitle ?? "Untitled",
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.amber,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.black.withOpacity(0.5),
+                                Colors.transparent,
+                              ],
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                sharedMemory.memoryTitle ?? "Untitled Memory",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              sharedMemory.memoryDescription ??
-                                  "No description",
-                              style: GoogleFonts.poppins(color: Colors.black87),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              "Shared by ${sharedMemory.friendFullName ?? "a friend"}",
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: Colors.grey[700],
+                              const SizedBox(height: 4),
+                              if (sharedMemory.memoryDescription != null &&
+                                  sharedMemory.memoryDescription!.isNotEmpty)
+                                Text(
+                                  sharedMemory.memoryDescription!,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.person,
+                                        color: Colors.white70,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        friend,
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.white70,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (sharedMemory.memoryDate != null)
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.calendar_today,
+                                          color: Colors.white70,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          "${sharedMemory.memoryDate!.day}/${sharedMemory.memoryDate!.month}/${sharedMemory.memoryDate!.year}",
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.white70,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                ],
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     );

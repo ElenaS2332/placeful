@@ -121,63 +121,65 @@ class _FavoriteMemoriesBody extends StatelessWidget {
                           );
                         },
                         child: Container(
-                          padding: const EdgeInsets.all(16),
+                          height: 180,
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.purple.shade300,
-                                Colors.purple.shade500,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
                             borderRadius: BorderRadius.circular(16),
+                            image:
+                                item.imageUrl != null
+                                    ? DecorationImage(
+                                      image: NetworkImage(item.imageUrl!),
+                                      fit: BoxFit.cover,
+                                    )
+                                    : null,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.08),
-                                blurRadius: 6,
-                                offset: const Offset(0, 3),
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
                               ),
                             ],
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.title,
-                                      style: GoogleFonts.poppins(
-                                        textStyle: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.black.withOpacity(0.5),
+                                  Colors.transparent,
+                                ],
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                              ),
+                            ),
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.title,
+                                  style: GoogleFonts.poppins(
+                                    textStyle: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      item.description,
-                                      style: GoogleFonts.poppins(
-                                        textStyle: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.white70,
-                                        ),
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                              const Icon(
-                                Icons.chevron_right,
-                                color: Colors.white,
-                                size: 28,
-                              ),
-                            ],
+                                const SizedBox(height: 4),
+                                Text(
+                                  item.description,
+                                  style: GoogleFonts.poppins(
+                                    textStyle: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );
