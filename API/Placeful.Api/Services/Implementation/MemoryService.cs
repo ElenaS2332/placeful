@@ -5,6 +5,7 @@ using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Entities;
 using Placeful.Api.Models.Exceptions.FavoriteMemoriesListExceptions;
 using Placeful.Api.Models.Exceptions.MemoryExceptions;
+using Placeful.Api.Models.Exceptions.UserProfileExceptions;
 using Placeful.Api.Services.Interface;
 
 namespace Placeful.Api.Services.Implementation;
@@ -131,6 +132,51 @@ public class MemoryService(PlacefulDbContext context,
         context.Memories.Remove(memoryToBeDeleted);
 
         await SaveChanges();
+    }
+
+    public async Task ShareMemory(Guid memoryId, String friendFirebaseUserId)
+    {
+        var currentUserId = GetCurrentUserFirebaseUid();
+        var currentUser = await context.UserProfiles
+            .FirstOrDefaultAsync(u => u.FirebaseUid == currentUserId);
+        if (currentUser is null) throw new UserProfileNotFoundException(currentUserId);
+        
+        var friend = await context.UserProfiles
+            .Include(u => u.SharedMemories)
+            .FirstOrDefaultAsync(u => u.FirebaseUid == friendFirebaseUserId);
+
+        if (friend == null) throw new UserProfileNotFoundException(friendFirebaseUserId);
+        
+        var memory = await context.Memories.FindAsync(memoryId);
+        if (memory == null) throw new MemoryNotFoundException(memoryId);
+        
+        var sharedMemoryFromDb = await context.SharedMemories.FirstOrDefaultAsync(
+            m => m.MemoryId == memoryId && 
+                 m.SharedFromUserId == currentUser.Id &&
+                 m.SharedWithUserId == friend.Id);
+        
+        if (sharedMemoryFromDb is not null) throw new MemoryAlreadySharedException(memoryId, friend.Id);
+        
+        var sharedMemory = new SharedMemory
+        {
+            MemoryId = memoryId,
+            Memory = memory,
+            SharedWithUserId = friend.Id,
+            SharedWithUser = friend,
+            SharedFromUserId = currentUser.Id,
+            SharedFromUser = currentUser
+        };
+        
+        context.SharedMemories.Add(sharedMemory);
+        await context.SaveChangesAsync();
+        
+        if (friend.SharedMemories is null)
+        {
+            friend.SharedMemories = new List<SharedMemory>();
+        }
+
+        friend.SharedMemories.Add(sharedMemory);
+        await context.SaveChangesAsync();
     }
 
     private async Task<bool> SaveChanges()

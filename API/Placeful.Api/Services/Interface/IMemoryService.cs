@@ -10,4 +10,5 @@ public interface IMemoryService
     Task CreateMemory(MemoryDto memoryDto);
     Task UpdateMemory(MemoryToUpdateDto memoryToUpdateDto);
     Task DeleteMemory(Guid id);
+    Task ShareMemory(Guid memoryId, String friendFirebaseUserId);
 }

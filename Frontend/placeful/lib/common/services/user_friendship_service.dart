@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:placeful/common/domain/exceptions/friend_request_already_sent_exception.dart';
 import 'package:placeful/common/domain/exceptions/friendship_already_exists_exception.dart';
 import 'package:placeful/common/domain/exceptions/http_response_exception.dart';
@@ -13,7 +11,6 @@ class UserFriendshipService {
   UserFriendshipService([HttpService? client]);
 
   final HttpService _client = getIt<HttpService>();
-  // final LoggerService loggerService = getIt<LoggerService>();
   final AuthService authService = getIt<AuthService>();
 
   Future<List<UserProfile>> getListOfUsers(String searchQuery) async {

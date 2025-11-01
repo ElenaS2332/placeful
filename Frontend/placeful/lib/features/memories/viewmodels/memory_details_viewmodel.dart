@@ -33,4 +33,13 @@ class MemoryDetailsViewModel extends ChangeNotifier {
   Future<void> deleteMemory(String id) async {
     await memoryService.deleteMemory(id);
   }
+
+  Future<void> shareMemoryWith(String friendId) async {
+    try {
+      await memoryService.shareMemoryWith(memory.id, friendId);
+    } catch (e) {
+      debugPrint('Error sharing memory: $e');
+      rethrow;
+    }
+  }
 }

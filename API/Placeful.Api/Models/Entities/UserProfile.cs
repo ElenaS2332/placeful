@@ -17,4 +17,5 @@ public class UserProfile
     public FavoriteMemoriesList? FavoritesMemoriesList { get; set; }
     public ICollection<UserFriendship>? SentFriendRequests { get; set; }
     public ICollection<UserFriendship>? ReceivedFriendRequests { get; set; }
+    public ICollection<SharedMemory>? SharedMemories { get; set; }
 }

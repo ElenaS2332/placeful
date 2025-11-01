@@ -16,7 +16,22 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<PlacefulDbContext>(options => { options.UseNpgsql(connectionString); });
+builder.Services.AddDbContext<PlacefulDbContext>(options =>
+{
+    options.UseNpgsql(connectionString)
+        .EnableSensitiveDataLogging()  
+        .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information);
+    
+    options.UseNpgsql(connectionString, npgsqlOptions =>
+    {
+        npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorCodesToAdd: null
+        );
+    });
+
+});
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {

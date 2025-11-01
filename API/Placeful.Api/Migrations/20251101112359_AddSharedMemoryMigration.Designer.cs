@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Placeful.Api.Data;
@@ -11,9 +12,11 @@ using Placeful.Api.Data;
 namespace Placeful.Api.Migrations
 {
     [DbContext(typeof(PlacefulDbContext))]
-    partial class PlacefulDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251101112359_AddSharedMemoryMigration")]
+    partial class AddSharedMemoryMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -115,24 +118,14 @@ namespace Placeful.Api.Migrations
                     b.Property<DateTime>("SharedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("SharedFromUserId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("SharedWithUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("UserProfileId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("MemoryId");
 
-                    b.HasIndex("SharedFromUserId");
-
                     b.HasIndex("SharedWithUserId");
-
-                    b.HasIndex("UserProfileId");
 
                     b.ToTable("SharedMemories");
                 });
@@ -221,30 +214,18 @@ namespace Placeful.Api.Migrations
             modelBuilder.Entity("Placeful.Api.Models.Entities.SharedMemory", b =>
                 {
                     b.HasOne("Placeful.Api.Models.Entities.Memory", "Memory")
-                        .WithMany()
+                        .WithMany("SharedMemories")
                         .HasForeignKey("MemoryId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Placeful.Api.Models.Entities.UserProfile", "SharedFromUser")
-                        .WithMany()
-                        .HasForeignKey("SharedFromUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Placeful.Api.Models.Entities.UserProfile", "SharedWithUser")
                         .WithMany()
                         .HasForeignKey("SharedWithUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Placeful.Api.Models.Entities.UserProfile", null)
-                        .WithMany("SharedMemories")
-                        .HasForeignKey("UserProfileId");
-
                     b.Navigation("Memory");
-
-                    b.Navigation("SharedFromUser");
 
                     b.Navigation("SharedWithUser");
                 });
@@ -293,6 +274,11 @@ namespace Placeful.Api.Migrations
                     b.Navigation("Memories");
                 });
 
+            modelBuilder.Entity("Placeful.Api.Models.Entities.Memory", b =>
+                {
+                    b.Navigation("SharedMemories");
+                });
+
             modelBuilder.Entity("Placeful.Api.Models.Entities.UserProfile", b =>
                 {
                     b.Navigation("Friends");
@@ -300,8 +286,6 @@ namespace Placeful.Api.Migrations
                     b.Navigation("ReceivedFriendRequests");
 
                     b.Navigation("SentFriendRequests");
-
-                    b.Navigation("SharedMemories");
                 });
 #pragma warning restore 612, 618
         }

@@ -11,7 +11,8 @@ public class PlacefulDbContext(DbContextOptions<PlacefulDbContext> options) : Db
     public DbSet<Memory> Memories { get; init; }
     public DbSet<UserProfile> UserProfiles { get; init; }
     public DbSet<UserFriendship> UserFriendships { get; init; }
-    
+    public DbSet<SharedMemory> SharedMemories { get; init; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -34,5 +35,20 @@ public class PlacefulDbContext(DbContextOptions<PlacefulDbContext> options) : Db
             .HasOne(m => m.Location)
             .WithMany(l => l.Memories) 
             .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<SharedMemory>(entity =>
+        {
+            entity.HasKey(sm => sm.Id);
+
+            entity.HasOne(sm => sm.SharedWithUser)
+                .WithMany()
+                .HasForeignKey(sm => sm.SharedWithUserId)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            entity.HasOne(sm => sm.SharedFromUser)
+                .WithMany() 
+                .HasForeignKey(sm => sm.SharedFromUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }

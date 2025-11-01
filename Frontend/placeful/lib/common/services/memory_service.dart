@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:placeful/common/domain/dtos/memory_dto.dart';
+import 'package:placeful/common/domain/exceptions/http_response_exception.dart';
+import 'package:placeful/common/domain/exceptions/memory_already_shared_exception.dart';
 import 'package:placeful/common/domain/models/memory.dart';
 import 'package:placeful/common/services/http_service.dart';
 import 'package:placeful/common/services/service_locatior.dart';
@@ -79,5 +81,17 @@ class MemoryService {
 
   Future<void> deleteMemory(String id) async {
     await _client.delete("memory/$id");
+  }
+
+  Future<void> shareMemoryWith(String memoryId, String friendId) async {
+    try {
+      await _client.post('memory/$memoryId/share/$friendId', {});
+    } on HttpResponseException catch (e) {
+      if (e.statusCode == 409) {
+        throw MemoryAlreadySharedException();
+      } else {
+        rethrow;
+      }
+    }
   }
 }

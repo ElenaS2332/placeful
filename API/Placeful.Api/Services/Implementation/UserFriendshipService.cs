@@ -14,6 +14,8 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
         var currentUserUid = GetCurrentUserFirebaseUid();
 
         return await context.UserFriendships
+            .Include(f => f.FriendshipInitiator)
+            .Include(f => f.FriendshipReceiver)
             .Where(f => f.FriendshipAccepted == true &&
                         (f.FriendshipInitiatorId.Equals(currentUserUid) ||
                          f.FriendshipReceiverId.Equals(currentUserUid)))
