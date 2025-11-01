@@ -1,3 +1,4 @@
+import 'package:placeful/common/domain/dtos/request_user_friendship_dto.dart';
 import 'package:placeful/common/domain/exceptions/friend_request_already_sent_exception.dart';
 import 'package:placeful/common/domain/exceptions/friendship_already_exists_exception.dart';
 import 'package:placeful/common/domain/exceptions/http_response_exception.dart';
@@ -34,14 +35,14 @@ class UserFriendshipService {
         .toList();
   }
 
-  Future<UserFriendship> sendFriendRequest(String otherUserId) async {
+  Future<RequestUserFriendshipDto> sendFriendRequest(String otherUserId) async {
     try {
       final response = await _client.post(
         'user-friendship/request/$otherUserId',
         '',
       );
 
-      return UserFriendship.fromJson(response);
+      return RequestUserFriendshipDto.fromJson(response);
     } on HttpResponseException catch (e) {
       if (e.statusCode == 409) {
         throw FriendRequestAlreadySentException();

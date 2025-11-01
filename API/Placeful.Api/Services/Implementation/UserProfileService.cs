@@ -35,7 +35,7 @@ public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor 
             .Where(u => u.FirebaseUid == firebaseUid)
             .Select(u => new UserProfile
             {
-                // Id = u.Id,
+                Id = u.Id,
                 FirebaseUid = u.FirebaseUid,
                 Email = u.Email,
                 FullName = u.FullName,
@@ -87,39 +87,47 @@ public class UserProfileService(PlacefulDbContext context, IHttpContextAccessor 
 
     public async Task CreateUserProfile(UserProfileDto userProfileDto)
     {
-        await using var transaction = await context.Database.BeginTransactionAsync();
+        var strategy = context.Database.CreateExecutionStrategy();
 
-        try
+        await strategy.ExecuteAsync(async () =>
         {
-            var newFavoriteMemoriesList = new FavoriteMemoriesList
-            {
-                UserProfileId = userProfileDto.FirebaseUid,
-                Memories = new List<Memory>()
-            };
+            // This block runs inside the retryable execution strategy
+            await using var transaction = await context.Database.BeginTransactionAsync();
 
-            await context.FavoriteMemoriesLists.AddAsync(newFavoriteMemoriesList);
-            await context.SaveChangesAsync();
-            
-            var newUserProfile = new UserProfile
+            try
             {
-                FirebaseUid = userProfileDto.FirebaseUid,
-                Email = userProfileDto.Email,
-                FullName = userProfileDto.FullName,
-                BirthDate = DateTime.SpecifyKind(userProfileDto.BirthDate, DateTimeKind.Utc),
-                FavoritesMemoriesList = newFavoriteMemoriesList,
-            };
-        
-            await context.UserProfiles.AddAsync(newUserProfile);
-            await context.SaveChangesAsync();
-            
-            await transaction.CommitAsync();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+                var newFavoriteMemoriesList = new FavoriteMemoriesList
+                {
+                    UserProfileId = userProfileDto.FirebaseUid,
+                    Memories = new List<Memory>()
+                };
+
+                await context.FavoriteMemoriesLists.AddAsync(newFavoriteMemoriesList);
+                await context.SaveChangesAsync();
+
+                var newUserProfile = new UserProfile
+                {
+                    FirebaseUid = userProfileDto.FirebaseUid,
+                    Email = userProfileDto.Email,
+                    FullName = userProfileDto.FullName,
+                    BirthDate = DateTime.SpecifyKind(userProfileDto.BirthDate, DateTimeKind.Utc),
+                    FavoritesMemoriesList = newFavoriteMemoriesList,
+                    SharedMemories = new List<SharedMemory>()
+                };
+
+                await context.UserProfiles.AddAsync(newUserProfile);
+                await context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        });
     }
+
 
     public async Task UpdateUserProfile(UpdateUserProfileDto updateUserProfileDto)
     {

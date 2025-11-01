@@ -85,17 +85,7 @@ public static class UserFriendshipEndpoints
     {
         try
         {
-            var userFriendship = await userFriendshipService.RequestFriendship(otherUserUid);
-
-            var dto = new UserFriendshipDto
-            {
-                FriendshipInitiatorId = userFriendship.FriendshipInitiatorId,
-                FriendshipReceiverId = userFriendship.FriendshipReceiverId,
-                FriendshipAccepted = userFriendship.FriendshipAccepted,
-                FriendshipInitiator = userFriendship.FriendshipInitiator,
-                FriendshipReceiver = userFriendship.FriendshipReceiver
-            };
-
+            var dto = await userFriendshipService.RequestFriendship(otherUserUid);
             return Results.Ok(dto);
         }
         catch (DomainException ex)

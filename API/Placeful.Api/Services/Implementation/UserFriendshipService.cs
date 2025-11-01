@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Placeful.Api.Data;
+using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Entities;
 using Placeful.Api.Models.Exceptions.UserFriendshipExceptions;
 using Placeful.Api.Services.Interface;
@@ -80,7 +81,7 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
     }
 
 
-    public async Task<UserFriendship> RequestFriendship(String otherUserUid)
+    public async Task<RequestUserFriendshipDto> RequestFriendship(String otherUserUid)
     {
         var currentUserUid = GetCurrentUserFirebaseUid();
         var friendship = await GetFriendship(currentUserUid, otherUserUid);
@@ -101,7 +102,14 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
         };
         await context.UserFriendships.AddAsync(newFriendship);
         await context.SaveChangesAsync();
-        return newFriendship;
+        return new RequestUserFriendshipDto
+        {
+            FriendshipInitiatorId = initiator!.FirebaseUid,
+            FriendshipReceiverId = receiver!.FirebaseUid,
+            FriendshipAccepted = false,
+            FriendshipInitiatorName = initiator.FullName,
+            FriendshipReceiverName = receiver.FullName,
+        };
     }
 
     public async Task<UserFriendship> AcceptFriendship(String otherUserUid)
