@@ -37,6 +37,7 @@ class EditProfileScreen extends StatelessWidget {
             ),
           ),
         ),
+        centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.deepPurple),
         actions: [
           IconButton(

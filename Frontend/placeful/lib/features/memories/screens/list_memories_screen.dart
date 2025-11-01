@@ -74,13 +74,14 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
           extendBodyBehindAppBar: true,
           backgroundColor: _bgColor,
           appBar: AppBar(
+            centerTitle: true,
             title: Text(
-              "All Memories",
+              "Your Memories",
               style: GoogleFonts.poppins(
                 textStyle: const TextStyle(
+                  color: Colors.deepPurple,
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
-                  color: Colors.black87,
                 ),
               ),
             ),

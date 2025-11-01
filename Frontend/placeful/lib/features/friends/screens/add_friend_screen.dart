@@ -52,12 +52,9 @@ class AddFriendScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+                centerTitle: true,
                 backgroundColor: Colors.white,
                 elevation: 0,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: () => Navigator.pop(context, true),
-                ),
               ),
               backgroundColor: Colors.white,
               body: SafeArea(

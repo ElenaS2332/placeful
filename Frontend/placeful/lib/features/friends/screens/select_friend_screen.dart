@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:placeful/features/friends/viewmodels/select_friend_viewmodel.dart';
 import 'package:provider/provider.dart';
 
@@ -10,7 +11,19 @@ class SelectFriendScreen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => SelectFriendViewModel()..loadFriends(),
       child: Scaffold(
-        appBar: AppBar(title: const Text('Select a Friend')),
+        appBar: AppBar(
+          title: Text(
+            'Select a Friend',
+            style: GoogleFonts.poppins(
+              textStyle: const TextStyle(
+                color: Colors.deepPurple,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+          ),
+          centerTitle: true,
+        ),
         body: Consumer<SelectFriendViewModel>(
           builder: (context, vm, _) {
             if (vm.isLoading) {

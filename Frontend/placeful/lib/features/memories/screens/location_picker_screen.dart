@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
 import 'package:placeful/features/memories/viewmodels/location_picker_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -43,7 +44,7 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
                   horizontal: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.deepPurple.shade100.withValues(alpha: 0.9),
+                  color: Colors.deepPurple.shade100.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: const [
                     BoxShadow(
@@ -91,14 +92,17 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 1,
-        title: const Text(
+        title: Text(
           "Pick Location",
-          style: TextStyle(
-            color: Colors.deepPurple,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+          style: GoogleFonts.poppins(
+            textStyle: const TextStyle(
+              color: Colors.deepPurple,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.deepPurple),
@@ -121,7 +125,7 @@ class _LocationPickerScreenBodyState extends State<_LocationPickerScreenBody> {
           gmap.GoogleMap(
             myLocationEnabled: true,
             initialCameraPosition: initialCameraPosition,
-            style: mapStyleNoPOI,
+            mapType: gmap.MapType.normal,
             onMapCreated: (controller) async {
               await vm.onMapCreated(controller);
             },

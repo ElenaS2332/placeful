@@ -93,12 +93,13 @@ class MemoryMapScreen extends StatelessWidget {
                 "Placeful",
                 style: GoogleFonts.poppins(
                   textStyle: const TextStyle(
+                    color: Colors.deepPurple,
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
-                    color: Colors.black87,
                   ),
                 ),
               ),
+              centerTitle: true,
               backgroundColor: bgColor,
               elevation: 0,
               iconTheme: const IconThemeData(color: Colors.black87),
@@ -120,6 +121,9 @@ class MemoryMapScreen extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.star),
                   tooltip: "Favorites",
+                  style: IconButton.styleFrom(
+                    foregroundColor: Colors.deepPurple,
+                  ),
                   onPressed: () {
                     Navigator.push(
                       context,

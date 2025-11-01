@@ -40,15 +40,6 @@ class _UserProfileScreenBody extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: bgColor,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.deepPurple),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const MemoryMapScreen()),
-            );
-          },
-        ),
         title: Text(
           'My Profile',
           style: GoogleFonts.poppins(

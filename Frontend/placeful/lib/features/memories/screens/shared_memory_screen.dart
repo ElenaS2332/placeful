@@ -34,17 +34,8 @@ class _SharedMemoryScreenBody extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: bgColor,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.deepPurple),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const MemoryMapScreen()),
-            );
-          },
-        ),
         title: Text(
-          "Shared Memories",
+          "Memories from your Friends",
           style: GoogleFonts.poppins(
             textStyle: const TextStyle(
               color: Colors.deepPurple,
@@ -64,10 +55,14 @@ class _SharedMemoryScreenBody extends StatelessWidget {
                 : vm.error != null
                 ? Center(child: Text(vm.error!))
                 : vm.sharedMemories.isEmpty
-                ? Center(
-                  child: Text(
-                    "No shared memories yet.",
-                    style: GoogleFonts.poppins(color: Colors.grey),
+                ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                  child: Center(
+                    child: Text(
+                      "Your friends haven't shared any memories yet. \nStart exploring together!",
+                      style: GoogleFonts.poppins(color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 )
                 : ListView.builder(

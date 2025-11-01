@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:placeful/features/memories/viewmodels/memory_details_viewmodel.dart';
@@ -16,7 +17,17 @@ class MemoryDetailsScreen extends StatelessWidget {
         builder: (context, viewModel, _) {
           return Scaffold(
             appBar: AppBar(
-              title: Text(viewModel.memory?.title ?? 'Memory Details'),
+              title: Text(
+                viewModel.memory?.title ?? 'Memory Details',
+                style: GoogleFonts.poppins(
+                  textStyle: const TextStyle(
+                    color: Colors.deepPurple,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+              centerTitle: true,
               actions: [],
             ),
             body:

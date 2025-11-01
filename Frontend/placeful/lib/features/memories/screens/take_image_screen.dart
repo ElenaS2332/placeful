@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class TakeImageScreen extends StatefulWidget {
   const TakeImageScreen({super.key});
@@ -109,12 +110,15 @@ class _TakeImageScreenState extends State<TakeImageScreen> {
         elevation: 1,
         title: Text(
           "Take image",
-          style: const TextStyle(
-            color: Colors.deepPurple,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+          style: GoogleFonts.poppins(
+            textStyle: const TextStyle(
+              color: Colors.deepPurple,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
           ),
         ),
+        centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.deepPurple),
       ),
       body: Stack(

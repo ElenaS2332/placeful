@@ -42,9 +42,9 @@ class _FavoriteMemoriesBody extends StatelessWidget {
               "Favorite Memories",
               style: GoogleFonts.poppins(
                 textStyle: const TextStyle(
-                  fontSize: 20,
+                  color: Colors.deepPurple,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  fontSize: 20,
                 ),
               ),
             ),
@@ -95,10 +95,14 @@ class _FavoriteMemoriesBody extends StatelessWidget {
               vm.isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : (vm.favoriteMemoriesList?.memories?.isEmpty ?? true)
-                  ? const Center(
-                    child: Text(
-                      "No favorite memories yet",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ? Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                    child: const Center(
+                      child: Text(
+                        "No favorite memories yet. \nStart adding some!",
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   )
                   : ListView.separated(
