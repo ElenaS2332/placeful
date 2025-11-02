@@ -63,7 +63,7 @@ class MemoryMapScreen extends StatelessWidget {
 
     return ChangeNotifierProvider(
       create: (_) {
-        final vm = MemoryMapViewModel();
+        final vm = MemoryMapViewModel()..fetchFriendshipRequests();
         vm.initializeMap();
         return vm;
       },
@@ -107,15 +107,14 @@ class MemoryMapScreen extends StatelessWidget {
                 IconButton(
                   icon: _friendRequestIcon(vm.friendRequestsCount),
                   tooltip: "User Profile",
-                  onPressed: () async {
-                    final updated = await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const UserProfileScreen(),
-                      ),
-                    );
-                    if (updated == true) {
-                      await vm.fetchFriendshipRequests();
-                    }
+                  onPressed: () {
+                    Navigator.of(context)
+                        .push(
+                          MaterialPageRoute(
+                            builder: (_) => const UserProfileScreen(),
+                          ),
+                        )
+                        .then((_) => vm.fetchFriendshipRequests());
                   },
                 ),
                 IconButton(

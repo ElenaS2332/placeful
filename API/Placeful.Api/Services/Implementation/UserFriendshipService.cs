@@ -4,6 +4,7 @@ using Placeful.Api.Data;
 using Placeful.Api.Models.DTOs;
 using Placeful.Api.Models.Entities;
 using Placeful.Api.Models.Exceptions.UserFriendshipExceptions;
+using Placeful.Api.Models.Exceptions.UserProfileExceptions;
 using Placeful.Api.Services.Interface;
 
 namespace Placeful.Api.Services.Implementation;
@@ -123,21 +124,30 @@ public class UserFriendshipService(PlacefulDbContext context, IUserProfileServic
         friendship.FriendshipAccepted = true;
         context.UserFriendships.Update(friendship);
 
-        UserProfile currentUser = friendship.FriendshipReceiver!;
-        UserProfile otherUser = friendship.FriendshipInitiator!;
+        UserProfile? currentUser = await context.UserProfiles
+            .Include(u => u.Friends)
+            .FirstOrDefaultAsync(u => u.FirebaseUid == currentUserUid);
+        
+        if (currentUser is null) throw new UserProfileNotFoundException(currentUserUid);
+            
+        UserProfile? otherUser =  await context.UserProfiles
+            .Include(u => u.Friends)
+            .FirstOrDefaultAsync(u => u.FirebaseUid == otherUserUid);
+        
+        if (otherUser is null) throw new UserProfileNotFoundException(otherUserUid);
 
         if (currentUser.Friends is null)
         {
             currentUser.Friends = new List<UserProfile>();
         }
         currentUser.Friends.Add(otherUser);
+        await context.SaveChangesAsync();
 
         if (otherUser.Friends is null)
         {
             otherUser.Friends = new List<UserProfile>();
         }
         otherUser.Friends.Add(currentUser);
-
         await context.SaveChangesAsync();
 
         return friendship;
