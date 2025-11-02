@@ -21,20 +21,20 @@ public class PlacefulDbContext(DbContextOptions<PlacefulDbContext> options) : Db
             .HasOne(f => f.FriendshipInitiator)
             .WithMany(u => u.SentFriendRequests)
             .HasForeignKey(f => f.FriendshipInitiatorId)
-            .HasPrincipalKey(u => u.FirebaseUid) 
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasPrincipalKey(u => u.FirebaseUid)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<UserFriendship>()
             .HasOne(f => f.FriendshipReceiver)
             .WithMany(u => u.ReceivedFriendRequests)
             .HasForeignKey(f => f.FriendshipReceiverId)
-            .HasPrincipalKey(u => u.FirebaseUid) 
-            .OnDelete(DeleteBehavior.Restrict);
-        
+            .HasPrincipalKey(u => u.FirebaseUid)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<Memory>()
             .HasOne(m => m.Location)
-            .WithMany(l => l.Memories) 
-            .OnDelete(DeleteBehavior.Cascade);
+            .WithMany(l => l.Memories)
+            .OnDelete(DeleteBehavior.Restrict);
         
         modelBuilder.Entity<SharedMemory>(entity =>
         {
@@ -43,12 +43,12 @@ public class PlacefulDbContext(DbContextOptions<PlacefulDbContext> options) : Db
             entity.HasOne(sm => sm.SharedWithUser)
                 .WithMany()
                 .HasForeignKey(sm => sm.SharedWithUserId)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(sm => sm.SharedFromUser)
-                .WithMany() 
+                .WithMany()
                 .HasForeignKey(sm => sm.SharedFromUserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

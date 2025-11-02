@@ -11,5 +11,5 @@ public interface IUserProfileService
     Task<UserProfile> GetUserProfile(String firebaseUid);
     Task CreateUserProfile(UserProfileDto userProfileDto);
     Task UpdateUserProfile(UpdateUserProfileDto updateUserProfileDto);
-    Task DeleteUserProfile(String firebaseUid);
+    Task DeleteUserProfile();
 }

@@ -16,7 +16,7 @@ public static class UserProfileEndpoints
         group.MapGet("", GetCurrentUserProfile).WithName(nameof(GetCurrentUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapPost("/register", CreateUserProfile).WithName(nameof(CreateUserProfile));
         group.MapPut("", UpdateUserProfile).WithName(nameof(UpdateUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
-        group.MapDelete("{userProfileId:guid}", DeleteUserProfile).WithName(nameof(DeleteUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapDelete("", DeleteUserProfile).WithName(nameof(DeleteUserProfile)).RequireAuthorization(AuthPolicy.Authenticated);
     }
 
     private static async Task<IResult> GetUserProfiles(
@@ -69,11 +69,11 @@ public static class UserProfileEndpoints
     }
 
 
-    private static async Task<IResult> DeleteUserProfile(String firebaseUid, IUserProfileService userProfileService)
+    private static async Task<IResult> DeleteUserProfile(IUserProfileService userProfileService)
     {
         try
         {
-            await userProfileService.DeleteUserProfile(firebaseUid);
+            await userProfileService.DeleteUserProfile();
             return Results.Ok();
         }
         catch (Exception ex)

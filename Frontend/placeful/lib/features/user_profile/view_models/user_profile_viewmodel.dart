@@ -92,4 +92,14 @@ class UserProfileViewModel extends ChangeNotifier {
   Future<void> signOut() async {
     await authService.signOut();
   }
+
+  Future<void> deleteAccount() async {
+    try {
+      await userService.deleteUserAccount();
+      await authService.signOut();
+    } catch (e) {
+      error = "Failed to delete account: $e";
+      notifyListeners();
+    }
+  }
 }

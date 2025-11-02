@@ -46,4 +46,12 @@ class UserService {
   Future<void> updateUser(UpdateUserDto userDto) async {
     await _client.put("user-profile", userDto.toJson());
   }
+
+  Future<void> deleteUserAccount() async {
+    try {
+      await _client.delete("user-profile");
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
