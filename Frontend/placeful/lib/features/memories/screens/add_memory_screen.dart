@@ -1,162 +1,81 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:camera/camera.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
+
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:provider/provider.dart';
 import 'package:placeful/common/domain/models/memory.dart';
+import 'package:provider/provider.dart';
 import 'package:placeful/common/domain/models/location.dart';
 import 'package:placeful/features/memories/screens/location_picker_screen.dart';
 import 'package:placeful/features/memories/screens/take_image_screen.dart';
 import '../viewmodels/add_memory_viewmodel.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
 
 class AddMemoryScreen extends StatelessWidget {
   const AddMemoryScreen({super.key, this.memoryToEdit});
-
   final Memory? memoryToEdit;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => AddMemoryViewModel(memoryToEdit),
-      child: const AddMemoryScreenBody(),
+      child: const _AddMemoryScreenBody(),
     );
   }
 }
 
-class AddMemoryScreenBody extends StatelessWidget {
-  const AddMemoryScreenBody({super.key});
+class _AddMemoryScreenBody extends StatelessWidget {
+  const _AddMemoryScreenBody();
 
-  Future<void> _showImageSourceDialog(
+  void showTopToast(
     BuildContext context,
-    AddMemoryViewModel vm,
-  ) async {
-    showModalBottomSheet(
-      context: context,
-      builder: (_) {
-        return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text("Open Camera"),
-                onTap: () async {
-                  Navigator.pop(context);
-                  await _openCamera(context, vm);
-                },
+    String message, {
+    bool success = true,
+  }) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            top: kToolbarHeight + 80,
+            left: 16,
+            right: 16,
+            child: Material(
+              color: Colors.transparent,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
+                decoration: BoxDecoration(
+                  color:
+                      success
+                          ? Colors.green.shade700.withValues(alpha: 0.9)
+                          : Colors.red.shade700,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  message,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
               ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text("Open Gallery"),
-                onTap: () async {
-                  Navigator.pop(context);
-                  await _openGallery(context, vm);
-                },
-              ),
-            ],
+            ),
           ),
-        );
-      },
-    );
-  }
-
-  Future<void> _openCamera(BuildContext context, AddMemoryViewModel vm) async {
-    final status = await Permission.camera.request();
-    if (!context.mounted) return;
-    if (status.isGranted) {
-      final capturedImage = await Navigator.push<XFile?>(
-        context,
-        MaterialPageRoute(builder: (_) => const TakeImageScreen()),
-      );
-      if (capturedImage != null && capturedImage.path.isNotEmpty) {
-        vm.setImageUrl(capturedImage.path);
-        vm.setSelectedImage(File(capturedImage.path));
-      }
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Camera permission denied")));
-    }
-  }
-
-  Future<void> _openGallery(BuildContext context, AddMemoryViewModel vm) async {
-    PermissionStatus status;
-    if (Platform.isIOS) {
-      status = await Permission.photos.request();
-    } else {
-      if (await Permission.photos.isGranted ||
-          await Permission.storage.isGranted) {
-        status = PermissionStatus.granted;
-      } else {
-        status = await Permission.photos.request();
-        if (status.isDenied && ((int.tryParse(Platform.version) ?? 0) < 33)) {
-          status = await Permission.storage.request();
-        }
-      }
-    }
-
-    if (status.isDenied || status.isPermanentlyDenied) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Gallery permission denied")),
-      );
-      if (status.isPermanentlyDenied) await openAppSettings();
-      return;
-    }
-
-    final albums = await PhotoManager.getAssetPathList(
-      type: RequestType.image,
-      onlyAll: true,
-    );
-    if (albums.isEmpty) return;
-
-    final recentAlbum = albums.first;
-    final recentImages = await recentAlbum.getAssetListPaged(page: 0, size: 30);
-    if (!context.mounted) return;
-
-    final selectedPath = await showModalBottomSheet<String>(
-      context: context,
-      builder: (_) {
-        return GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            mainAxisSpacing: 2,
-            crossAxisSpacing: 2,
-          ),
-          itemCount: recentImages.length,
-          itemBuilder: (_, index) {
-            final asset = recentImages[index];
-            return FutureBuilder<Uint8List?>(
-              future: asset.thumbnailDataWithSize(
-                const ThumbnailSize(200, 200),
-              ),
-              builder: (_, snapshot) {
-                if (!snapshot.hasData) return const SizedBox();
-                return GestureDetector(
-                  onTap: () async {
-                    final file = await asset.file;
-                    if (!context.mounted) return;
-                    if (file != null && file.existsSync()) {
-                      Navigator.pop(context, file.path);
-                    }
-                  },
-                  child: Image.memory(snapshot.data!, fit: BoxFit.cover),
-                );
-              },
-            );
-          },
-        );
-      },
     );
 
-    if (selectedPath != null && selectedPath.isNotEmpty) {
-      vm.setImageUrl(selectedPath);
-      vm.setSelectedImage(File(selectedPath));
-    }
+    overlay.insert(overlayEntry);
+    Future.delayed(const Duration(seconds: 2), () => overlayEntry.remove());
   }
 
   @override
@@ -164,75 +83,35 @@ class AddMemoryScreenBody extends StatelessWidget {
     final vm = Provider.of<AddMemoryViewModel>(context);
     final formKey = GlobalKey<FormState>();
 
-    if (vm.isInitializing) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        centerTitle: true,
-        title: Text(
-          vm.memoryToEdit == null ? "Add New Memory" : "Edit Memory",
-          style: GoogleFonts.poppins(
-            textStyle: const TextStyle(
-              color: Colors.deepPurple,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Colors.deepPurple),
-      ),
-      backgroundColor: Colors.white,
+      appBar: AppBar(title: const Text("Add New Memory")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
+              TextField(
+                decoration: const InputDecoration(labelText: "Title"),
                 controller: vm.titleController,
                 onChanged: vm.setTitle,
-                decoration: InputDecoration(
-                  labelText: "Title",
-                  prefixIcon: const Icon(Icons.title),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: vm.descriptionController,
-                onChanged: vm.setDescription,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: "Description",
-                  prefixIcon: const Icon(Icons.description),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
               ),
               const SizedBox(height: 12),
               TextField(
-                controller: vm.dateController,
+                decoration: const InputDecoration(labelText: "Description"),
+                controller: vm.descriptionController,
+                onChanged: vm.setDescription,
+              ),
+              const SizedBox(height: 12),
+              TextField(
                 readOnly: true,
+                controller: vm.dateController,
                 onTap: () => vm.pickDate(context),
                 decoration: InputDecoration(
                   hintText: "Select Date",
-                  prefixIcon: const Icon(Icons.calendar_today),
                   filled: true,
-                  fillColor: Colors.grey.shade100,
+                  fillColor: Colors.white24,
+                  prefixIcon: const Icon(Icons.calendar_today),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -241,44 +120,28 @@ class AddMemoryScreenBody extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               TextField(
-                controller: vm.locationController,
                 readOnly: true,
+                controller: vm.locationController,
                 onTap: () async {
-                  if (!context.mounted) return;
-                  if (vm.showMap) vm.toggleMap();
-                  final selectedLocationDto = await Navigator.push(
+                  final selectedLocation = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => const LocationPickerScreen(),
                     ),
                   );
-
-                  if (selectedLocationDto != null) {
-                    final loc = Location.fromDto(selectedLocationDto);
-
-                    vm.setLocation(loc);
-                    vm.memoryLocation = gmap.LatLng(
-                      loc.latitude,
-                      loc.longitude,
-                    );
-
-                    vm.locationController.text = loc.name;
-
-                    if (!vm.showMap) vm.toggleMap();
+                  if (selectedLocation != null) {
+                    final locationToAdd = Location.fromDto(selectedLocation);
+                    vm.setLocation(locationToAdd);
+                    vm.locationController.text = locationToAdd.name;
                   }
                 },
-                decoration: InputDecoration(
-                  hintText: "Add Location",
-                  prefixIcon: const Icon(Icons.location_on),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+                style: TextStyle(color: Colors.grey.shade800, fontSize: 16),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.location_on),
+                  labelText: "Location",
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               if (vm.location != null)
                 Center(
                   child: ElevatedButton.icon(
@@ -296,123 +159,256 @@ class AddMemoryScreenBody extends StatelessWidget {
                   ),
                 ),
               const SizedBox(height: 16),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child:
-                    vm.showMap
-                        ? Container(
-                          key: const ValueKey('map'),
-                          height: 200,
-                          margin: const EdgeInsets.only(top: 8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.grey.shade400),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: GoogleMap(
-                              initialCameraPosition: CameraPosition(
-                                target: vm.memoryLocation,
-                                zoom: 15,
-                              ),
-                              markers: {
-                                Marker(
-                                  markerId: const MarkerId('memory'),
-                                  position: vm.memoryLocation,
-                                  infoWindow: InfoWindow(
-                                    title: vm.title,
-                                    snippet: vm.location!.name,
-                                  ),
-                                ),
-                              },
-                              zoomControlsEnabled: false,
-                              myLocationButtonEnabled: false,
-                              scrollGesturesEnabled: true,
-                              tiltGesturesEnabled: false,
+              if (vm.location != null)
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child:
+                      vm.showMap && vm.location != null
+                          ? Container(
+                            key: const ValueKey('map'),
+                            height: 200,
+                            margin: const EdgeInsets.only(top: 8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade400),
                             ),
-                          ),
-                        )
-                        : const SizedBox.shrink(),
-              ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: GoogleMap(
+                                initialCameraPosition: CameraPosition(
+                                  target: gmap.LatLng(
+                                    vm.location!.latitude,
+                                    vm.location!.longitude,
+                                  ),
+                                  zoom: 15,
+                                ),
+                                markers: {
+                                  Marker(
+                                    markerId: const MarkerId(
+                                      'selected_location',
+                                    ),
+                                    position: gmap.LatLng(
+                                      vm.location!.latitude,
+                                      vm.location!.longitude,
+                                    ),
+                                    infoWindow: InfoWindow(
+                                      title: vm.titleController.text,
+                                      snippet: vm.location!.name,
+                                    ),
+                                    icon: BitmapDescriptor.defaultMarkerWithHue(
+                                      BitmapDescriptor.hueViolet,
+                                    ),
+                                  ),
+                                },
+                                zoomControlsEnabled: false,
+                                myLocationButtonEnabled: false,
+                                scrollGesturesEnabled: true,
+                                tiltGesturesEnabled: false,
+                              ),
+                            ),
+                          )
+                          : const SizedBox.shrink(),
+                ),
               const SizedBox(height: 16),
-              if (vm.imageUrl != null && vm.imageUrl!.isNotEmpty)
-                SizedBox(
-                  height: 250,
-                  child: Image.network(
-                    vm.imageUrl!,
-                    fit: BoxFit.cover,
+              Consumer<AddMemoryViewModel>(
+                builder: (_, vm, __) {
+                  if (vm.imageUrl == null || vm.imageUrl!.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  final file = File(vm.imageUrl!);
+                  if (!file.existsSync()) return const SizedBox.shrink();
+                  return Container(
                     width: double.infinity,
                     height: 250,
-                    errorBuilder:
-                        (_, __, ___) => Container(
-                          height: 250,
-                          color: Colors.grey[300],
-                          child: const Center(
-                            child: Icon(Icons.image_not_supported),
-                          ),
-                        ),
-                  ),
-                ),
-              if (vm.imageUrl != null && vm.imageUrl!.isNotEmpty)
-                const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () => _showImageSourceDialog(context, vm),
-                icon: const Icon(Icons.add_a_photo),
-                label: const Text("Add Image"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      image: DecorationImage(
+                        image: FileImage(file),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+                },
               ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed:
-                    vm.isLoading
-                        ? null
-                        : () async {
-                          if (!formKey.currentState!.validate()) return;
-                          final success = await vm.saveMemory();
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                success
-                                    ? (vm.memoryToEdit == null
-                                        ? 'Memory added!'
-                                        : 'Memory updated!')
-                                    : 'Error saving memory',
-                              ),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                          if (success) Navigator.pop(context);
-                        },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple.shade400,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              if (vm.showMap) const SizedBox(height: 12),
+              if (!vm.showMap) const SizedBox(height: 180),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => _showImageSourceDialog(context, vm),
+                      child: const Text("Add Image"),
+                    ),
                   ),
-                ),
-                child:
-                    vm.isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : Text(
-                          vm.memoryToEdit == null
-                              ? "Add Memory"
-                              : "Save Memory",
-                        ),
+                ],
               ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed:
+                          vm.isLoading
+                              ? null
+                              : () async {
+                                if (!formKey.currentState!.validate()) return;
+                                final success = await vm.addMemory();
+                                if (!context.mounted) return;
+                                showTopToast(
+                                  context,
+                                  success
+                                      ? 'Memory successfully added!'
+                                      : 'An error occurred while adding memory.',
+                                  success: success,
+                                );
+                                if (success) Navigator.pop(context, true);
+                              },
+                      child:
+                          vm.isLoading
+                              ? const CircularProgressIndicator()
+                              : const Text("Add Memory"),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (vm.error != null)
+                Text(vm.error!, style: const TextStyle(color: Colors.red)),
               const SizedBox(height: 16),
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+Future<void> _showImageSourceDialog(
+  BuildContext context,
+  AddMemoryViewModel vm,
+) async {
+  showModalBottomSheet(
+    context: context,
+    builder: (_) {
+      return SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text("Open Camera"),
+              onTap: () async {
+                Navigator.pop(context);
+                await _openCamera(context, vm);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text("Open Gallery"),
+              onTap: () async {
+                Navigator.pop(context);
+                await _openGallery(context, vm);
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Future<void> _openCamera(BuildContext context, AddMemoryViewModel vm) async {
+  final status = await Permission.camera.request();
+  if (!context.mounted) return;
+  if (status.isGranted) {
+    final capturedImage = await Navigator.push<XFile?>(
+      context,
+      MaterialPageRoute(builder: (_) => const TakeImageScreen()),
+    );
+    if (capturedImage != null && capturedImage.path.isNotEmpty) {
+      final file = File(capturedImage.path);
+      vm.setImageUrl(capturedImage.path);
+      vm.setSelectedImage(file);
+    }
+  } else {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Camera permission denied")));
+  }
+}
+
+Future<void> _openGallery(BuildContext context, AddMemoryViewModel vm) async {
+  PermissionStatus status;
+  if (Platform.isIOS) {
+    status = await Permission.photos.request();
+  } else if (Platform.isAndroid) {
+    if (await Permission.photos.isGranted ||
+        await Permission.storage.isGranted) {
+      status = PermissionStatus.granted;
+    } else {
+      status = await Permission.photos.request();
+      if (status.isDenied && ((int.tryParse(Platform.version) ?? 0) < 33)) {
+        status = await Permission.storage.request();
+      }
+    }
+  } else {
+    status = PermissionStatus.denied;
+  }
+
+  if (status.isDenied || status.isPermanentlyDenied) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Gallery permission denied")));
+    if (status.isPermanentlyDenied) await openAppSettings();
+    return;
+  }
+
+  final albums = await PhotoManager.getAssetPathList(
+    type: RequestType.image,
+    onlyAll: true,
+  );
+  if (albums.isEmpty) return;
+  final recentAlbum = albums.first;
+  final recentImages = await recentAlbum.getAssetListPaged(page: 0, size: 30);
+
+  if (!context.mounted) return;
+
+  final selectedPath = await showModalBottomSheet<String>(
+    context: context,
+    builder: (_) {
+      return GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 2,
+          crossAxisSpacing: 2,
+        ),
+        itemCount: recentImages.length,
+        itemBuilder: (_, index) {
+          final asset = recentImages[index];
+          return FutureBuilder<Uint8List?>(
+            future: asset.thumbnailDataWithSize(const ThumbnailSize(200, 200)),
+            builder: (_, snapshot) {
+              if (!snapshot.hasData) return const SizedBox();
+              return GestureDetector(
+                onTap: () async {
+                  final file = await asset.file;
+                  if (!context.mounted) return;
+                  if (file != null && file.existsSync()) {
+                    Navigator.pop(context, file.path);
+                  }
+                },
+                child: Image.memory(snapshot.data!, fit: BoxFit.cover),
+              );
+            },
+          );
+        },
+      );
+    },
+  );
+
+  if (selectedPath != null && selectedPath.isNotEmpty) {
+    final file = File(selectedPath);
+    vm.setImageUrl(selectedPath);
+    vm.setSelectedImage(file);
   }
 }

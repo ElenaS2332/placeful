@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:placeful/common/domain/dtos/location_dto.dart';
@@ -16,18 +17,6 @@ class AddMemoryViewModel extends ChangeNotifier {
     _initializeMemory();
   }
 
-  bool isInitializing = true;
-
-  String title = '';
-  String description = '';
-  DateTime? date;
-  Location? location;
-  String? imageUrl = '';
-
-  File? selectedImageFile;
-  bool isLoading = false;
-  String? error;
-
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
   final dateController = TextEditingController();
@@ -38,7 +27,19 @@ class AddMemoryViewModel extends ChangeNotifier {
 
   LatLng memoryLocation = LatLng(0, 0);
 
+  String title = '';
+  String description = '';
+  DateTime? date;
+  Location? location;
+  String? imageUrl = '';
+
+  File? selectedImageFile;
+  bool isLoading = false;
+  String? error;
+  bool isInitializing = true;
+
   Future<void> _initializeMemory() async {
+    locationController.text = 'Add Location';
     if (memoryToEdit != null) {
       titleController.text = memoryToEdit!.title;
       descriptionController.text = memoryToEdit!.description;
@@ -71,6 +72,11 @@ class AddMemoryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleMap() {
+    _showMap = !_showMap;
+    notifyListeners();
+  }
+
   void setSelectedImage(File file) {
     selectedImageFile = file;
   }
@@ -89,24 +95,22 @@ class AddMemoryViewModel extends ChangeNotifier {
 
   void setLocation(Location value) {
     location = value;
+    notifyListeners();
   }
 
   void setImageUrl(String value) {
     imageUrl = value;
+    notifyListeners();
   }
 
   void setMemoryLocation(LatLng value) {
     memoryLocation = value;
+    notifyListeners();
   }
 
   bool get isValid => title.isNotEmpty && description.isNotEmpty;
 
-  void toggleMap() {
-    _showMap = !_showMap;
-    notifyListeners();
-  }
-
-  Future<bool> saveMemory() async {
+  Future<bool> addMemory() async {
     if (!isValid) {
       error = 'Please fill all required fields';
       notifyListeners();
@@ -125,30 +129,16 @@ class AddMemoryViewModel extends ChangeNotifier {
         location:
             location != null
                 ? LocationDto(
-                  id: location!.id,
                   latitude: location!.latitude,
                   longitude: location!.longitude,
                   name: location!.name,
+                  id: '',
                 )
                 : null,
         imageUrl: imageUrl,
       );
 
-      if (memoryToEdit != null) {
-        await memoryService.updateMemory(
-          memoryToEdit!.copyWith(
-            title: title,
-            description: description,
-            date: date,
-            location: location,
-            imageUrl: imageUrl,
-          ),
-          imageFile: selectedImageFile,
-        );
-      } else {
-        await memoryService.addMemory(memoryDto, imageFile: selectedImageFile);
-      }
-
+      await memoryService.addMemory(memoryDto, imageFile: selectedImageFile);
       return true;
     } catch (e) {
       error = e.toString();

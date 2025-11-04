@@ -40,53 +40,61 @@ public class MemoryService(PlacefulDbContext context,
 
     public async Task CreateMemory(MemoryDto memoryDto)
     {
-        await using var transaction = await context.Database.BeginTransactionAsync();
+        var strategy = context.Database.CreateExecutionStrategy();
 
-        try
+        await strategy.ExecuteAsync(async () =>
         {
-            if (memoryDto.ImageFile is not null && memoryDto.ImageFile.Length > 0)
-            {
-                var imageUrl = await blobStorageService.UploadFileAsync(memoryDto.ImageFile);
-                memoryDto.ImageUrl = imageUrl;
-            }
+            await using var transaction = await context.Database.BeginTransactionAsync();
 
-            var location = new Location();
-            if (memoryDto.LocationName is not null &&
-                memoryDto.LocationLatitude is not null &&
-                memoryDto.LocationLongitude is not null)
+            try
             {
-                location = new Location
+                if (memoryDto.ImageFile is not null && memoryDto.ImageFile.Length > 0)
                 {
-                    Latitude = memoryDto.LocationLatitude.Value,
-                    Longitude = memoryDto.LocationLongitude.Value,
-                    Name = memoryDto.LocationName,
+                    var imageUrl = await blobStorageService.UploadFileAsync(memoryDto.ImageFile);
+                    memoryDto.ImageUrl = imageUrl;
+                }
+
+                Location? location = null;
+                if (memoryDto.LocationName is not null &&
+                    memoryDto.LocationLatitude is not null &&
+                    memoryDto.LocationLongitude is not null)
+                {
+                    location = new Location
+                    {
+                        Latitude = memoryDto.LocationLatitude.Value,
+                        Longitude = memoryDto.LocationLongitude.Value,
+                        Name = memoryDto.LocationName,
+                    };
+
+                    await context.Locations.AddAsync(location);
+                    await context.SaveChangesAsync();
+                }
+
+                var userId = GetCurrentUserFirebaseUid();
+
+                var newMemory = new Memory
+                {
+                    Title = memoryDto.Title,
+                    Description = memoryDto.Description,
+                    Date = (memoryDto.Date ?? DateTime.UtcNow).ToUniversalTime(),
+                    ImageUrl = memoryDto.ImageUrl,
+                    Location = location,
+                    UserProfileId = userId
                 };
-                await context.Locations.AddAsync(location);
+
+                await context.Memories.AddAsync(newMemory);
                 await context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
             }
-
-            var userId = GetCurrentUserFirebaseUid();
-
-            var newMemory = new Memory
+            catch
             {
-                Title = memoryDto.Title,
-                Description = memoryDto.Description,
-                Date = (memoryDto.Date ?? DateTime.UtcNow).ToUniversalTime(),
-                ImageUrl = memoryDto.ImageUrl,
-                Location = location,
-                UserProfileId = userId
-            };
-            await context.Memories.AddAsync(newMemory);
-            await context.SaveChangesAsync();
-
-            await transaction.CommitAsync();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+                await transaction.RollbackAsync();
+                throw;
+            }
+        });
     }
+
 
     public async Task UpdateMemory(MemoryToUpdateDto dto)
     {
