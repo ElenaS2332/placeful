@@ -93,12 +93,10 @@ class AddMemoryViewModel extends ChangeNotifier {
 
   void setImageUrl(String value) {
     imageUrl = value;
-    notifyListeners();
   }
 
   void setMemoryLocation(LatLng value) {
     memoryLocation = value;
-    notifyListeners();
   }
 
   bool get isValid => title.isNotEmpty && description.isNotEmpty;

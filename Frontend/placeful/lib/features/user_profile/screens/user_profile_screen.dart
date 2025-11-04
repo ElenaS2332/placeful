@@ -4,7 +4,6 @@ import 'package:placeful/common/domain/models/user_profile.dart';
 import 'package:placeful/common/domain/models/user_friendship.dart';
 import 'package:placeful/features/authentication/login_screen.dart';
 import 'package:placeful/features/friends/screens/add_friend_screen.dart';
-import 'package:placeful/features/memories/screens/memory_map_screen.dart';
 import 'package:placeful/features/user_profile/screens/edit_profile_screen.dart';
 import 'package:placeful/features/user_profile/view_models/edit_profile_viewmodel.dart';
 import 'package:placeful/features/user_profile/view_models/user_profile_viewmodel.dart';

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:placeful/features/memories/screens/add_memory_screen.dart';
+import 'package:placeful/features/memories/screens/list_memories_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:placeful/features/memories/viewmodels/memory_details_viewmodel.dart';
 
@@ -18,7 +20,7 @@ class MemoryDetailsScreen extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               title: Text(
-                viewModel.memory?.title ?? 'Memory Details',
+                viewModel.memory?.title ?? '',
                 style: GoogleFonts.poppins(
                   textStyle: const TextStyle(
                     color: Colors.deepPurple,
@@ -28,7 +30,38 @@ class MemoryDetailsScreen extends StatelessWidget {
                 ),
               ),
               centerTitle: true,
-              actions: [],
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.deepPurple),
+                  tooltip: "Edit Profile",
+                  onPressed: () async {
+                    final updated = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                AddMemoryScreen(memoryToEdit: viewModel.memory),
+                      ),
+                    );
+                    if (updated == true) await viewModel.loadMemoryDetails();
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.deepPurple),
+                  onPressed: () async {
+                    await viewModel.deleteMemory(memoryId);
+                    if (context.mounted) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ListMemoriesScreen(),
+                        ),
+                        (route) => false,
+                      );
+                    }
+                  },
+                ),
+              ],
             ),
             body:
                 viewModel.memory == null
