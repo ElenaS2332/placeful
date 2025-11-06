@@ -31,9 +31,7 @@ class LocationPickerViewModel extends ChangeNotifier {
         return;
       }
 
-      final pos = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      final pos = await Geolocator.getCurrentPosition();
 
       _currentPosition = gmap.LatLng(pos.latitude, pos.longitude);
 

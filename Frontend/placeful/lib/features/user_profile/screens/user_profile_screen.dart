@@ -180,7 +180,7 @@ class _UserProfileScreenBody extends StatelessWidget {
                       : "No email provided",
                   style: GoogleFonts.poppins(
                     textStyle: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.deepPurple,
                     ),
@@ -280,7 +280,7 @@ class _UserProfileScreenBody extends StatelessWidget {
                       );
                     }).toList(),
               ),
-          const SizedBox(height: 220),
+          const SizedBox(height: 160),
           Center(
             child: TextButton(
               onPressed: () async {
@@ -354,7 +354,7 @@ class _UserProfileScreenBody extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),
@@ -363,9 +363,11 @@ class _UserProfileScreenBody extends StatelessWidget {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: const Color(0xFF8668FF).withOpacity(0.2),
+            backgroundColor: const Color(0xFF8668FF).withValues(alpha: 0.2),
             child: Text(
-              friend.fullName[0].toUpperCase(),
+              friend.fullName.isNotEmpty
+                  ? friend.fullName[0].toUpperCase()
+                  : "?",
               style: const TextStyle(
                 color: Color(0xFF8668FF),
                 fontWeight: FontWeight.bold,
@@ -373,27 +375,30 @@ class _UserProfileScreenBody extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                friend.fullName,
-                style: GoogleFonts.poppins(
-                  textStyle: const TextStyle(
-                    color: Colors.deepPurple,
-                    fontWeight: FontWeight.w600,
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  friend.fullName,
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              Text(
-                friend.email,
-                style: GoogleFonts.poppins(
-                  textStyle: const TextStyle(color: Colors.grey),
+                Text(
+                  friend.email,
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(color: Colors.grey),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const Spacer(),
           TextButton(
             onPressed: () async {
               await vm.removeFriend(friend.firebaseUid);

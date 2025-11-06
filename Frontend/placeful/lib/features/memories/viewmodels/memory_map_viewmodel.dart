@@ -51,9 +51,7 @@ class MemoryMapViewModel extends ChangeNotifier {
         return;
       }
 
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      final position = await Geolocator.getCurrentPosition();
 
       _currentLocation = LatLng(position.latitude, position.longitude);
     } catch (e) {
@@ -125,9 +123,7 @@ class MemoryMapViewModel extends ChangeNotifier {
         return;
       }
 
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      final position = await Geolocator.getCurrentPosition();
 
       final target = LatLng(position.latitude, position.longitude);
       _currentLocation = target;

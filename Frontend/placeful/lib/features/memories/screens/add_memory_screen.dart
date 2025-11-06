@@ -213,9 +213,11 @@ class _AddMemoryScreenBody extends StatelessWidget {
               Consumer<AddMemoryViewModel>(
                 builder: (_, vm, __) {
                   final imagePath = vm.imageUrl;
-                  if (imagePath == null || imagePath.isEmpty)
+                  if (imagePath == null || imagePath.isEmpty) {
                     return const SizedBox.shrink();
+                  }
 
+                  // ignore: unused_local_variable
                   Widget imageWidget;
                   if (imagePath.startsWith('http')) {
                     imageWidget = Image.network(imagePath, fit: BoxFit.cover);
@@ -269,7 +271,9 @@ class _AddMemoryScreenBody extends StatelessWidget {
                                 showTopToast(
                                   context,
                                   success
-                                      ? 'Memory successfully added!'
+                                      ? vm.memoryToEdit != null
+                                          ? 'Memory updated successfully.'
+                                          : 'Memory added successfully.'
                                       : 'An error occurred while adding memory.',
                                   success: success,
                                 );

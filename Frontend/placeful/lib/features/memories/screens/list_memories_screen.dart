@@ -99,7 +99,7 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                   child: Icon(
                     Icons.eco_rounded,
                     size: 180,
-                    color: Colors.purple.withOpacity(0.15),
+                    color: Colors.purple.withValues(alpha: 0.15),
                   ),
                 ),
               ),
@@ -111,7 +111,7 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                   child: Icon(
                     Icons.eco_rounded,
                     size: 200,
-                    color: Colors.purple.withOpacity(0.18),
+                    color: Colors.purple.withValues(alpha: 0.18),
                   ),
                 ),
               ),
@@ -368,8 +368,8 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                                         right: 8,
                                         child: Container(
                                           decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(
-                                              0.8,
+                                            color: Colors.white.withValues(
+                                              alpha: 0.8,
                                             ),
                                             shape: BoxShape.circle,
                                             boxShadow: const [

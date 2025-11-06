@@ -244,7 +244,17 @@ class MemoryMapScreen extends StatelessWidget {
                             MaterialPageRoute(
                               builder: (_) => const AddMemoryScreen(),
                             ),
-                          );
+                          ).then((added) {
+                            if (added == true) {
+                              // Only refetch if a new memory was added
+                              final vm = Provider.of<MemoryMapViewModel>(
+                                // ignore: use_build_context_synchronously
+                                context,
+                                listen: false,
+                              );
+                              vm.fetchLatestMemories();
+                            }
+                          });
                         },
                       ),
                     ],

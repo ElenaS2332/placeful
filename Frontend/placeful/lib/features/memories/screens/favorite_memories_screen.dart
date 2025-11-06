@@ -137,7 +137,7 @@ class _FavoriteMemoriesBody extends StatelessWidget {
                                     : null,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.15),
+                                color: Colors.black.withValues(alpha: 0.15),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
                               ),
@@ -148,7 +148,7 @@ class _FavoriteMemoriesBody extends StatelessWidget {
                               borderRadius: BorderRadius.circular(16),
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.black.withOpacity(0.5),
+                                  Colors.black.withValues(alpha: 0.5),
                                   Colors.transparent,
                                 ],
                                 begin: Alignment.bottomCenter,
