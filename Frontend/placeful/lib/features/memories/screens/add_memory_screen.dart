@@ -1,18 +1,16 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:camera/camera.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
-
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:placeful/common/domain/models/memory.dart';
-import 'package:provider/provider.dart';
 import 'package:placeful/common/domain/models/location.dart';
+import 'package:placeful/common/domain/models/memory.dart';
 import 'package:placeful/features/memories/screens/location_picker_screen.dart';
 import 'package:placeful/features/memories/screens/take_image_screen.dart';
-import '../viewmodels/add_memory_viewmodel.dart';
+import 'package:placeful/features/memories/viewmodels/add_memory_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 class AddMemoryScreen extends StatelessWidget {
   const AddMemoryScreen({super.key, this.memoryToEdit});
@@ -53,7 +51,7 @@ class _AddMemoryScreenBody extends StatelessWidget {
                 decoration: BoxDecoration(
                   color:
                       success
-                          ? Colors.green.shade700.withValues(alpha: 0.9)
+                          ? Colors.green.shade700.withOpacity(0.9)
                           : Colors.red.shade700,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: const [
@@ -174,8 +172,8 @@ class _AddMemoryScreenBody extends StatelessWidget {
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(16),
-                              child: GoogleMap(
-                                initialCameraPosition: CameraPosition(
+                              child: gmap.GoogleMap(
+                                initialCameraPosition: gmap.CameraPosition(
                                   target: gmap.LatLng(
                                     vm.location!.latitude,
                                     vm.location!.longitude,
@@ -183,20 +181,21 @@ class _AddMemoryScreenBody extends StatelessWidget {
                                   zoom: 15,
                                 ),
                                 markers: {
-                                  Marker(
-                                    markerId: const MarkerId(
+                                  gmap.Marker(
+                                    markerId: const gmap.MarkerId(
                                       'selected_location',
                                     ),
                                     position: gmap.LatLng(
                                       vm.location!.latitude,
                                       vm.location!.longitude,
                                     ),
-                                    infoWindow: InfoWindow(
+                                    infoWindow: gmap.InfoWindow(
                                       title: vm.titleController.text,
                                       snippet: vm.location!.name,
                                     ),
-                                    icon: BitmapDescriptor.defaultMarkerWithHue(
-                                      BitmapDescriptor.hueViolet,
+                                    icon: gmap
+                                        .BitmapDescriptor.defaultMarkerWithHue(
+                                      gmap.BitmapDescriptor.hueViolet,
                                     ),
                                   ),
                                 },
@@ -217,16 +216,6 @@ class _AddMemoryScreenBody extends StatelessWidget {
                     return const SizedBox.shrink();
                   }
 
-                  // ignore: unused_local_variable
-                  Widget imageWidget;
-                  if (imagePath.startsWith('http')) {
-                    imageWidget = Image.network(imagePath, fit: BoxFit.cover);
-                  } else {
-                    final file = File(imagePath);
-                    if (!file.existsSync()) return const SizedBox.shrink();
-                    imageWidget = Image.file(file, fit: BoxFit.cover);
-                  }
-
                   return Container(
                     width: double.infinity,
                     height: 250,
@@ -243,9 +232,7 @@ class _AddMemoryScreenBody extends StatelessWidget {
                   );
                 },
               ),
-
-              if (vm.showMap) const SizedBox(height: 12),
-              if (!vm.showMap) const SizedBox(height: 180),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -339,11 +326,13 @@ Future<void> _showImageSourceDialog(
 Future<void> _openCamera(BuildContext context, AddMemoryViewModel vm) async {
   final status = await Permission.camera.request();
   if (!context.mounted) return;
+
   if (status.isGranted) {
     final capturedImage = await Navigator.push<XFile?>(
       context,
       MaterialPageRoute(builder: (_) => const TakeImageScreen()),
     );
+
     if (capturedImage != null && capturedImage.path.isNotEmpty) {
       final file = File(capturedImage.path);
       vm.setImageUrl(capturedImage.path);
@@ -388,42 +377,50 @@ Future<void> _openGallery(BuildContext context, AddMemoryViewModel vm) async {
     onlyAll: true,
   );
   if (albums.isEmpty) return;
+
   final recentAlbum = albums.first;
   final recentImages = await recentAlbum.getAssetListPaged(page: 0, size: 30);
 
   if (!context.mounted) return;
 
-  final selectedPath = await showModalBottomSheet<String>(
-    context: context,
-    builder: (_) {
-      return GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          mainAxisSpacing: 2,
-          crossAxisSpacing: 2,
-        ),
-        itemCount: recentImages.length,
-        itemBuilder: (_, index) {
-          final asset = recentImages[index];
-          return FutureBuilder<Uint8List?>(
-            future: asset.thumbnailDataWithSize(const ThumbnailSize(200, 200)),
-            builder: (_, snapshot) {
-              if (!snapshot.hasData) return const SizedBox();
-              return GestureDetector(
-                onTap: () async {
-                  final file = await asset.file;
-                  if (!context.mounted) return;
-                  if (file != null && file.existsSync()) {
-                    Navigator.pop(context, file.path);
-                  }
-                },
-                child: Image.memory(snapshot.data!, fit: BoxFit.cover),
-              );
-            },
-          );
-        },
-      );
-    },
+  final selectedPath = await Navigator.push<String>(
+    context,
+    MaterialPageRoute(
+      builder:
+          (_) => Scaffold(
+            appBar: AppBar(title: const Text("Select Image")),
+            body: GridView.builder(
+              padding: const EdgeInsets.all(2),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 2,
+                crossAxisSpacing: 2,
+              ),
+              itemCount: recentImages.length,
+              itemBuilder: (_, index) {
+                final asset = recentImages[index];
+                return FutureBuilder<Uint8List?>(
+                  future: asset.thumbnailDataWithSize(
+                    const ThumbnailSize(200, 200),
+                  ),
+                  builder: (_, snapshot) {
+                    if (!snapshot.hasData) return const SizedBox();
+                    return GestureDetector(
+                      onTap: () async {
+                        final file = await asset.file;
+                        if (!context.mounted) return;
+                        if (file != null && file.existsSync()) {
+                          Navigator.pop(context, file.path);
+                        }
+                      },
+                      child: Image.memory(snapshot.data!, fit: BoxFit.cover),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+    ),
   );
 
   if (selectedPath != null && selectedPath.isNotEmpty) {
