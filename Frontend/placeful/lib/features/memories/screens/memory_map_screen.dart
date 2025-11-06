@@ -56,85 +56,14 @@ class MemoryMapScreen extends StatelessWidget {
     );
   }
 
-  void _showTopToast(BuildContext context) {
-    final overlay = Overlay.of(context);
-    if (overlay == null) return;
-
-    late OverlayEntry overlayEntry;
-    overlayEntry = OverlayEntry(
-      builder:
-          (context) => Positioned(
-            top: 120,
-            left: 20,
-            right: 20,
-            child: Material(
-              color: Colors.transparent,
-              child: Dismissible(
-                key: const Key('shared_memories_toast'),
-                direction: DismissDirection.up,
-                onDismissed: (_) => overlayEntry.remove(),
-                child: GestureDetector(
-                  onTap: () {
-                    overlayEntry.remove();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const SharedMemoryScreen(),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.deepPurple.shade400,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Unlock new memories",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          "See the memories your friends shared with you",
-                          style: TextStyle(color: Colors.white70, fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-    );
-
-    overlay.insert(overlayEntry);
-    // Future.delayed(const Duration(seconds: 10)).then((_) {
-    //   if (overlayEntry.mounted) overlayEntry.remove();
-    // });
-  }
-
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final bgColor = const Color(0xFFF7F5FF);
+    final Color bgColor = const Color(0xFFF7F5FF);
 
     return ChangeNotifierProvider(
       create: (_) {
-        final vm = MemoryMapViewModel();
+        final vm = MemoryMapViewModel()..fetchFriendshipRequests();
         vm.initializeMap();
         return vm;
       },
@@ -158,19 +87,19 @@ class MemoryMapScreen extends StatelessWidget {
               }).toSet();
 
           return Scaffold(
-            extendBodyBehindAppBar: true,
             backgroundColor: bgColor,
             appBar: AppBar(
               title: Text(
-                "Memories Map",
+                "Placeful",
                 style: GoogleFonts.poppins(
                   textStyle: const TextStyle(
+                    color: Colors.deepPurple,
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
-                    color: Colors.black87,
                   ),
                 ),
               ),
+              centerTitle: true,
               backgroundColor: bgColor,
               elevation: 0,
               iconTheme: const IconThemeData(color: Colors.black87),
@@ -178,20 +107,22 @@ class MemoryMapScreen extends StatelessWidget {
                 IconButton(
                   icon: _friendRequestIcon(vm.friendRequestsCount),
                   tooltip: "User Profile",
-                  onPressed: () async {
-                    final updated = await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const UserProfileScreen(),
-                      ),
-                    );
-                    if (updated == true) {
-                      await vm.fetchFriendshipRequests();
-                    }
+                  onPressed: () {
+                    Navigator.of(context)
+                        .push(
+                          MaterialPageRoute(
+                            builder: (_) => const UserProfileScreen(),
+                          ),
+                        )
+                        .then((_) => vm.fetchFriendshipRequests());
                   },
                 ),
                 IconButton(
                   icon: const Icon(Icons.star),
                   tooltip: "Favorites",
+                  style: IconButton.styleFrom(
+                    foregroundColor: Colors.deepPurple,
+                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -203,113 +134,117 @@ class MemoryMapScreen extends StatelessWidget {
                 ),
               ],
             ),
-            body: Stack(
+            body: Column(
               children: [
-                vm.isLoading
-                    ? const Center(
-                      child: CircularProgressIndicator(
-                        color: Colors.deepPurple,
-                      ),
-                    )
-                    : GoogleMap(
-                      initialCameraPosition:
-                          vm.currentLocation != null
-                              ? CameraPosition(
-                                target: vm.currentLocation!,
-                                zoom: 16,
-                              )
-                              : const CameraPosition(
-                                target: LatLng(41.9981, 21.4254),
-                                zoom: 14,
-                              ),
-                      onMapCreated: (controller) {
-                        vm.setMapController(controller);
-
-                        Future.delayed(
-                          const Duration(microseconds: 500),
-                          () => _showTopToast(context),
-                        );
-                      },
-                      markers: markers,
-                      zoomGesturesEnabled: true,
-                      zoomControlsEnabled: false,
-                      myLocationEnabled: true,
-                      myLocationButtonEnabled: false,
-                      scrollGesturesEnabled: true,
-                      rotateGesturesEnabled: true,
-                      style: _mapStyle,
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  child: Container(
+                    height: screenHeight * 0.6,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                Positioned(
-                  bottom: screenHeight * 0.2,
-                  right: 16,
-                  child: FloatingActionButton(
-                    heroTag: "myLocation",
-                    backgroundColor: Colors.white,
-                    child: const Icon(Icons.my_location, color: Colors.black),
-                    onPressed: () async {
-                      await vm.setCurrentLocation();
-                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Stack(
+                        children: [
+                          vm.isLoading
+                              ? const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.deepPurple,
+                                ),
+                              )
+                              : GoogleMap(
+                                initialCameraPosition:
+                                    vm.currentLocation != null
+                                        ? CameraPosition(
+                                          target: vm.currentLocation!,
+                                          zoom: 16,
+                                        )
+                                        : const CameraPosition(
+                                          target: LatLng(41.9981, 21.4254),
+                                          zoom: 14,
+                                        ),
+                                onMapCreated: (controller) {
+                                  vm.setMapController(controller);
+                                },
+                                markers: markers,
+                                zoomGesturesEnabled: true,
+                                zoomControlsEnabled: false,
+                                myLocationEnabled: true,
+                                myLocationButtonEnabled: false,
+                                scrollGesturesEnabled: true,
+                                rotateGesturesEnabled: true,
+                                style: _mapStyle,
+                              ),
+                          Positioned(
+                            bottom: 16,
+                            right: 16,
+                            child: FloatingActionButton(
+                              heroTag: "myLocation",
+                              backgroundColor: Colors.white,
+                              child: const Icon(
+                                Icons.my_location,
+                                color: Colors.black,
+                              ),
+                              onPressed: () async {
+                                await vm.setCurrentLocation();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    height: screenHeight * 0.18,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.purple.shade200.withValues(alpha: 0.9),
-                          Colors.purple.shade400.withValues(alpha: 0.9),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      _buildButton(
+                        context,
+                        label: "View Your Memories",
+                        icon: Icons.grid_view,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ListMemoriesScreen(),
+                            ),
+                          );
+                        },
                       ),
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(24),
+                      const SizedBox(height: 12),
+                      _buildButton(
+                        context,
+                        label: "View Memories from Friends",
+                        icon: Icons.group,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SharedMemoryScreen(),
+                            ),
+                          );
+                        },
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(25),
-                          blurRadius: 8,
-                          offset: const Offset(0, -2),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildGradientButton(
-                            label: "List All Memories",
-                            icon: Icons.grid_view,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const ListMemoriesScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          _buildGradientButton(
-                            label: "Add New Memory",
-                            icon: Icons.add,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const AddMemoryScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                      const SizedBox(height: 12),
+                      _buildButton(
+                        context,
+                        label: "Add New Memory",
+                        icon: Icons.add,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AddMemoryScreen(),
+                            ),
+                          );
+                        },
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -320,35 +255,26 @@ class MemoryMapScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildGradientButton({
+  Widget _buildButton(
+    BuildContext context, {
     required String label,
     required IconData icon,
     required VoidCallback onTap,
   }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Colors.white, Colors.white70]),
-        borderRadius: BorderRadius.circular(12),
+    return ElevatedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, color: Colors.white),
+      label: Text(
+        label,
+        style: GoogleFonts.poppins(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
       ),
-      child: ElevatedButton.icon(
-        icon: Icon(icon, color: Colors.deepPurple),
-        label: Text(
-          label,
-          style: GoogleFonts.poppins(
-            textStyle: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Colors.deepPurple,
-            ),
-          ),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          minimumSize: const Size.fromHeight(48),
-        ),
-        onPressed: onTap,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.deepPurple.shade400,
+        minimumSize: const Size.fromHeight(50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
