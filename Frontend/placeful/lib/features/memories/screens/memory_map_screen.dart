@@ -63,8 +63,11 @@ class MemoryMapScreen extends StatelessWidget {
 
     return ChangeNotifierProvider(
       create: (_) {
-        final vm = MemoryMapViewModel()..fetchFriendshipRequests();
-        vm.initializeMap();
+        final vm =
+            MemoryMapViewModel()
+              ..fetchFriendshipRequests()
+              ..fetchLatestMemories()
+              ..initializeMap();
         return vm;
       },
       child: Consumer<MemoryMapViewModel>(
