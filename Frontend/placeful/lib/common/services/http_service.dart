@@ -107,6 +107,40 @@ class HttpService {
     response.ensureSuccessStatusCode();
     return _decodeBody(response.body);
   }
+
+  Future<dynamic> putWithMedia(
+    String path, {
+    required Map<String, String> fields,
+    File? file,
+    String fileFieldName = 'ImageFile',
+  }) async {
+    final uri = Uri.parse('$baseApiUrl$path');
+    final request = http.MultipartRequest('PUT', uri);
+    final headers = await _buildHeaders();
+    headers.remove('Content-Type');
+    request.headers.addAll(headers);
+
+    request.fields.addAll(fields);
+
+    if (file != null) {
+      final stream = http.ByteStream(file.openRead());
+      final length = await file.length();
+      final multipartFile = http.MultipartFile(
+        fileFieldName,
+        stream,
+        length,
+        filename: file.path.split('/').last,
+      );
+      request.files.add(multipartFile);
+    } else {
+      request.fields[fileFieldName] = '';
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    response.ensureSuccessStatusCode();
+    return _decodeBody(response.body);
+  }
 }
 
 dynamic _decodeBody(String body) {

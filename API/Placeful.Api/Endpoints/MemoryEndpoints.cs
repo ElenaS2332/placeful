@@ -17,7 +17,7 @@ public static class MemoryEndpoints
         group.MapGet("/shared", GetSharedMemoriesForCurrentUser).WithName(nameof(GetSharedMemoriesForCurrentUser)).RequireAuthorization(AuthPolicy.Authenticated);
         group.MapPost("", CreateMemory).WithName(nameof(CreateMemory)).DisableAntiforgery().RequireAuthorization(AuthPolicy.Authenticated);
         group.MapPost("{memoryId:guid}/share/{friendFirebaseUserId}", ShareMemory).WithName(nameof(ShareMemory)).DisableAntiforgery().RequireAuthorization(AuthPolicy.Authenticated);
-        group.MapPut("", UpdateMemory).WithName(nameof(UpdateMemory)).RequireAuthorization(AuthPolicy.Authenticated);
+        group.MapPut("{memoryId:guid}", UpdateMemory).WithName(nameof(UpdateMemory)).RequireAuthorization(AuthPolicy.Authenticated).DisableAntiforgery().RequireAuthorization(AuthPolicy.Authenticated);
         group.MapDelete("{memoryId:guid}", DeleteMemory).WithName(nameof(DeleteMemory)).RequireAuthorization(AuthPolicy.Authenticated);
     }
 

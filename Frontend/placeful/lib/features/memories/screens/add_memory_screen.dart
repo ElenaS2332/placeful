@@ -212,24 +212,36 @@ class _AddMemoryScreenBody extends StatelessWidget {
               const SizedBox(height: 16),
               Consumer<AddMemoryViewModel>(
                 builder: (_, vm, __) {
-                  if (vm.imageUrl == null || vm.imageUrl!.isEmpty) {
+                  final imagePath = vm.imageUrl;
+                  if (imagePath == null || imagePath.isEmpty)
                     return const SizedBox.shrink();
+
+                  Widget imageWidget;
+                  if (imagePath.startsWith('http')) {
+                    imageWidget = Image.network(imagePath, fit: BoxFit.cover);
+                  } else {
+                    final file = File(imagePath);
+                    if (!file.existsSync()) return const SizedBox.shrink();
+                    imageWidget = Image.file(file, fit: BoxFit.cover);
                   }
-                  final file = File(vm.imageUrl!);
-                  if (!file.existsSync()) return const SizedBox.shrink();
+
                   return Container(
                     width: double.infinity,
                     height: 250,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       image: DecorationImage(
-                        image: FileImage(file),
+                        image:
+                            imagePath.startsWith('http')
+                                ? NetworkImage(imagePath)
+                                : FileImage(File(imagePath)) as ImageProvider,
                         fit: BoxFit.cover,
                       ),
                     ),
                   );
                 },
               ),
+
               if (vm.showMap) const SizedBox(height: 12),
               if (!vm.showMap) const SizedBox(height: 180),
               Row(
@@ -266,7 +278,11 @@ class _AddMemoryScreenBody extends StatelessWidget {
                       child:
                           vm.isLoading
                               ? const CircularProgressIndicator()
-                              : const Text("Add Memory"),
+                              : Text(
+                                vm.memoryToEdit != null
+                                    ? "Update Memory"
+                                    : "Add Memory",
+                              ),
                     ),
                   ),
                 ],

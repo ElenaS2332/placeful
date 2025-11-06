@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:placeful/common/domain/dtos/memory_dto.dart';
+import 'package:placeful/common/domain/dtos/memory_to_edit_dto.dart';
 import 'package:placeful/common/domain/dtos/shared_memory_dto.dart';
 import 'package:placeful/common/domain/exceptions/http_response_exception.dart';
 import 'package:placeful/common/domain/exceptions/memory_already_shared_exception.dart';
@@ -52,8 +53,46 @@ class MemoryService {
     }
   }
 
-  Future<void> updateMemory(Memory memory) async {
-    await _client.put("memory/${memory.id}", memory.toJson());
+  Future<void> updateMemory(
+    MemoryToEditDto memoryToEdit, {
+    File? imageFile,
+  }) async {
+    final fields = <String, String>{
+      'Id': memoryToEdit.id,
+      'Title': memoryToEdit.title,
+      'Description': memoryToEdit.description,
+    };
+
+    if (memoryToEdit.date != null) {
+      fields['Date'] = memoryToEdit.date!.toIso8601String();
+    }
+
+    if (memoryToEdit.location != null) {
+      fields['Location.Latitude'] = memoryToEdit.location!.latitude.toString();
+      fields['Location.Longitude'] =
+          memoryToEdit.location!.longitude.toString();
+      fields['Location.Name'] = memoryToEdit.location!.name;
+    }
+
+    if (imageFile != null) {
+      await _client.putWithMedia(
+        'memory/${memoryToEdit.id}',
+        fields: fields,
+        file: imageFile,
+        fileFieldName: 'ImageFile',
+      );
+    } else {
+      if (memoryToEdit.imageUrl != null) {
+        fields['ImageUrl'] = memoryToEdit.imageUrl!;
+      }
+
+      await _client.putWithMedia(
+        'memory/${memoryToEdit.id}',
+        fields: fields,
+        file: null,
+        fileFieldName: 'ImageFile',
+      );
+    }
   }
 
   Future<void> deleteMemory(String id) async {

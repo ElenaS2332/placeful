@@ -27,10 +27,6 @@ class MemoryDetailsViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> updateMemory(Memory memory) async {
-    await memoryService.updateMemory(memory);
-  }
-
   Future<void> deleteMemory(String id) async {
     await memoryService.deleteMemory(id);
   }
