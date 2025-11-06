@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:placeful/common/domain/exceptions/memory_already_shared_exception.dart';
+import 'package:placeful/features/friends/screens/select_friend_screen.dart';
 import 'package:placeful/features/memories/screens/add_memory_screen.dart';
 import 'package:placeful/features/memories/screens/list_memories_screen.dart';
 import 'package:provider/provider.dart';
@@ -58,6 +60,76 @@ class MemoryDetailsScreen extends StatelessWidget {
                         ),
                         (route) => false,
                       );
+                    }
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.share),
+                  onPressed: () async {
+                    final selectedFriend = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SelectFriendScreen(),
+                      ),
+                    );
+
+                    if (selectedFriend != null) {
+                      try {
+                        await viewModel.shareMemoryWith(
+                          selectedFriend.firebaseUid,
+                        );
+
+                        if (!context.mounted) return;
+                        showDialog(
+                          context: context,
+                          builder:
+                              (_) => AlertDialog(
+                                content: Text(
+                                  "Memory shared with ${selectedFriend.fullName}",
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text("OK"),
+                                  ),
+                                ],
+                              ),
+                        );
+                      } on MemoryAlreadySharedException {
+                        if (!context.mounted) return;
+                        showDialog(
+                          context: context,
+                          builder:
+                              (_) => AlertDialog(
+                                title: const Text("Already Shared"),
+                                content: Text(
+                                  "This memory was already shared with ${selectedFriend.fullName}.",
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text("OK"),
+                                  ),
+                                ],
+                              ),
+                        );
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        showDialog(
+                          context: context,
+                          builder:
+                              (_) => AlertDialog(
+                                title: const Text("Error"),
+                                content: Text("Failed to share memory: $e"),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text("OK"),
+                                  ),
+                                ],
+                              ),
+                        );
+                      }
                     }
                   },
                 ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:placeful/features/memories/screens/memory_details_screen.dart';
-import 'package:placeful/features/memories/screens/memory_map_screen.dart';
 import 'package:placeful/features/memories/viewmodels/shared_memory_screen_viewmodel.dart';
 import 'package:provider/provider.dart';
 
