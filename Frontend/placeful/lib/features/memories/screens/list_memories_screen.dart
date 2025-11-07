@@ -275,51 +275,52 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                                                     MainAxisAlignment
                                                         .spaceBetween,
                                                 children: [
-                                                  Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        _truncate(memory.title),
-                                                        style: GoogleFonts.poppins(
-                                                          textStyle:
-                                                              const TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color:
-                                                                    Colors
-                                                                        .white,
-                                                                fontSize: 16,
-                                                              ),
+                                                  Flexible(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          memory.title,
+                                                          maxLines: 1,
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                          style: GoogleFonts.poppins(
+                                                            textStyle:
+                                                                const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  color:
+                                                                      Colors
+                                                                          .white,
+                                                                  fontSize: 16,
+                                                                ),
+                                                          ),
                                                         ),
-                                                        maxLines: 1,
-                                                        overflow:
-                                                            TextOverflow
-                                                                .ellipsis,
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Text(
-                                                        _truncate(
+                                                        const SizedBox(
+                                                          height: 4,
+                                                        ),
+                                                        Text(
                                                           memory.description,
-                                                          40,
+                                                          maxLines: 1,
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                          style: GoogleFonts.nunito(
+                                                            textStyle:
+                                                                const TextStyle(
+                                                                  color:
+                                                                      Colors
+                                                                          .white70,
+                                                                  fontSize: 12,
+                                                                ),
+                                                          ),
                                                         ),
-                                                        maxLines: 2,
-                                                        overflow:
-                                                            TextOverflow
-                                                                .ellipsis,
-                                                        style: GoogleFonts.nunito(
-                                                          textStyle:
-                                                              const TextStyle(
-                                                                color:
-                                                                    Colors
-                                                                        .white70,
-                                                                fontSize: 12,
-                                                              ),
-                                                        ),
-                                                      ),
-                                                    ],
+                                                      ],
+                                                    ),
                                                   ),
                                                   Row(
                                                     children: [

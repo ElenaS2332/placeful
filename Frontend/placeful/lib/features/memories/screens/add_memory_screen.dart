@@ -51,7 +51,7 @@ class _AddMemoryScreenBody extends StatelessWidget {
                 decoration: BoxDecoration(
                   color:
                       success
-                          ? Colors.green.shade700.withOpacity(0.9)
+                          ? Colors.green.shade700.withValues(alpha: 0.9)
                           : Colors.red.shade700,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: const [
