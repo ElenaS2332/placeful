@@ -24,10 +24,11 @@ public static class MemoryEndpoints
     private static async Task<IResult> GetMemoriesForCurrentUser(
         [FromQuery] int page,
         [FromQuery] int pageSize,
+        [FromQuery] string? searchQuery,
         IMemoryService memoryService,
         HttpContext context)
     {
-        var memories = await memoryService.GetMemoriesForCurrentUser(page, pageSize);
+        var memories = await memoryService.GetMemoriesForCurrentUser(page, pageSize, searchQuery);
         return Results.Ok(memories);
     }
 
@@ -83,7 +84,9 @@ public static class MemoryEndpoints
         }
     }
 
-    private static async Task<IResult> ShareMemory(Guid memoryId, String friendFirebaseUserId, IMemoryService memoryService)
+    private static async Task<IResult> ShareMemory(Guid memoryId, 
+        String friendFirebaseUserId, 
+        IMemoryService memoryService)
     {
         try
         {

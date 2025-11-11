@@ -13,13 +13,29 @@ public class MemoryService(PlacefulDbContext context,
     IHttpContextAccessor httpContextAccessor,
     IBlobStorageService blobStorageService) : IMemoryService
 {
-    public async Task<IEnumerable<Memory>> GetMemoriesForCurrentUser(int page = 1, int pageSize = 10)
+    public async Task<IEnumerable<Memory>> GetMemoriesForCurrentUser(
+        int page = 1,
+        int pageSize = 10,
+        string? searchQuery = null)
     {
         var userId = GetCurrentUserFirebaseUid();
 
-        return await context.Memories
+        var query = context.Memories
             .Where(m => m.UserProfileId == userId)
             .Include(m => m.Location)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var lowerQuery = searchQuery.ToLower();
+            query = query.Where(m =>
+                m.Title.ToLower().Contains(lowerQuery) ||
+                m.Description.ToLower().Contains(lowerQuery) ||
+                (m.Location != null && m.Location.Name.ToLower().Contains(lowerQuery))
+            );
+        }
+
+        return await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -152,9 +168,7 @@ public class MemoryService(PlacefulDbContext context,
         var friend = await context.UserProfiles
             .Include(u => u.SharedMemories)
             .FirstOrDefaultAsync(u => u.FirebaseUid == friendFirebaseUserId);
-
         if (friend == null) throw new UserProfileNotFoundException(friendFirebaseUserId);
-        
         var memory = await context.Memories.FindAsync(memoryId);
         if (memory == null) throw new MemoryNotFoundException(memoryId);
         
@@ -162,9 +176,7 @@ public class MemoryService(PlacefulDbContext context,
             m => m.MemoryId == memoryId && 
                  m.SharedFromUserId == currentUser.Id &&
                  m.SharedWithUserId == friend.Id);
-        
         if (sharedMemoryFromDb is not null) throw new MemoryAlreadySharedException(memoryId, friend.Id);
-        
         var sharedMemory = new SharedMemory
         {
             MemoryId = memoryId,
@@ -177,12 +189,10 @@ public class MemoryService(PlacefulDbContext context,
         
         context.SharedMemories.Add(sharedMemory);
         await context.SaveChangesAsync();
-        
         if (friend.SharedMemories is null)
         {
             friend.SharedMemories = new List<SharedMemory>();
         }
-
         friend.SharedMemories.Add(sharedMemory);
         await context.SaveChangesAsync();
     }

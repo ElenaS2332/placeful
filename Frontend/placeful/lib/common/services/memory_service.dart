@@ -20,6 +20,17 @@ class MemoryService {
     return response.map((c) => Memory.fromJson(c)).toList();
   }
 
+  Future<List<Memory>> searchMemories(
+    String searchQuery, {
+    int page = 1,
+    int pageSize = 5,
+  }) async {
+    final List response = await _client.get(
+      "memory?page=$page&pageSize=$pageSize&searchQuery=$searchQuery",
+    );
+    return response.map((c) => Memory.fromJson(c)).toList();
+  }
+
   Future<Memory> getMemory(String id) async {
     final Map<String, dynamic> response = await _client.get("memory/$id");
     return Memory.fromJson(response);

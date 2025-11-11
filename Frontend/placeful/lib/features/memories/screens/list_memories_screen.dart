@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:placeful/features/memories/screens/memory_details_screen.dart';
-import 'package:placeful/features/memories/screens/add_memory_screen.dart';
-import 'package:provider/provider.dart';
-import 'package:placeful/features/memories/viewmodels/list_memories_viewmodel.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:placeful/features/memories/screens/add_memory_screen.dart';
+import 'package:placeful/features/memories/screens/memory_details_screen.dart';
+import 'package:placeful/features/memories/viewmodels/list_memories_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 class ListMemoriesScreen extends StatelessWidget {
   const ListMemoriesScreen({super.key});
@@ -28,6 +28,8 @@ class _ListMemoriesScreenBody extends StatefulWidget {
 class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
   late ScrollController _scrollController;
   final Color _bgColor = const Color(0xFFF7F5FF);
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -47,6 +49,7 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -74,20 +77,62 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
           extendBodyBehindAppBar: true,
           backgroundColor: _bgColor,
           appBar: AppBar(
-            centerTitle: true,
-            title: Text(
-              "Your Memories",
-              style: GoogleFonts.poppins(
-                textStyle: const TextStyle(
-                  color: Colors.deepPurple,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-            ),
             backgroundColor: _bgColor,
             elevation: 0,
+            centerTitle: true,
             iconTheme: const IconThemeData(color: Colors.black87),
+            title:
+                _isSearching
+                    ? TextField(
+                      controller: _searchController,
+                      autofocus: true,
+                      cursorColor: Colors.deepPurple,
+                      style: GoogleFonts.poppins(
+                        color: Colors.deepPurple,
+                        fontSize: 18,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Search memories...',
+                        hintStyle: GoogleFonts.poppins(
+                          color: Colors.deepPurple.shade200,
+                        ),
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (value) {
+                        if (value.isNotEmpty) {
+                          vm.search(value);
+                        } else {
+                          vm.clearSearch();
+                        }
+                      },
+                    )
+                    : Text(
+                      "Your Memories",
+                      style: GoogleFonts.poppins(
+                        textStyle: const TextStyle(
+                          color: Colors.deepPurple,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+            actions: [
+              _isSearching
+                  ? IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      setState(() => _isSearching = false);
+                      _searchController.clear();
+                      vm.clearSearch();
+                    },
+                  )
+                  : IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () {
+                      setState(() => _isSearching = true);
+                    },
+                  ),
+            ],
           ),
           body: Stack(
             children: [
@@ -129,7 +174,9 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                "No memories yet",
+                                _isSearching
+                                    ? "No memories found for your search"
+                                    : "No memories yet",
                                 style: GoogleFonts.nunito(
                                   textStyle: const TextStyle(
                                     fontSize: 18,
@@ -138,29 +185,31 @@ class _ListMemoriesScreenBodyState extends State<_ListMemoriesScreenBody> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              IconButton(
-                                iconSize: 48,
-                                color: Colors.deepPurple,
-                                icon: const Icon(Icons.add_circle_outline),
-                                onPressed: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const AddMemoryScreen(),
+                              if (!_isSearching) ...[
+                                IconButton(
+                                  iconSize: 48,
+                                  color: Colors.deepPurple,
+                                  icon: const Icon(Icons.add_circle_outline),
+                                  onPressed: () async {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const AddMemoryScreen(),
+                                      ),
+                                    );
+                                    vm.fetchMemoriesAndFavoriteList();
+                                  },
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  "Add your first memory",
+                                  style: GoogleFonts.nunito(
+                                    textStyle: const TextStyle(
+                                      color: Colors.black54,
                                     ),
-                                  );
-                                  vm.fetchMemoriesAndFavoriteList();
-                                },
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "Add your first memory",
-                                style: GoogleFonts.nunito(
-                                  textStyle: const TextStyle(
-                                    color: Colors.black54,
                                   ),
                                 ),
-                              ),
+                              ],
                             ],
                           ),
                         )
