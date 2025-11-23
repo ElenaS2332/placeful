@@ -179,9 +179,9 @@ class AddMemoryViewModel extends ChangeNotifier {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: now.subtract(const Duration(days: 365 * 20)),
+      initialDate: now,
       firstDate: DateTime(1900),
-      lastDate: now.subtract(const Duration(days: 365 * 12)),
+      lastDate: now,
     );
     if (picked != null) {
       dateController.text = "${picked.day}/${picked.month}/${picked.year}";
