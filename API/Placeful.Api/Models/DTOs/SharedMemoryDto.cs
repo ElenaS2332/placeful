@@ -18,7 +18,7 @@ public class SharedMemoryDto
     public SharedMemoryDto(SharedMemory memory)
     {
         MemoryId = memory.MemoryId;
-        FriendFullName = memory.SharedWithUser?.FullName;
+        FriendFullName = memory.SharedFromUser?.FullName;
         MemoryTitle = memory.Memory?.Title;
         MemoryDescription = memory.Memory?.Description;
         MemoryDate = memory.Memory?.Date;
